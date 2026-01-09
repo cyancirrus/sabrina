@@ -1,10 +1,8 @@
 #![allow(unused)]
-
 use std::collections::{HashSet,HashMap};
 use std::fmt;
 use std::fs;
 use std::error::Error;
-use sabrina::parser::map::test;
 
 type Coord = (isize, isize);
 enum Object {
@@ -97,37 +95,3 @@ impl Environment {
     }
 }
 
-fn samplepath() -> Environment {
-    let mut information = HashMap::new();
-    let bounds = Bounds::new(0, 0, 8, 4);
-    let environment = vec![
-        ((1,0), Object::Obstacle),
-        ((1,1), Object::Obstacle),
-        ((3,3), Object::Obstacle),
-        ((3,2), Object::Obstacle),
-        ((3,1), Object::Obstacle),
-        
-        ((5,0), Object::Wall),
-        ((5,1), Object::Wall),
-        ((5,2), Object::Wall),
-        ((5,3), Object::Doorway),
-    ];
-    for (coord, object) in environment {
-        information.insert(coord, object);
-    }
-    Environment { information, bounds }
-}
-
-fn main() {
-    // let mut sample = samplepath();
-    // println!("{sample:}");
-    let path = "./data/sample/test0.map";
-    match readmap(path) {
-        Ok(env) => {
-            println!("{env}");
-        },
-        Err(e) => {
-            println!("Err\n{e:?}");
-        }
-    }
-}
