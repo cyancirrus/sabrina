@@ -1,9 +1,9 @@
+use crate::environment::representation::{Bounds, Environment, Object};
 use std::collections::HashMap;
-use std::fs;
 use std::error::Error;
-use crate::environment::representation::{Environment, Bounds, Object};
+use std::fs;
 
-pub fn readmap(path:&str) -> Result<Environment, Box<dyn Error>> {
+pub fn readmap(path: &str) -> Result<Environment, Box<dyn Error>> {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,
         Err(e) => return Err(format!("Unable to read path {path:?}\n{e:?}").into()),
@@ -18,7 +18,11 @@ pub fn readmap(path:&str) -> Result<Environment, Box<dyn Error>> {
                 b'*' => Object::Obstacle,
                 b'#' => Object::Wall,
                 b'x' => Object::Corner,
-                _ => return Err(format!("Unexpected symbol found in map with source {path:?}").into()),
+                _ => {
+                    return Err(
+                        format!("Unexpected symbol found in map with source {path:?}").into(),
+                    );
+                }
             };
             mirrored_objects.push(((idx_x as isize, idx_y as isize), obj));
             max_x = max_x.max(idx_x as isize);
@@ -29,8 +33,8 @@ pub fn readmap(path:&str) -> Result<Environment, Box<dyn Error>> {
     let bounds = Bounds::new(0, 0, max_x + 1, max_y + 1);
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
-        information.insert( (idx_x , max_y - mir_idx_y), obj);
+        information.insert((idx_x, max_y - mir_idx_y), obj);
     }
 
-    Ok(Environment::new(information, bounds ))
+    Ok(Environment::new(information, bounds))
 }
