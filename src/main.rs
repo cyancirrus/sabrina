@@ -147,7 +147,7 @@ impl Sabrina {
                 if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
                     precursor.insert(nxy, node.coord);
                     enqueue.insert(nxy);
-                    let cost = Self::estimate(&nxy, &target);
+                    let cost = node.cost + Self::estimate(&nxy, &target);
                     p_queue.push(MinNode::new(cost, nxy));
                 }
             }
