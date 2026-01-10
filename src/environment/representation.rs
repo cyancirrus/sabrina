@@ -14,7 +14,7 @@ pub enum Object {
     Unknown,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Bounds {
     pub min_x: isize,
     pub min_y: isize,
@@ -40,9 +40,9 @@ pub struct Environment {
 
 impl fmt::Display for Environment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for i in (self.bounds.min_y..self.bounds.max_y).rev() {
+        for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
             let mut line = String::new();
-            for j in self.bounds.min_x..self.bounds.max_x {
+            for j in self.bounds.min_x..=self.bounds.max_x {
                 let symbol = match self.information.get(&(j, i)) {
                     // None => '\u{00b7}',
                     None => ' ',
@@ -75,8 +75,8 @@ impl Environment {
     pub fn insert_object(&mut self, coord: Coord, obj: Object) {
         self.bounds.min_x = self.bounds.min_x.min(coord.0);
         self.bounds.min_y = self.bounds.min_y.min(coord.1);
-        self.bounds.max_x = self.bounds.max_x.min(coord.0);
-        self.bounds.max_y = self.bounds.max_y.min(coord.1);
+        self.bounds.max_x = self.bounds.max_x.max(coord.0);
+        self.bounds.max_y = self.bounds.max_y.max(coord.1);
         self.information.insert(coord, obj);
     }
 }

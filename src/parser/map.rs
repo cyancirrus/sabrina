@@ -30,7 +30,7 @@ pub fn readmap(path: &str) -> Result<Environment, Box<dyn Error>> {
         max_y = max_y.max(idx_y as isize);
     }
     let mut information = HashMap::new();
-    let bounds = Bounds::new(0, 0, max_x + 1, max_y + 1);
+    let bounds = Bounds::new(0, 0, max_x, max_y);
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
         information.insert((idx_x, max_y - mir_idx_y), obj);

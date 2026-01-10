@@ -21,6 +21,14 @@ pub struct Measurement {
     data: [Option<Coord>; GRAIN],
 }
 
+#[derive(Eq, PartialEq, Debug)]
+pub enum Status {
+    Enroute,
+    Blocked,
+    Impossible,
+    Complete,
+}
+
 impl Lidar {
     pub fn new(max_range: isize, oracle: Environment) -> Self {
         Self { max_range, oracle }
@@ -31,7 +39,9 @@ impl Lidar {
         for h in 1..self.max_range {
             let n_xy = (position.0 + delta.0 * h, position.1 + delta.1 * h);
             if !self.oracle.path_clear(&n_xy) {
-                return Some(n_xy);
+                // denomralize b/c is oracle and needs to be relative
+                let denorm_xy = (n_xy.0 - position.0, n_xy.1 - position.1);
+                return Some(denorm_xy);
             }
         }
         None
@@ -104,9 +114,22 @@ impl Sabrina {
         self.position = destination
     }
 
-    pub fn navigate(&mut self, target: Coord) -> bool {
+    fn reconstruct(precursor: &HashMap<Coord, Coord>, source: &Coord, target: &Coord) -> Vec<Coord> {
+        // Ensure this is synchronized with action as this returns reversed plan
+        let mut plan = vec![];
+        let mut node = *target;
+        while node != *source {
+            plan.push(node);
+            node = precursor[&node];
+        }
+        plan
+    }
+
+    fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
         let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
+        let mut precursor = HashMap::new();
+
         p_queue.push(MinNode::new(
             Self::estimate(&self.position, &target),
             self.position,
@@ -117,31 +140,46 @@ impl Sabrina {
         while let Some(node) = p_queue.pop() {
             // implementing base A* before I worry about backtracking and navigation
             if node.coord == target {
-                println!("!Destination achieved!");
-                return true;
-            } else if !self.environment.path_clear(&node.coord) {
-                println!("bad state");
-                // Unfortunately we're teleporting with this we sohuld like go back towards
-                // unexplored but i'm not sure exactly how to do that
-                continue;
+                let plan = Self::reconstruct(&precursor, &self.position, &target);
+                return Some(plan);
             } else if !self.environment.path_clear(&target) {
-                println!("unachievable target is out of bounds");
-                return false
+                return None;
             }
-            self.scan();
-            // need something better here don't want to recursively navigate and i don't think i
-            // can in rust
-            self.teleport(node.coord);
             for (dx, dy) in neighbors {
                 let nxy = (node.coord.0 + dx, node.coord.1 + dy);
                 if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
+                    precursor.insert(nxy, node.coord);
                     enqueue.insert(nxy);
                     let cost = Self::estimate(&nxy, &target);
                     p_queue.push(MinNode::new(cost, nxy));
                 }
             }
         }
-        false
+        None
+    }
+
+    fn action(&mut self, plan: Vec<Coord>) -> Status {
+        for &pos in plan.iter().rev() {
+            self.scan();
+            if self.environment.path_clear(&pos) {
+                self.position = pos;
+            } else {
+                return Status::Blocked;
+            }
+        }
+        Status::Complete
+    }
+
+    pub fn navigate(&mut self, target: Coord) -> Status {
+        let mut status = Status::Enroute;
+        while status != Status::Complete && status != Status::Impossible {
+            let plan = self.plan(target);
+            status = match plan {
+                Some(p) => self.action(p),
+                None => Status::Impossible,
+            }
+        }
+        status
     }
 }
 
@@ -150,15 +188,18 @@ fn main() {
     match readmap(path) {
         Ok(oracle) => {
             let position = (1, 1);
-            let target = (18,3);
+            let target = (18, 3);
+            // let target = (4, 2);
+            // let target = (1, 2);
             // println!("Test oracle pathclear 0, 1 {:?}", oracle.path_clear(&(1,2)));
             let bounds = Bounds::new(0, 0, 4, 4);
             let environment = Environment::new(HashMap::new(), bounds);
-            let lidar = Lidar::new(3, oracle.clone());
+            let lidar = Lidar::new(100, oracle.clone());
             let mut sabby = Sabrina::new(position, environment, lidar);
             println!("{oracle}");
-
+            // sabby.scan();
             println!("What is this {:?}", sabby.navigate(target));
+            println!("Final map\n{}", sabby.environment);
         }
         Err(e) => {
             println!("Err\n{e:?}");
