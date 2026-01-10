@@ -85,6 +85,7 @@ impl Sabrina {
         }
     }
     fn scan(&mut self) {
+        // These will need to be rotated in order to account for orrientation
         let measure = self.lidar.measure(&self.position);
         for m in measure.data {
             if let Some((nx, ny)) = m {
@@ -105,10 +106,12 @@ impl Sabrina {
 
     pub fn navigate(&mut self, target: Coord) -> bool {
         let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
+        let mut enqueue: HashSet<Coord> = HashSet::new();
         p_queue.push(MinNode::new(
             Self::estimate(&self.position, &target),
             self.position,
         ));
+        enqueue.insert(self.position);
         let neighbors = [(1, 0), (0, 1), (-1, 0), (0, -1)];
 
         while let Some(node) = p_queue.pop() {
@@ -117,9 +120,13 @@ impl Sabrina {
                 println!("!Destination achieved!");
                 return true;
             } else if !self.environment.path_clear(&node.coord) {
+                println!("bad state");
                 // Unfortunately we're teleporting with this we sohuld like go back towards
                 // unexplored but i'm not sure exactly how to do that
                 continue;
+            } else if !self.environment.path_clear(&target) {
+                println!("unachievable target is out of bounds");
+                return false
             }
             self.scan();
             // need something better here don't want to recursively navigate and i don't think i
@@ -127,7 +134,8 @@ impl Sabrina {
             self.teleport(node.coord);
             for (dx, dy) in neighbors {
                 let nxy = (node.coord.0 + dx, node.coord.1 + dy);
-                if self.environment.path_clear(&nxy) {
+                if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
+                    enqueue.insert(nxy);
                     let cost = Self::estimate(&nxy, &target);
                     p_queue.push(MinNode::new(cost, nxy));
                 }
@@ -142,11 +150,15 @@ fn main() {
     match readmap(path) {
         Ok(oracle) => {
             let position = (1, 1);
+            let target = (18,3);
+            // println!("Test oracle pathclear 0, 1 {:?}", oracle.path_clear(&(1,2)));
             let bounds = Bounds::new(0, 0, 4, 4);
             let environment = Environment::new(HashMap::new(), bounds);
             let lidar = Lidar::new(3, oracle.clone());
-            let sabby = Sabrina::new(position, environment, lidar);
+            let mut sabby = Sabrina::new(position, environment, lidar);
             println!("{oracle}");
+
+            println!("What is this {:?}", sabby.navigate(target));
         }
         Err(e) => {
             println!("Err\n{e:?}");
