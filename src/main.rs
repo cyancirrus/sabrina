@@ -110,10 +110,6 @@ impl Sabrina {
         target.0.abs_diff(source.0) + target.1.abs_diff(source.1)
     }
 
-    fn teleport(&mut self, destination: Coord) {
-        self.position = destination
-    }
-
     fn reconstruct(precursor: &HashMap<Coord, Coord>, source: &Coord, target: &Coord) -> Vec<Coord> {
         // Ensure this is synchronized with action as this returns reversed plan
         let mut plan = vec![];
@@ -126,6 +122,7 @@ impl Sabrina {
     }
 
     fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
+        if !self.environment.path_clear(&target) { return None };
         let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
@@ -142,8 +139,6 @@ impl Sabrina {
             if node.coord == target {
                 let plan = Self::reconstruct(&precursor, &self.position, &target);
                 return Some(plan);
-            } else if !self.environment.path_clear(&target) {
-                return None;
             }
             for (dx, dy) in neighbors {
                 let nxy = (node.coord.0 + dx, node.coord.1 + dy);
@@ -173,6 +168,8 @@ impl Sabrina {
     pub fn navigate(&mut self, target: Coord) -> Status {
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
+            println!("{}", self.environment);
+            println!("-------------------------------");
             let plan = self.plan(target);
             status = match plan {
                 Some(p) => self.action(p),
@@ -196,9 +193,13 @@ fn main() {
             let environment = Environment::new(HashMap::new(), bounds);
             let lidar = Lidar::new(100, oracle.clone());
             let mut sabby = Sabrina::new(position, environment, lidar);
-            println!("{oracle}");
+            println!("absolute_environment\n{oracle}");
+            println!("-------------------------------");
+            println!("    Starting Navigation        ");
+            println!("-------------------------------");
+
             // sabby.scan();
-            println!("What is this {:?}", sabby.navigate(target));
+            println!("Final Status {:?}", sabby.navigate(target));
             println!("Final map\n{}", sabby.environment);
         }
         Err(e) => {
