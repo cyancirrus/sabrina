@@ -8,6 +8,8 @@ use std::error::Error;
 use std::fmt;
 use std::fs;
 
+//TODO: Next session: orientation + beam rotation OR frontier-based exploration
+
 type Coord = (isize, isize);
 const GRAIN: usize = 4;
 // Sees in 4 principle components
