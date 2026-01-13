@@ -59,7 +59,11 @@ impl Sabrina {
         target.0.abs_diff(source.0) + target.1.abs_diff(source.1)
     }
 
-    fn reconstruct(precursor: &HashMap<Coord, Coord>, source: &Coord, target: &Coord) -> Vec<Coord> {
+    fn reconstruct(
+        precursor: &HashMap<Coord, Coord>,
+        source: &Coord,
+        target: &Coord,
+    ) -> Vec<Coord> {
         // Ensure this is synchronized with action as this returns reversed plan
         let mut plan = vec![];
         let mut node = *target;
@@ -71,7 +75,9 @@ impl Sabrina {
     }
 
     pub fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
-        if !self.environment.path_clear(&target) { return None };
+        if !self.environment.path_clear(&target) {
+            return None;
+        };
         let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();

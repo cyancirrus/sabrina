@@ -38,6 +38,12 @@ pub struct Environment {
     bounds: Bounds,
 }
 
+pub trait SpatialSource<T> {
+    fn get_bounds(&self) -> Bounds;
+    fn get_cell(&self, coord: &Coord) -> T;
+    fn set_sell(&mut self, coord: &Coord, object: T);
+}
+
 impl fmt::Display for Environment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for i in (self.bounds.min_y..=self.bounds.max_y).rev() {

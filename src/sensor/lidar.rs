@@ -1,4 +1,4 @@
-use crate::environment::representation::{Environment};
+use crate::environment::representation::Environment;
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
 //TODO: When finally make quadtree, create a hazard like cost a hazard will be used as a cost

@@ -1,9 +1,9 @@
 #![allow(unused)]
 use sabrina::environment::representation::{Bounds, Environment};
+use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::map::readmap;
 use sabrina::sensor::lidar::Lidar;
-use sabrina::intelligence::sabrina::Sabrina;
-use std::collections::{HashMap};
+use std::collections::HashMap;
 
 fn main() {
     println!("------------------------------------");
