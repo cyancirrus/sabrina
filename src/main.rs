@@ -249,7 +249,7 @@ impl QuadTree {
             if let Some(n) = self.information.get(&m_coord) {
                 if n.homogenous {
                     for g in child_morton(&m_coord) {
-                        stack.push((lvl, g));
+                        stack.push((lvl-1, g));
                     }
                     break;
                 }
@@ -258,7 +258,7 @@ impl QuadTree {
             }
         }
         while let Some((lvl, m)) = stack.pop() {
-            print_morton(&m);
+            let level = m.0 >> PARTITION;
             self.information.remove(&m);
             if lvl == 0 { continue; }
             for g in child_morton(coord) {
