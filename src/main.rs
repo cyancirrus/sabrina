@@ -245,37 +245,24 @@ impl QuadTree {
         let mut stack = Vec::new();
         for lvl in (1..LEVELS).rev() {
             let m_coord = encode_morton(coord, lvl);
-            println!("Looking at node");
-            println!("------------");
             print_morton(&m_coord);
-            println!("------------");
             if let Some(n) = self.information.get(&m_coord) {
-                if lvl > 0 && n.homogenous {
+                if n.homogenous {
                     for g in child_morton(&m_coord) {
-                        stack.push(g);
+                        stack.push((lvl, g));
                     }
+                    break;
                 }
-                if n.homogenous { break; }
-                // if n.homogenous {
-                //     stack.push(m_coord);
-                //     break;
-                // }
-                // homogenous |= n.homogenous;
             } else {
-                println!("doing something here");
                 return;
             }
         }
-        println!("stack {stack:?}");
-        while let Some(m) = stack.pop() {
+        while let Some((lvl, m)) = stack.pop() {
             print_morton(&m);
-            let level = m.0 >> PARTITION;
             self.information.remove(&m);
-            println!("level {level:?}");
-            if level > 0 {
-                for g in child_morton(coord) {
-                    stack.push(g);
-                }
+            if lvl == 0 { continue; }
+            for g in child_morton(coord) {
+                stack.push((lvl - 1, g));
             }
         }
     }
