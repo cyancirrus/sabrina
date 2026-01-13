@@ -8,11 +8,11 @@ use std::error::Error;
 use std::fmt;
 use std::fs;
 
-const LEVELS: isize = 8;
+const LEVELS: isize = 2;
 const GRID: usize = 4;
 const PARTITION: usize = 32;
 type Coord = (isize, isize);
-type Information = HashMap<(isize, isize), QuadNode>;
+type Information = HashMap<Coord, QuadNode>;
 // Sees in 4 principle components
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
@@ -106,18 +106,34 @@ fn encode_morton(coord: &Coord, level: isize) -> (Coord) {
     )
 }
 
-fn print_morton(morton: &Coord) {
-    let level = morton.0 >> PARTITION;
-    println!("level: {level:?}");
-    println!(
-        "(x: {}, y: {})",
-        morton.0 & ((1 << PARTITION) - 1),
-        morton.1 & ((1 << PARTITION) - 1),
-    );
+fn child_morton(morton: &Coord) -> [Coord;4] {
+    print_morton(morton);
+    let level = (morton.0 >> PARTITION) - 1;
+    let mask = !(1<<PARTITION -1);
+    println!("before shifting {level:}");
+    [
+        (
+            (morton.0 & mask) | (level << PARTITION),
+            (morton.1 & mask) | (level << PARTITION),
+        ),
+        (
+            (morton.0 & mask) | (level << PARTITION) | 1 << level,
+            (morton.1 & mask) | (level << PARTITION),
+        ),
+        (
+            (morton.0 & mask) | (level << PARTITION),
+            (morton.1 & mask) | (level << PARTITION) | 1 << level,
+        ),
+        (
+            (morton.0 & mask) | (level << PARTITION) | 1 << level,
+            (morton.1 & mask) | (level << PARTITION) | 1 << level,
+        ),
+    ]
+
 }
 
 fn grid_morton(coord: &Coord, level: isize) -> [Coord; 4] {
-    let mask = !((1 << level));
+    let mask = !(1 << level);
     // clockwise navigation through grid
     [
         (
@@ -138,6 +154,21 @@ fn grid_morton(coord: &Coord, level: isize) -> [Coord; 4] {
         ),
     ]
 }
+
+fn print_morton(morton: &Coord) {
+    let level = morton.0 >> PARTITION;
+    println!("level: {level:?}");
+    println!(
+        "(x: {}, y: {})",
+        morton.0, morton.1,
+    );
+    println!(
+        "(x: {}, y: {})",
+        morton.0 & ((1 << PARTITION) - 1),
+        morton.1 & ((1 << PARTITION) - 1),
+    );
+}
+
 
 impl QuadTree {
     fn update_bounds(&mut self, coord: &Coord) {
@@ -187,6 +218,7 @@ impl QuadTree {
                 break;
             }
             let m_coord = encode_morton(coord, lvl);
+            // println!("m_coord {m_coord:?}");
             if let Some(n) = self.information.get_mut(&m_coord) {
                 // homogenous as previous level for all grid memberew homogenous
                 n.homogenous = true;
@@ -206,22 +238,76 @@ impl QuadTree {
     }
     fn cleanse_repres(&mut self, coord: &Coord) {
         let mut homogenous = false;
-        for lvl in (0..LEVELS).rev() {
-            if homogenous {
-                let grid = grid_morton(coord, lvl);
-                for g in grid {
-                    self.information.remove(&g);
-                }
-                continue;
-            }
+        let mut stack = Vec::new();
+        for lvl in (1..LEVELS).rev() {
             let m_coord = encode_morton(coord, lvl);
+            println!("Looking at node");
+            println!("------------");
+            print_morton(&m_coord);
+            println!("------------");
             if let Some(n) = self.information.get(&m_coord) {
-                homogenous |= n.homogenous;
+                if lvl > 0 && n.homogenous {
+                    for g in child_morton(&m_coord) {
+                        stack.push(g);
+                    }
+                }
+                break;
+                // if n.homogenous {
+                //     stack.push(m_coord);
+                //     break;
+                // }
+                // homogenous |= n.homogenous;
             } else {
+                println!("doing something here");
                 return;
+            }
+            // if homogenous {
+            //     println!("Adding node to queue");
+            //     println!("----");
+            //     print_morton(&m_coord);
+            //     println!("----");
+            //     // for g in child_morton(&m_coord) {
+            //     //     println!("g {g:?}");
+            //     //     stack.push(g);
+            //     // }
+            //     println!("after the shift");
+            //     break;
+            // }
+        }
+        println!("stack {stack:?}");
+        while let Some(m) = stack.pop() {
+            print_morton(&m);
+            let level = m.0 >> PARTITION;
+            self.information.remove(&m);
+            if level > 0 {
+                for g in child_morton(coord) {
+                    stack.push(g);
+                }
             }
         }
     }
+    // fn cleanse_repres(&mut self, coord: &Coord) {
+    //     let mut homogenous = false;
+    //     let mut queue = Vec::new();
+    //     for lvl in (0..LEVELS).rev() {
+    //         if homogenous {
+    //             println!("in the compression");
+    //             let grid = grid_morton(coord, lvl);
+    //             for g in grid {
+    //                 println!("g {g:?}");
+    //                 self.information.remove(&g);
+    //             }
+    //             continue;
+    //         }
+    //         let m_coord = encode_morton(coord, lvl);
+    //         if let Some(n) = self.information.get(&m_coord) {
+    //             homogenous |= n.homogenous;
+    //         } else {
+    //             println!("doing something here");
+    //             return;
+    //         }
+    //     }
+    // }
     fn insert_cell(&mut self, coord: &Coord, mut belief: Belief) {
         self.update_bounds(coord);
         self.insert_levels(coord);
@@ -257,7 +343,7 @@ impl QuadTree {
         for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
             let mut line = String::new();
             for j in self.bounds.min_x..=self.bounds.max_x {
-                 match self.get_cell_with_level(&(j, i)) {
+                match self.get_cell_with_level(&(j, i)) {
                     None => line.push_str("[ ]"),
                     Some((lvl, Belief::Occupied)) => line.push_str(&format!("[{lvl:}]")),
                     Some((lvl, Belief::Unknown)) => line.push_str(&format!("[{lvl:}]")),
@@ -274,9 +360,7 @@ impl fmt::Display for QuadTree {
         for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
             let mut line = String::new();
             for j in self.bounds.min_x..=self.bounds.max_x {
-                // let symbol = match self.information.get(&(j, i)) {
                 let symbol = match self.get_cell(&(j, i)) {
-                    // None => '\u{00b7}',
                     None => ' ',
                     Some(Belief::Occupied) => '#',
                     Some(Belief::Unknown) => '?',
@@ -293,40 +377,55 @@ impl fmt::Display for QuadTree {
 }
 
 fn main() {
-    // println!("------------------------");
-    // for n in grid_morton(&test, 1) {
+    println!("------------------------");
+    let test = (0, 0);
+    let level = 2;
+    // for n in grid_morton(&test, level) {
     //     print_morton(&n);
     // }
-    // println!("------------------------");
-    // for n in grid_morton(&test, 3) {
+    // for n in child_morton(&test) {
     //     print_morton(&n);
     // }
-    let mut oracle_quad = QuadTree::new();
-    oracle_quad.insert_cell(&(0, 0), Belief::Occupied);
-    oracle_quad.insert_cell(&(0, 1), Belief::Occupied);
-    oracle_quad.insert_cell(&(1, 0), Belief::Occupied);
-    oracle_quad.insert_cell(&(1, 1), Belief::Occupied);
-    println!("Oracle_quad\n{:?}", oracle_quad);
-    println!("-------------------------------");
-    println!("-------------------------------");
-    println!("Oracle_quad\n{}", oracle_quad);
-    println!("-------------------------------");
-    println!("-------------------------------");
+    // for i in 0..1<<level {
+    //     for j in 0..1<<level{
+    //         println!("parent {:?}", encode_morton(&(i,j), level));
+    //     }
+    // }
 
-    let path = "./data/sample/test_quad0.map";
-    match (readmap(path), readquad(path, LEVELS)) {
-        (Ok(oracle_grid), Ok(oracle_quad)) => {
-            // println!("Oracle_quad {:?}", oracle_quad.information);
-            println!("-------------------------------");
-            println!("Oracle Grid\n{oracle_grid}");
-            println!("-------------------------------");
-            println!("-------------------------------");
-            println!("Oracle Quad\n{oracle_quad}");
-            println!("-------------------------------");
-            oracle_quad.display_with_levels();
-        },
-        _ => {
-            println!("Unexpected Error");
+    let mut oracle_quad = QuadTree::new();
+    // for i in 0..2 {
+    //     for j in 0..2 {
+    for i in 0..2 {
+        for j in 0..2 {
+            // if i == 3 && j == 3 { break; }
+            oracle_quad.insert_cell(&(i, j), Belief::Occupied);
         }
     }
+    println!("-------------------------------");
+    println!("-------------------------------");
+    // oracle_quad.insert_cell(&(3, 3), Belief::Occupied);
+    println!("Oracle_quad\n{:?}", oracle_quad);
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("Oracle_quad\n{}", oracle_quad);
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // oracle_quad.display_with_levels();
+
+    // let path = "./data/sample/test_quad1.map";
+    // match (readmap(path), readquad(path, LEVELS)) {
+    //     (Ok(oracle_grid), Ok(oracle_quad)) => {
+    //         // println!("Oracle_quad {:?}", oracle_quad.information);
+    //         println!("-------------------------------");
+    //         println!("Oracle Grid\n{oracle_grid}");
+    //         println!("-------------------------------");
+    //         println!("-------------------------------");
+    //         println!("Oracle Quad\n{oracle_quad}");
+    //         println!("-------------------------------");
+    //         oracle_quad.display_with_levels();
+    //     }
+    //     _ => {
+    //         println!("Unexpected Error");
+    //     }
+    // }
 }
