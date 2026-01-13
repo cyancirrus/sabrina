@@ -107,7 +107,7 @@ fn encode_morton(coord: &Coord, level: isize) -> (Coord) {
 }
 
 fn child_morton(morton: &Coord) -> [Coord;4] {
-    // print_morton(morton);
+    print_morton(morton);
     let level = (morton.0 >> PARTITION) - 1;
     // something off by one here
     // let mask = ((1<<PARTITION+1) -1);
@@ -136,7 +136,8 @@ fn child_morton(morton: &Coord) -> [Coord;4] {
 }
 
 fn grid_morton(coord: &Coord, level: isize) -> [Coord; 4] {
-    let mask = !(1 << level);
+    let mask = !((1 << (level + 1)) - 1);
+    println!("mask {mask:b}");
     // clockwise navigation through grid
     [
         (
@@ -203,6 +204,9 @@ impl QuadTree {
         let grid = grid_morton(coord, level);
         for d in grid {
             if !self.information.contains_key(&d) {
+                println!("HHHHHHHHHHHHHERRRRRRRRRRRREEE");
+                print_morton(&d);
+                println!("HHHHHHHHHHHHHERRRRRRRRRRRREEE");
                 return None;
             };
         }
@@ -215,13 +219,14 @@ impl QuadTree {
     }
 
     fn bubble_belief(&mut self, coord: &Coord, mut belief: Belief) {
+        println!("--------------------------------------------");
         let mut homogenous = true;
         for lvl in 0..self.levels {
             if !homogenous {
                 break;
             }
             let m_coord = encode_morton(coord, lvl);
-            // println!("m_coord {m_coord:?}");
+            println!("m_coord {m_coord:?}");
             if let Some(n) = self.information.get_mut(&m_coord) {
                 // homogenous as previous level for all grid memberew homogenous
                 n.homogenous = true;
@@ -235,17 +240,19 @@ impl QuadTree {
                     }
                 }
             } else {
+                println!("IS THIS THE ISSUE");
+                print_morton(coord);
+                println!("here {lvl:}");
                 return;
             }
         }
     }
     fn cleanse_repres(&mut self, coord: &Coord) {
-        println!("--------------------------------------------");
+        println!("in cleanse");
         let mut homogenous = false;
         let mut stack = Vec::new();
         for lvl in (1..LEVELS).rev() {
             let m_coord = encode_morton(coord, lvl);
-            print_morton(&m_coord);
             if let Some(n) = self.information.get(&m_coord) {
                 if n.homogenous {
                     for g in child_morton(&m_coord) {
@@ -257,13 +264,20 @@ impl QuadTree {
                 return;
             }
         }
+        println!("STACK {stack:?}");
         while let Some((lvl, m)) = stack.pop() {
-            let level = m.0 >> PARTITION;
+            // let level = m.0 >> PARTITION;
             self.information.remove(&m);
+            println!("****************************");
+            println!("Lvl {lvl:}, m {m:?}");
+            print_morton(&m);
+            println!("****************************");
             if lvl == 0 { continue; }
-            for g in child_morton(coord) {
+            for g in child_morton(&m) {
+                // println!("in child morton");
                 stack.push((lvl - 1, g));
             }
+            break;
         }
     }
     // fn cleanse_repres(&mut self, coord: &Coord) {
@@ -358,36 +372,20 @@ impl fmt::Display for QuadTree {
 
 fn main() {
     // println!("------------------------");
-    // let test = (3, 3);
-    // let level = 1;
-    // let test = encode_morton(&(3,3), 1);
+    let test = (3, 3);
+    let level = 2;
+    let m_test = encode_morton(&test, level);
     // let test = encode_morton(&(3,3), 1);
     // let test = encode_morton(&test, 2);
-    // println!("STARTING");
-    // for n in child_morton(&test) {
-    //     print_morton(&n);
-    // }
-    // println!("DONE");
-    // for n in grid_morton(&test, level) {
-    //     print_morton(&n);
-    // }
-    // for n in child_morton(&test) {
-    //     print_morton(&n);
-    // }
-    // for i in 0..1<<level {
-    //     for j in 0..1<<level{
-    //         println!("parent {:?}", encode_morton(&(i,j), level));
-    //     }
-    // }
-
+    for n in child_morton(&m_test) {
+        print_morton(&n);
+    }
+    for n in grid_morton(&test, level) {
+        print_morton(&n);
+    }
     let mut oracle_quad = QuadTree::new();
-    // for i in 0..2 {
-    //     for j in 0..2 {
     for i in 0..4 {
         for j in 0..4 {
-    // for i in 2..4 {
-    //     for j in 2..4 {
-            // if i == 3 && j == 3 { break; }
             oracle_quad.insert_cell(&(i, j), Belief::Occupied);
         }
     }
@@ -400,7 +398,7 @@ fn main() {
     // println!("-------------------------------");
     // println!("-------------------------------");
     // oracle_quad.insert_cell(&(3, 3), Belief::Occupied);
-    println!("Oracle_quad\n{:?}", oracle_quad);
+    // println!("Oracle_quad\n{:?}", oracle_quad);
     // // println!("-------------------------------");
     // // println!("-------------------------------");
     // // println!("Oracle_quad\n{}", oracle_quad);
