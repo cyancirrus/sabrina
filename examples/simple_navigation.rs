@@ -188,7 +188,7 @@ impl Sabrina {
 }
 
 fn main() {
-    let path = "./data/sample/test0.map";
+    let path = "./data/sample/test_nav0.map";
     match readmap(path) {
         Ok(oracle) => {
             let position = (1, 1);

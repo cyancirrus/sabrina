@@ -98,3 +98,4 @@ Final map
 ## License
 
 MIT / Apache-2.0 
+cargo run --example simple_navigation
