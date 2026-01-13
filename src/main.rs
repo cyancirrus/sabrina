@@ -8,7 +8,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs;
 
-const LEVELS: isize = 2;
+const LEVELS: isize = 3;
 const GRID: usize = 4;
 const PARTITION: usize = 32;
 type Coord = (isize, isize);
@@ -107,26 +107,29 @@ fn encode_morton(coord: &Coord, level: isize) -> (Coord) {
 }
 
 fn child_morton(morton: &Coord) -> [Coord;4] {
-    print_morton(morton);
+    // print_morton(morton);
     let level = (morton.0 >> PARTITION) - 1;
-    let mask = !(1<<PARTITION -1);
-    println!("before shifting {level:}");
+    // something off by one here
+    // let mask = ((1<<PARTITION+1) -1);
+    // println!("mask {:b}", mask);
+    // println!("before shifting {:}", level + 1);
+    // println!("the mask should {:b}", mask & morton.0);
     [
         (
-            (morton.0 & mask) | (level << PARTITION),
-            (morton.1 & mask) | (level << PARTITION),
+            (morton.0 - (1<< PARTITION)),
+            (morton.1 - (1 << PARTITION)),
         ),
         (
-            (morton.0 & mask) | (level << PARTITION) | 1 << level,
-            (morton.1 & mask) | (level << PARTITION),
+            (morton.0 - (1 << PARTITION))  | 1 << level,
+            (morton.1 - (1 << PARTITION)) ,
         ),
         (
-            (morton.0 & mask) | (level << PARTITION),
-            (morton.1 & mask) | (level << PARTITION) | 1 << level,
+            (morton.0 - (1 << PARTITION)) ,
+            (morton.1 - (1 << PARTITION))  | 1 << level,
         ),
         (
-            (morton.0 & mask) | (level << PARTITION) | 1 << level,
-            (morton.1 & mask) | (level << PARTITION) | 1 << level,
+            (morton.0 - (1 << PARTITION))  | 1 << level,
+            (morton.1 - (1 << PARTITION))  | 1 << level,
         ),
     ]
 
@@ -237,6 +240,7 @@ impl QuadTree {
         }
     }
     fn cleanse_repres(&mut self, coord: &Coord) {
+        println!("--------------------------------------------");
         let mut homogenous = false;
         let mut stack = Vec::new();
         for lvl in (1..LEVELS).rev() {
@@ -251,7 +255,7 @@ impl QuadTree {
                         stack.push(g);
                     }
                 }
-                break;
+                if n.homogenous { break; }
                 // if n.homogenous {
                 //     stack.push(m_coord);
                 //     break;
@@ -261,24 +265,13 @@ impl QuadTree {
                 println!("doing something here");
                 return;
             }
-            // if homogenous {
-            //     println!("Adding node to queue");
-            //     println!("----");
-            //     print_morton(&m_coord);
-            //     println!("----");
-            //     // for g in child_morton(&m_coord) {
-            //     //     println!("g {g:?}");
-            //     //     stack.push(g);
-            //     // }
-            //     println!("after the shift");
-            //     break;
-            // }
         }
         println!("stack {stack:?}");
         while let Some(m) = stack.pop() {
             print_morton(&m);
             let level = m.0 >> PARTITION;
             self.information.remove(&m);
+            println!("level {level:?}");
             if level > 0 {
                 for g in child_morton(coord) {
                     stack.push(g);
@@ -377,9 +370,17 @@ impl fmt::Display for QuadTree {
 }
 
 fn main() {
-    println!("------------------------");
-    let test = (0, 0);
-    let level = 2;
+    // println!("------------------------");
+    // let test = (3, 3);
+    // let level = 1;
+    // let test = encode_morton(&(3,3), 1);
+    // let test = encode_morton(&(3,3), 1);
+    // let test = encode_morton(&test, 2);
+    // println!("STARTING");
+    // for n in child_morton(&test) {
+    //     print_morton(&n);
+    // }
+    // println!("DONE");
     // for n in grid_morton(&test, level) {
     //     print_morton(&n);
     // }
@@ -395,22 +396,30 @@ fn main() {
     let mut oracle_quad = QuadTree::new();
     // for i in 0..2 {
     //     for j in 0..2 {
-    for i in 0..2 {
-        for j in 0..2 {
+    for i in 0..4 {
+        for j in 0..4 {
+    // for i in 2..4 {
+    //     for j in 2..4 {
             // if i == 3 && j == 3 { break; }
             oracle_quad.insert_cell(&(i, j), Belief::Occupied);
         }
     }
-    println!("-------------------------------");
-    println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
+    // println!("-------------------------------");
     // oracle_quad.insert_cell(&(3, 3), Belief::Occupied);
     println!("Oracle_quad\n{:?}", oracle_quad);
+    // // println!("-------------------------------");
+    // // println!("-------------------------------");
+    // // println!("Oracle_quad\n{}", oracle_quad);
     // println!("-------------------------------");
     // println!("-------------------------------");
-    // println!("Oracle_quad\n{}", oracle_quad);
-    // println!("-------------------------------");
-    // println!("-------------------------------");
-    // oracle_quad.display_with_levels();
+    oracle_quad.display_with_levels();
 
     // let path = "./data/sample/test_quad1.map";
     // match (readmap(path), readquad(path, LEVELS)) {
