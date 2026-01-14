@@ -4,13 +4,6 @@ use crate::global::types::{Bounds, Coord};
 use std::collections::HashMap;
 use std::fmt;
 
-// TODO: Bit-level Quadtree Fixes (Off-by-one/Masks)
-// Unknown State Initialization + Visual Debugger (Essential for visibility)
-// Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
-// Multi-ray LiDAR & Planner Implementation.
-// Hestereses or defered clean up
-// Consdier implementing a jump iter
-
 type Information = HashMap<Coord, QuadNode>;
 // Sees in 4 principle components
 
