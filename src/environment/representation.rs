@@ -1,10 +1,10 @@
 #![allow(unused)]
+use crate::global::types::{Bounds, Coord};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::fs;
 
-type Coord = (isize, isize);
 #[derive(Clone)]
 pub enum Object {
     Doorway,
@@ -14,24 +14,6 @@ pub enum Object {
     Unknown,
 }
 
-#[derive(Clone, Debug)]
-pub struct Bounds {
-    pub min_x: isize,
-    pub min_y: isize,
-    pub max_x: isize,
-    pub max_y: isize,
-}
-
-impl Bounds {
-    pub fn new(min_x: isize, min_y: isize, max_x: isize, max_y: isize) -> Self {
-        Self {
-            min_x,
-            min_y,
-            max_x,
-            max_y,
-        }
-    }
-}
 #[derive(Clone)]
 pub struct Environment {
     information: HashMap<Coord, Object>,

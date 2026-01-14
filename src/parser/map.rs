@@ -1,4 +1,5 @@
-use crate::environment::representation::{Bounds, Environment, Object};
+use crate::environment::representation::{Environment, Object};
+use crate::global::types::Bounds;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
