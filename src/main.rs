@@ -8,6 +8,13 @@ use std::error::Error;
 use std::fmt;
 use std::fs;
 
+// TODO: Bit-level Quadtree Fixes (Off-by-one/Masks)
+// Unknown State Initialization + Visual Debugger (Essential for visibility)
+// Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
+// Multi-ray LiDAR & Planner Implementation.
+// Hestereses or defered clean up
+// Consdier implementing a jump iter
+
 const LEVELS: isize = 3;
 const GRID: usize = 4;
 const PARTITION: usize = 32;
@@ -108,11 +115,8 @@ fn encode_morton(coord: &Coord, level: isize) -> (Coord) {
 
 fn child_morton(morton: &Coord) -> [Coord;4] {
     let level = (morton.0 >> PARTITION) - 1;
-    // something off by one here
-    // let mask = ((1<<PARTITION+1) -1);
-    // println!("mask {:b}", mask);
-    // println!("before shifting {:}", level + 1);
-    // println!("the mask should {:b}", mask & morton.0);
+    // TODO: something off by one error here to be debugged
+    // level is one digit too long
     [
         (
             (morton.0 - (1<< PARTITION)),
@@ -342,35 +346,36 @@ fn main() {
     // // for n in grid_morton(&test, level) {
     // //     print_morton(&n);
     // // }
-    // let mut oracle_quad = QuadTree::new();
-    // for i in 0..4 {
-    //     for j in 0..4 {
-    //         oracle_quad.insert_cell(&(i, j), Belief::Occupied);
-    //     }
-    // }
-    // // oracle_quad.insert_cell(&(3, 3), Belief::Occupied);
-    // println!("Oracle_quad\n{:?}", oracle_quad);
-    // // println!("-------------------------------");
-    // // println!("-------------------------------");
-    // println!("Oracle_quad\n{}", oracle_quad);
-    // println!("-------------------------------");
-    // println!("-------------------------------");
-    // oracle_quad.display_with_levels();
-
-    let path = "./data/sample/test_quad0.map";
-    match (readmap(path), readquad(path, LEVELS)) {
-        (Ok(oracle_grid), Ok(oracle_quad)) => {
-            // println!("Oracle_quad {:?}", oracle_quad.information);
-            println!("-------------------------------");
-            println!("Oracle Grid\n{oracle_grid}");
-            println!("-------------------------------");
-            println!("-------------------------------");
-            println!("Oracle Quad\n{oracle_quad}");
-            println!("-------------------------------");
-            oracle_quad.display_with_levels();
-        }
-        _ => {
-            println!("Unexpected Error");
+    let mut oracle_quad = QuadTree::new();
+    for i in 0..4 {
+        for j in 0..4 {
+            oracle_quad.insert_cell(&(i, j), Belief::Occupied);
         }
     }
+    println!("Oracle_quad\n{:?}", oracle_quad);
+    println!("-------------------------------");
+    println!("-------------------------------");
+    println!("Oracle_quad\n{}", oracle_quad);
+    println!("-------------------------------");
+    println!("-------------------------------");
+    oracle_quad.display_with_levels();
+
+//     let path = "./data/sample/test_quad0.map";
+//     match (readmap(path), readquad(path, LEVELS)) {
+//         (Ok(oracle_grid), Ok(oracle_quad)) => {
+//             // println!("Oracle_quad {:?}", oracle_quad.information);
+//             println!("-------------------------------");
+//             println!("Oracle Grid\n{oracle_grid}");
+//             println!("-------------------------------");
+//             println!("-------------------------------");
+//             println!("Oracle Quad\n{oracle_quad}");
+//             println!("-------------------------------");
+//             println!("Oracle Quad\n{oracle_quad:?}");
+//             println!("-------------------------------");
+//             oracle_quad.display_with_levels();
+//         }
+//         _ => {
+//             println!("Unexpected Error");
+//         }
+//     }
 }
