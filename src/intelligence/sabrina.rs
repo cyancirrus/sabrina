@@ -1,5 +1,6 @@
-use crate::environment::grid::{Grid, Object};
+use crate::environment::grid::{Grid};
 use crate::sensor::lidar::{Lidar, Status};
+use crate::global::types::Belief;
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
@@ -50,7 +51,7 @@ impl Sabrina {
             if let Some((nx, ny)) = m {
                 self.environment.insert_object(
                     (nx + self.position.0, ny + self.position.1),
-                    Object::Unknown,
+                    Belief::Unknown,
                 );
             }
         }

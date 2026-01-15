@@ -1,5 +1,5 @@
-use crate::environment::grid::{Grid, Object};
-use crate::global::types::Bounds;
+use crate::environment::grid::{Grid};
+use crate::global::types::{Bounds, Belief};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
@@ -15,10 +15,11 @@ pub fn readmap(path: &str) -> Result<Grid, Box<dyn Error>> {
         for (idx_x, cell) in line.as_bytes().chunks_exact(3).enumerate() {
             let obj = match cell[1] {
                 b' ' => continue,
-                b'+' => Object::Doorway,
-                b'*' => Object::Obstacle,
-                b'#' => Object::Wall,
-                b'x' => Object::Corner,
+                b'?' => Belief::Unknown,
+                b'#' => Belief::Occupied,
+                b'+' => Belief::Occupied,
+                b'*' => Belief::Occupied,
+                b'x' => Belief::Occupied,
                 _ => {
                     return Err(
                         format!("Unexpected symbol found in map with source {path:?}").into(),

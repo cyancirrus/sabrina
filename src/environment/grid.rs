@@ -1,22 +1,13 @@
 #![allow(unused)]
-use crate::global::types::{Bounds, Coord};
+use crate::global::types::{Bounds, Coord, Belief};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::fs;
 
 #[derive(Clone)]
-pub enum Object {
-    Doorway,
-    Obstacle,
-    Corner,
-    Wall,
-    Unknown,
-}
-
-#[derive(Clone)]
 pub struct Grid {
-    pub information: HashMap<Coord, Object>,
+    pub information: HashMap<Coord, Belief>,
     pub bounds: Bounds,
 }
 
@@ -27,7 +18,7 @@ pub trait SpatialSource<T> {
 }
 
 impl Grid {
-    pub fn new(information: HashMap<Coord, Object>, bounds: Bounds) -> Self {
+    pub fn new(information: HashMap<Coord, Belief>, bounds: Bounds) -> Self {
         Self {
             information,
             bounds,
@@ -36,7 +27,7 @@ impl Grid {
     pub fn path_clear(&self, xy: &Coord) -> bool {
         !self.information.contains_key(xy)
     }
-    pub fn insert_object(&mut self, coord: Coord, obj: Object) {
+    pub fn insert_object(&mut self, coord: Coord, obj: Belief) {
         self.bounds.min_x = self.bounds.min_x.min(coord.0);
         self.bounds.min_y = self.bounds.min_y.min(coord.1);
         self.bounds.max_x = self.bounds.max_x.max(coord.0);

@@ -1,5 +1,6 @@
 #![allow(unused)]
-use crate::environment::grid::{Grid, Object};
+use crate::environment::grid::{Grid};
+use crate::global::types::Belief;
 use std::error::Error;
 use std::fmt;
 use std::fs;
@@ -12,11 +13,9 @@ impl fmt::Display for Grid {
                 let symbol = match self.information.get(&(j, i)) {
                     // None => '\u{00b7}',
                     None => ' ',
-                    Some(Object::Corner) => 'x',
-                    Some(Object::Doorway) => '+',
-                    Some(Object::Obstacle) => '*',
-                    Some(Object::Unknown) => '?',
-                    Some(Object::Wall) => '#',
+                    Some(Belief::Free) => ' ',
+                    Some(Belief::Occupied) => '#',
+                    Some(Belief::Unknown) => '?',
                 };
                 line.push('[');
                 line.push(symbol);
