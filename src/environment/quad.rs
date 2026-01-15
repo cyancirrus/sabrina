@@ -1,5 +1,5 @@
 use crate::environment::morton::{child_morton, encode_morton, grid_morton};
-use crate::global::consts::{GRID, LEVELS};
+use crate::global::consts::LEVELS;
 use crate::global::types::{Bounds, Coord};
 use std::collections::HashMap;
 use std::fmt;
@@ -65,6 +65,9 @@ impl QuadTree {
         );
         for lvl in 1..self.levels {
             let m_coord = encode_morton(coord, lvl);
+            if self.information.contains_key(&m_coord) {
+                return;
+            }
             self.information.insert(
                 m_coord,
                 QuadNode {
@@ -74,44 +77,35 @@ impl QuadTree {
             );
         }
     }
-    pub fn get_grid(&self, coord: &Coord, level: isize) -> Option<[QuadNode; GRID]> {
-        let grid = grid_morton(coord, level);
-        for d in grid {
-            if !self.information.contains_key(&d) {
-                return None;
-            };
-        }
-        Some([
-            self.information[&grid[0]],
-            self.information[&grid[1]],
-            self.information[&grid[2]],
-            self.information[&grid[3]],
-        ])
-    }
-
-    pub fn bubble_belief(&mut self, coord: &Coord, mut belief: Belief) {
-        for lvl in 0..self.levels {
-            let m_coord = encode_morton(coord, lvl);
-            if let Some(n) = self.information.get_mut(&m_coord) {
-                // homogenous as previous level for all grid memberew homogenous
-                n.homogenous = true;
-                n.belief = belief;
-            }
-            if let Some(grid) = self.get_grid(&coord, lvl) {
-                belief = grid[0].belief;
-                for i in 1..GRID {
-                    if grid[i].belief != belief {
+    pub fn bubble_belief(&mut self, coord: &Coord, belief: Belief) {
+        for lvl in 0..self.levels - 1 {
+            for g in grid_morton(&coord, lvl) {
+                if let Some(qnode) = self.information.get(&g) {
+                    if qnode.belief != belief {
                         return;
                     }
+                } else {
+                    return;
                 }
+            }
+            let m_coord = encode_morton(&coord, lvl + 1);
+            if let Some(ancestor) = self.information.get_mut(&m_coord) {
+                ancestor.homogenous = true;
+                ancestor.belief = belief;
             } else {
-                return;
+                self.information.insert(
+                    m_coord,
+                    QuadNode {
+                        homogenous: true,
+                        belief: belief,
+                    },
+                );
             }
         }
     }
     pub fn cleanse_repres(&mut self, coord: &Coord) {
         let mut stack = Vec::new();
-        for lvl in (1..LEVELS).rev() {
+        for lvl in (1..self.levels).rev() {
             let m_coord = encode_morton(coord, lvl);
             if let Some(n) = self.information.get(&m_coord) {
                 if n.homogenous {
@@ -126,11 +120,10 @@ impl QuadTree {
         }
         while let Some((lvl, m)) = stack.pop() {
             self.information.remove(&m);
-            if lvl == 0 {
-                continue;
-            }
-            for g in child_morton(&m) {
-                stack.push((lvl - 1, g));
+            if lvl > 0 {
+                for g in child_morton(&m) {
+                    stack.push((lvl - 1, g));
+                }
             }
         }
     }
@@ -140,21 +133,42 @@ impl QuadTree {
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
     }
-    fn get_cell(&self, coord: &Coord) -> Option<Belief> {
-        for lvl in (0..self.levels).rev() {
-            let m_coord = encode_morton(coord, lvl);
-            if let Some(n) = self.information.get(&m_coord) {
-                if n.homogenous {
-                    return Some(n.belief);
-                }
+    pub fn split_cell(&mut self, coord: &Coord, belief: Belief, level: isize) {
+        if level == 0 {
+            return;
+        }
+        let m_coord = encode_morton(coord, level);
+        let n_coord = encode_morton(coord, level - 1);
+        let Some(parent_node) = self.information.remove(&m_coord) else {
+            return;
+        };
+        for g in child_morton(coord) {
+            let belief = if g == n_coord {
+                belief
+            } else {
+                parent_node.belief
+            };
+            self.information.insert(
+                g,
+                QuadNode {
+                    belief,
+                    homogenous: parent_node.homogenous,
+                },
+            );
+        }
+    }
+    pub fn set_cell(&mut self, coord: &Coord, belief: Belief) {
+        if let Some((level, h_belief)) = self.get_cell(coord) {
+            if h_belief == belief {
+                return;
+            }
+            for lvl in (1..level).rev() {
+                self.split_cell(coord, belief, lvl);
             }
         }
-        None
+        self.information.insert(*coord, QuadNode { belief, homogenous: true });
     }
-}
-
-impl QuadTree {
-    fn get_cell_with_level(&self, coord: &Coord) -> Option<(isize, Belief)> {
+    fn get_cell(&self, coord: &Coord) -> Option<(isize, Belief)> {
         for lvl in (0..self.levels).rev() {
             let m_coord = encode_morton(coord, lvl);
             if let Some(n) = self.information.get(&m_coord) {
@@ -165,11 +179,14 @@ impl QuadTree {
         }
         None
     }
+}
+
+impl QuadTree {
     pub fn display_with_levels(&self) {
         for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
             let mut line = String::new();
             for j in self.bounds.min_x..=self.bounds.max_x {
-                match self.get_cell_with_level(&(j, i)) {
+                match self.get_cell(&(j, i)) {
                     None => line.push_str("[ ]"),
                     Some((lvl, Belief::Occupied)) => line.push_str(&format!("[{lvl:}]")),
                     Some((lvl, Belief::Unknown)) => line.push_str(&format!("[{lvl:}]")),
@@ -188,8 +205,8 @@ impl fmt::Display for QuadTree {
             for j in self.bounds.min_x..=self.bounds.max_x {
                 let symbol = match self.get_cell(&(j, i)) {
                     None => ' ',
-                    Some(Belief::Occupied) => '#',
-                    Some(Belief::Unknown) => '?',
+                    Some((_, Belief::Occupied)) => '#',
+                    Some((_, Belief::Unknown)) => '?',
                     Some(_) => '?',
                 };
                 line.push('[');
