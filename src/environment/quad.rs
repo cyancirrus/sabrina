@@ -247,10 +247,10 @@ impl fmt::Display for QuadTree {
             let mut line = String::new();
             for j in self.bounds.min_x..=self.bounds.max_x {
                 let symbol = match self.get_cell(&(j, i)) {
-                    None => ' ',
+                    None => 'x',
+                    Some((_, Belief::Free)) => ' ',
                     Some((_, Belief::Occupied)) => '#',
                     Some((_, Belief::Unknown)) => '?',
-                    Some(_) => '?',
                 };
                 line.push('[');
                 line.push(symbol);
