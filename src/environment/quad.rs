@@ -1,8 +1,7 @@
-use crate::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
+use crate::environment::morton::{child_morton, encode_morton, grid_morton};
 use crate::global::consts::PARTITION;
 use crate::global::types::{Bounds, Coord};
 use std::collections::HashMap;
-use std::fmt;
 
 type Information = HashMap<Coord, QuadNode>;
 // Sees in 4 principle components
@@ -102,29 +101,6 @@ impl QuadTree {
             },
         );
     }
-    pub fn insert_levels(&mut self, coord: &Coord) {
-        // To be obsolesced
-        self.information.insert(
-            *coord,
-            QuadNode {
-                homogenous: true,
-                belief: Belief::Occupied,
-            },
-        );
-        for lvl in 1..self.levels {
-            let m_coord = encode_morton(coord, lvl);
-            if self.information.contains_key(&m_coord) {
-                return;
-            }
-            self.information.insert(
-                m_coord,
-                QuadNode {
-                    homogenous: false,
-                    belief: Belief::Unknown,
-                },
-            );
-        }
-    }
     pub fn bubble_belief(&mut self, coord: &Coord, belief: Belief) {
         for lvl in 0..self.levels - 1 {
             for g in grid_morton(&coord, lvl) {
@@ -211,7 +187,7 @@ impl QuadTree {
             },
         );
     }
-    fn get_cell(&self, coord: &Coord) -> Option<(isize, Belief)> {
+    pub fn get_cell(&self, coord: &Coord) -> Option<(isize, Belief)> {
         for lvl in (0..self.levels).rev() {
             let m_coord = encode_morton(coord, lvl);
             if let Some(n) = self.information.get(&m_coord) {
@@ -221,43 +197,5 @@ impl QuadTree {
             }
         }
         None
-    }
-}
-
-impl QuadTree {
-    pub fn display_with_levels(&self) {
-        for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
-            let mut line = String::new();
-            for j in self.bounds.min_x..=self.bounds.max_x {
-                match self.get_cell(&(j, i)) {
-                    None => line.push_str("[ ]"),
-                    Some((lvl, Belief::Occupied)) => line.push_str(&format!("[{lvl:}]")),
-                    Some((lvl, Belief::Unknown)) => line.push_str(&format!("[{lvl:}]")),
-                    Some((lvl, Belief::Free)) => line.push_str(&format!("[{lvl:}]")),
-                };
-            }
-            println!("{}", line);
-        }
-    }
-}
-
-impl fmt::Display for QuadTree {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
-            let mut line = String::new();
-            for j in self.bounds.min_x..=self.bounds.max_x {
-                let symbol = match self.get_cell(&(j, i)) {
-                    None => 'x',
-                    Some((_, Belief::Free)) => ' ',
-                    Some((_, Belief::Occupied)) => '#',
-                    Some((_, Belief::Unknown)) => '?',
-                };
-                line.push('[');
-                line.push(symbol);
-                line.push(']');
-            }
-            let _ = writeln!(f, "{}", line);
-        }
-        Ok(())
     }
 }

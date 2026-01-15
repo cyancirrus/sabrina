@@ -1,4 +1,4 @@
-use crate::environment::representation::{Environment, Object};
+use crate::environment::grid::{Environment, Object};
 use crate::sensor::lidar::{Lidar, Status};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap, HashSet};
@@ -90,7 +90,6 @@ impl Sabrina {
         let neighbors = [(1, 0), (0, 1), (-1, 0), (0, -1)];
 
         while let Some(node) = p_queue.pop() {
-            // implementing base A* before I worry about backtracking and navigation
             if node.coord == target {
                 let plan = Self::reconstruct(&precursor, &self.position, &target);
                 return Some(plan);

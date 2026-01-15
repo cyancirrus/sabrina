@@ -1,6 +1,7 @@
 #![allow(unused)]
-use sabrina::environment::representation::{Bounds, Environment};
+use sabrina::environment::grid::Environment;
 use sabrina::intelligence::sabrina::Sabrina;
+use sabrina::global::types::Bounds;
 use sabrina::parser::map::readmap;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::HashMap;
