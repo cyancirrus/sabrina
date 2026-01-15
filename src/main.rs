@@ -62,7 +62,6 @@ fn cardinal_bounding(m_coord:&Coord) -> [Coord;4] {
     cards
 }
 
-
 pub fn east_morton(morton: &Coord) -> [Coord; 2] {
     // child filtered east neighbors; dx := 1
     let level = (morton.0 >> PARTITION) - 1;
@@ -116,49 +115,24 @@ pub fn south_morton(morton: &Coord) -> [Coord; 2] {
         ),
     ]
 }
-
 fn edge_neighbors(quad:&QuadTree, m_coord:&Coord) -> Vec<Coord> {
-    // Neighbor and filter need to be opposites ie (neigh east -> filter west);
-    // east ~ dx = 1;
-    // north ~ dy = 1;
-    // south ~ dy = 0;
-    // west ~ dx = 0;
+    // neighbor and filter need to be opposites ie (neigh east -> filter west);
     let cardinals = cardinals(m_coord);
+    let filters = [west_morton, south_morton, east_morton, north_morton];
     let mut neighbors = Vec::new();
-    let mut stack = vec![cardinals[0]];
-    // East
-    while let Some(p_coord) = stack.pop() {
-        if let Some(_) = quad.information.get(&p_coord) {
-            neighbors.push(p_coord);
+    let mut stack = Vec::new();
+    for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
+        stack.push(*cardinal);
+        while let Some(p_coord) = stack.pop() {
+            if quad.information.contains_key(&p_coord) {
+                neighbors.push(p_coord);
+            }
+            stack.extend(filter(&p_coord));
         }
-        neighbors.extend(west_morton(&p_coord));
-    }
-    //North
-    stack.push(cardinals[1]);
-    while let Some(p_coord) = stack.pop() {
-        if let Some(_) = quad.information.get(&p_coord) {
-            neighbors.push(p_coord);
-        }
-        neighbors.extend(south_morton(&p_coord));
-    }
-    //West
-    stack.push(cardinals[2]);
-    while let Some(p_coord) = stack.pop() {
-        if let Some(_) = quad.information.get(&p_coord) {
-            neighbors.push(p_coord);
-        }
-        neighbors.extend(east_morton(&p_coord));
-    }
-    //South
-    stack.push(cardinals[3]);
-    while let Some(p_coord) = stack.pop() {
-        if let Some(_) = quad.information.get(&p_coord) {
-            neighbors.push(p_coord);
-        }
-        neighbors.extend(south_morton(&p_coord));
     }
     neighbors
 }
+
 
 fn main() {
     let x = encode_morton(&(0,0), 1);
