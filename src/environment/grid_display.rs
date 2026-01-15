@@ -4,7 +4,6 @@ use std::error::Error;
 use std::fmt;
 use std::fs;
 
-
 impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for i in (self.bounds.min_y..=self.bounds.max_y).rev() {

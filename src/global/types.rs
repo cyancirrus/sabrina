@@ -18,3 +18,10 @@ impl Bounds {
         }
     }
 }
+
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+pub enum Belief {
+    Free,
+    Occupied,
+    Unknown,
+}

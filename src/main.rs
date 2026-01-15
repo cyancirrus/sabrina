@@ -1,7 +1,8 @@
 #![allow(unused)]
 use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
-use sabrina::environment::quad::{Belief, QuadTree};
+use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts;
+use sabrina::global::types::Belief;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::readmap;
 use sabrina::parser::quad::readquad;

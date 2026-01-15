@@ -1,6 +1,6 @@
 use crate::environment::morton::{child_morton, encode_morton, grid_morton};
 use crate::global::consts::PARTITION;
-use crate::global::types::{Bounds, Coord};
+use crate::global::types::{Belief, Bounds, Coord};
 use std::collections::HashMap;
 
 type Information = HashMap<Coord, QuadNode>;
@@ -19,13 +19,6 @@ pub struct QuadTree {
     pub padding: Bounds,
     pub information: Information,
 }
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
-pub enum Belief {
-    Free,
-    Occupied,
-    Unknown,
-}
-
 impl QuadTree {
     pub fn new(m: usize, n: usize, levels: isize) -> Self {
         let mut information = HashMap::new();

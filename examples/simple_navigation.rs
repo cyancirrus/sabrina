@@ -1,7 +1,7 @@
 #![allow(unused)]
 use sabrina::environment::grid::Grid;
-use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::global::types::Bounds;
+use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::readmap;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::HashMap;

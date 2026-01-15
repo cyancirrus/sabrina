@@ -1,4 +1,5 @@
-use crate::environment::quad::{Belief,QuadTree};
+use crate::environment::quad::QuadTree;
+use crate::global::types::Belief;
 use std::fmt;
 impl QuadTree {
     pub fn display_with_levels(&self) {
