@@ -1,6 +1,6 @@
-use crate::environment::grid::{Grid};
-use crate::sensor::lidar::{Lidar, Status};
+use crate::environment::grid::Grid;
 use crate::global::types::Belief;
+use crate::sensor::lidar::{Lidar, Status};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 

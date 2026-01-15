@@ -194,9 +194,9 @@ impl QuadTree {
     pub fn path_clear(&self, coord: &Coord) -> bool {
         match self.get_cell(coord) {
             Some((_, Belief::Free)) => true,
-            Some((_, Belief::Unknown))=> true,
+            Some((_, Belief::Unknown)) => true,
             Some((_, Belief::Occupied)) => false,
-            None => false
+            None => false,
         }
     }
 }

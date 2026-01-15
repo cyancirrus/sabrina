@@ -1,5 +1,5 @@
-use crate::environment::grid::{Grid};
-use crate::global::types::{Bounds, Belief};
+use crate::environment::grid::Grid;
+use crate::global::types::{Belief, Bounds};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;

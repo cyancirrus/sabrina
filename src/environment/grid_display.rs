@@ -1,5 +1,5 @@
 #![allow(unused)]
-use crate::environment::grid::{Grid};
+use crate::environment::grid::Grid;
 use crate::global::types::Belief;
 use std::error::Error;
 use std::fmt;

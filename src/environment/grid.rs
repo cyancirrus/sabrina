@@ -1,5 +1,5 @@
 #![allow(unused)]
-use crate::global::types::{Bounds, Coord, Belief};
+use crate::global::types::{Belief, Bounds, Coord};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
