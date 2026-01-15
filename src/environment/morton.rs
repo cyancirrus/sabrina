@@ -7,7 +7,6 @@ pub fn encode_morton(coord: &Coord, level: isize) -> Coord {
             && coord.1 < (1 << PARTITION)
             && level < (1 << isize::BITS as usize - PARTITION)
     );
-    // lvl 2: 1111_1100
     let mask = !((1 << level) - 1);
     (
         (coord.0 & mask) | (level << PARTITION),
