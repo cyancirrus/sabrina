@@ -16,7 +16,6 @@ use std::collections::HashMap;
 // // Consdier implementing a jump iter
 
 fn main() {
-
     // let mut quad = QuadTree::new(8, 4, 4);
     let mut quad = QuadTree::new(4, 4, 3);
     quad.display_with_levels();
@@ -31,10 +30,6 @@ fn main() {
     quad.insert_cell(&(1, 0), Belief::Occupied);
     println!("----------------------------------");
     quad.display_with_levels();
-
-
-
-
 
     let path = "./data/sample/test_quad0.map";
     match (readmap(path), readquad(path, consts::LEVELS)) {
