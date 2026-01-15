@@ -1,6 +1,6 @@
 #![allow(unused)]
-use sabrina::environment::morton::{encode_morton, grid_morton};
-use sabrina::environment::quad::QuadTree;
+use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
+use sabrina::environment::quad::{Belief, QuadTree};
 use sabrina::global::consts;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::map::readmap;
@@ -16,30 +16,40 @@ use std::collections::HashMap;
 // // Consdier implementing a jump iter
 
 fn main() {
-    let mut quad = QuadTree::new();
+    // let mut quad = QuadTree::new(8, 4, 4);
+    // let mut quad = QuadTree::new(4, 4, 3);
+    let mut quad = QuadTree::new(4, 4, 3);
+    // Initial
     quad.display_with_levels();
-    println!("quad bounds {:?}", quad.bounds);
-    println!("quad bounds {:?}", quad);
-
-    println!("-------------------------------");
-    println!("------ BASE PARSE -------------");
-    println!("-------------------------------");
-    let path = "./data/sample/test_quad1.map";
-    match (readmap(path), readquad(path, consts::LEVELS)) {
-        (Ok(oracle_grid), Ok(oracle_quad)) => {
-            // println!("Oracle_quad {:?}", oracle_quad.information);
-            // println!("-------------------------------");
-            // println!("Oracle Grid\n{oracle_grid}");
-            // println!("-------------------------------");
-            // println!("-------------------------------");
-            // println!("Oracle Quad\n{oracle_quad}");
-            // println!("-------------------------------");
-            println!("Oracle Quad\n{oracle_quad:?}");
-            println!("-------------------------------");
-            oracle_quad.display_with_levels();
-        }
-        _ => {
-            println!("Unexpected Error");
-        }
-    }
+    println!("----------------------------------");
+    quad.insert_cell(&(1, 1), Belief::Occupied);
+    quad.display_with_levels();
+    println!("{quad}");
+    println!("----------------------------------");
+    quad.insert_cell(&(0, 0), Belief::Occupied);
+    quad.insert_cell(&(0, 1), Belief::Occupied);
+    quad.insert_cell(&(1, 0), Belief::Occupied);
+    println!("----------------------------------");
+    quad.display_with_levels();
+    println!("{quad}");
+    println!("----------------------------------");
+    println!("{quad:?}");
+    // // let path = "./data/sample/test_quad1.map";
+    // // match (readmap(path), readquad(path, consts::LEVELS)) {
+    // //     (Ok(oracle_grid), Ok(oracle_quad)) => {
+    // //         // println!("Oracle_quad {:?}", oracle_quad.information);
+    // //         // println!("-------------------------------");
+    // //         // println!("Oracle Grid\n{oracle_grid}");
+    // //         // println!("-------------------------------");
+    // //         // println!("-------------------------------");
+    // //         // println!("Oracle Quad\n{oracle_quad}");
+    // //         // println!("-------------------------------");
+    // //         println!("Oracle Quad\n{oracle_quad:?}");
+    // //         println!("-------------------------------");
+    // //         oracle_quad.display_with_levels();
+    // //     }
+    // //     _ => {
+    // //         println!("Unexpected Error");
+    // //     }
+    // // }
 }
