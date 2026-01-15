@@ -17,13 +17,12 @@ use std::collections::HashMap;
 
 fn main() {
     // let mut quad = QuadTree::new(8, 4, 4);
-    // let mut quad = QuadTree::new(4, 4, 3);
     let mut quad = QuadTree::new(4, 4, 3);
-    // Initial
     quad.display_with_levels();
     println!("----------------------------------");
     quad.insert_cell(&(1, 1), Belief::Occupied);
     quad.display_with_levels();
+    println!("----------------------------------");
     println!("{quad}");
     println!("----------------------------------");
     quad.insert_cell(&(0, 0), Belief::Occupied);
@@ -31,6 +30,7 @@ fn main() {
     quad.insert_cell(&(1, 0), Belief::Occupied);
     println!("----------------------------------");
     quad.display_with_levels();
+    println!("----------------------------------");
     println!("{quad}");
     println!("----------------------------------");
     println!("{quad:?}");

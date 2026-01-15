@@ -162,8 +162,6 @@ impl QuadTree {
                     }
                     break;
                 }
-            } else {
-                return;
             }
         }
         while let Some((lvl, m)) = stack.pop() {
@@ -176,10 +174,8 @@ impl QuadTree {
         }
     }
     pub fn insert_cell(&mut self, coord: &Coord, belief: Belief) {
-        let _ = belief;
         self.update_bounds(coord);
         self.set_cell(coord, belief);
-        // self.insert_levels(coord);
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
     }
