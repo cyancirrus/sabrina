@@ -1,4 +1,4 @@
-use crate::environment::grid::Environment;
+use crate::environment::grid::Grid;
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
 //TODO: When finally make quadtree, create a hazard like cost a hazard will be used as a cost
@@ -14,7 +14,7 @@ const GRAIN: usize = 4;
 pub struct Lidar {
     // Max range ould be noise informed
     pub max_range: isize,
-    oracle: Environment,
+    oracle: Grid,
 }
 pub struct Measurement {
     // closest objects eventually need to refactor with theta
@@ -30,7 +30,7 @@ pub enum Status {
 }
 
 impl Lidar {
-    pub fn new(max_range: isize, oracle: Environment) -> Self {
+    pub fn new(max_range: isize, oracle: Grid) -> Self {
         Self { max_range, oracle }
     }
     fn beam(&self, position: &Coord, delta: &Coord) -> Option<Coord> {

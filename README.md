@@ -5,7 +5,7 @@
 ## Features
 
 * Parse 2D maps with walls, obstacles, corners, and doorways.
-* Represent environments with a flexible `Environment` struct.
+* Represent environments with a flexible `Grid` struct.
 * Simulate LIDAR measurements in 4 principal directions.
 * Plan paths using a basic A* algorithm.
 * Stepwise navigation that updates the agent’s knowledge of the environment.
@@ -22,7 +22,7 @@ sabrina/
 ├── src/
 │   ├── main.rs            # Entry point / demo navigation
 │   ├── lib.rs
-│   ├── environment/       # Environment representation
+│   ├── environment/       # Grid representation
 │   │   ├── mod.rs
 │   │   └── representation.rs
 │   └── parser/            # Map parsing
@@ -32,7 +32,7 @@ sabrina/
 
 ### Core Components
 
-* **Environment & Objects**
+* **Grid & Objects**
   Represents the grid world. Objects include `Wall`, `Doorway`, `Corner`, `Obstacle`, and `Unknown`. The environment tracks objects and dynamic bounds.
 
 * **Lidar**
@@ -42,7 +42,7 @@ sabrina/
   The main agent struct, containing its position, environment knowledge, and LIDAR. Can `scan()`, `plan()` paths, and `navigate()` toward a target.
 
 * **Map Parser**
-  Reads simple text-based maps (`*.map`) into an `Environment` struct.
+  Reads simple text-based maps (`*.map`) into an `Grid` struct.
 
 ## Getting Started
 

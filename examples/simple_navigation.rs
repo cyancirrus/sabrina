@@ -1,8 +1,8 @@
 #![allow(unused)]
-use sabrina::environment::grid::Environment;
+use sabrina::environment::grid::Grid;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::global::types::Bounds;
-use sabrina::parser::map::readmap;
+use sabrina::parser::grid::readmap;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::HashMap;
 
@@ -19,7 +19,7 @@ fn main() {
             // let target = (1, 2);
             // println!("Test oracle pathclear 0, 1 {:?}", oracle.path_clear(&(1,2)));
             let bounds = Bounds::new(0, 0, 4, 4);
-            let environment = Environment::new(HashMap::new(), bounds);
+            let environment = Grid::new(HashMap::new(), bounds);
             let lidar = Lidar::new(100, oracle.clone());
             let mut sabby = Sabrina::new(position, environment, lidar);
             println!("absolute_environment\n{oracle}");

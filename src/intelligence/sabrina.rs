@@ -1,4 +1,4 @@
-use crate::environment::grid::{Environment, Object};
+use crate::environment::grid::{Grid, Object};
 use crate::sensor::lidar::{Lidar, Status};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap, HashSet};
@@ -31,12 +31,12 @@ impl PartialOrd for MinNode {
 
 pub struct Sabrina {
     pub position: Coord,
-    pub environment: Environment,
+    pub environment: Grid,
     lidar: Lidar,
 }
 
 impl Sabrina {
-    pub fn new(position: Coord, environment: Environment, lidar: Lidar) -> Self {
+    pub fn new(position: Coord, environment: Grid, lidar: Lidar) -> Self {
         Self {
             position,
             environment,

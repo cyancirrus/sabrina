@@ -1,10 +1,10 @@
-use crate::environment::grid::{Environment, Object};
+use crate::environment::grid::{Grid, Object};
 use crate::global::types::Bounds;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
-pub fn readmap(path: &str) -> Result<Environment, Box<dyn Error>> {
+pub fn readmap(path: &str) -> Result<Grid, Box<dyn Error>> {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,
         Err(e) => return Err(format!("Unable to read path {path:?}\n{e:?}").into()),
@@ -37,5 +37,5 @@ pub fn readmap(path: &str) -> Result<Environment, Box<dyn Error>> {
         information.insert((idx_x, max_y - mir_idx_y), obj);
     }
 
-    Ok(Environment::new(information, bounds))
+    Ok(Grid::new(information, bounds))
 }

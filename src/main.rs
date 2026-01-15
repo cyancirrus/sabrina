@@ -3,7 +3,7 @@ use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, pri
 use sabrina::environment::quad::{Belief, QuadTree};
 use sabrina::global::consts;
 use sabrina::intelligence::sabrina::Sabrina;
-use sabrina::parser::map::readmap;
+use sabrina::parser::grid::readmap;
 use sabrina::parser::quad::readquad;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::HashMap;

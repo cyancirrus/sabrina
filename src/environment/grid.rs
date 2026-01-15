@@ -15,9 +15,9 @@ pub enum Object {
 }
 
 #[derive(Clone)]
-pub struct Environment {
-    information: HashMap<Coord, Object>,
-    bounds: Bounds,
+pub struct Grid {
+    pub information: HashMap<Coord, Object>,
+    pub bounds: Bounds,
 }
 
 pub trait SpatialSource<T> {
@@ -26,31 +26,7 @@ pub trait SpatialSource<T> {
     fn set_sell(&mut self, coord: &Coord, object: T);
 }
 
-impl fmt::Display for Environment {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for i in (self.bounds.min_y..=self.bounds.max_y).rev() {
-            let mut line = String::new();
-            for j in self.bounds.min_x..=self.bounds.max_x {
-                let symbol = match self.information.get(&(j, i)) {
-                    // None => '\u{00b7}',
-                    None => ' ',
-                    Some(Object::Corner) => 'x',
-                    Some(Object::Doorway) => '+',
-                    Some(Object::Obstacle) => '*',
-                    Some(Object::Unknown) => '?',
-                    Some(Object::Wall) => '#',
-                };
-                line.push('[');
-                line.push(symbol);
-                line.push(']');
-            }
-            writeln!(f, "{}", line);
-        }
-        Ok(())
-    }
-}
-
-impl Environment {
+impl Grid {
     pub fn new(information: HashMap<Coord, Object>, bounds: Bounds) -> Self {
         Self {
             information,
