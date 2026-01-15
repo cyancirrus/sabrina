@@ -16,7 +16,7 @@ pub struct QuadNode {
 #[derive(Debug)]
 pub struct QuadTree {
     levels: isize,
-    bounds: Bounds,
+    pub bounds: Bounds,
     information: Information,
 }
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
@@ -32,11 +32,17 @@ impl QuadTree {
             levels: LEVELS,
             bounds: Bounds {
                 min_x: 0,
-                max_x: 0,
                 min_y: 0,
-                max_y: 0,
+                max_x: (1 << LEVELS-1) - 1,
+                max_y: (1 << LEVELS-1) - 1,
             },
-            information: HashMap::new(),
+            information: HashMap::from([(
+                encode_morton(&(0, 0), LEVELS - 1),
+                QuadNode {
+                    belief: Belief::Unknown,
+                    homogenous: true,
+                },
+            )]),
         }
     }
     pub fn initialize(information: Information, bounds: Bounds, levels: isize) -> Self {
@@ -166,7 +172,13 @@ impl QuadTree {
                 self.split_cell(coord, belief, lvl);
             }
         }
-        self.information.insert(*coord, QuadNode { belief, homogenous: true });
+        self.information.insert(
+            *coord,
+            QuadNode {
+                belief,
+                homogenous: true,
+            },
+        );
     }
     fn get_cell(&self, coord: &Coord) -> Option<(isize, Belief)> {
         for lvl in (0..self.levels).rev() {
