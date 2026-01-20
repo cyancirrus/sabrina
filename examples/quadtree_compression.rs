@@ -1,8 +1,8 @@
-use sabrina::environment::quad::Belief;
 use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts;
-use sabrina::parser::map::readmap;
-use sabrina::parser::quad::readquad;
+use sabrina::global::types::Belief;
+use sabrina::parser::grid::read_grid;
+use sabrina::parser::quad::read_quad;
 
 fn main() {
     // let mut quad = QuadTree::new(8, 4, 4);
@@ -21,7 +21,7 @@ fn main() {
     quad.display_with_levels();
 
     let path = "./data/sample/test_quad0.map";
-    match (readmap(path), readquad(path, consts::LEVELS)) {
+    match (read_grid(path), read_quad(path, consts::LEVELS)) {
         (Ok(_oracle_grid), Ok(oracle_quad)) => {
             println!("Oracle Quad\n{oracle_quad}");
             println!("-------------------------------");

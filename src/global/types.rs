@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 pub type Coord = (isize, isize);
 
 #[derive(Clone, Debug)]
@@ -24,4 +25,30 @@ pub enum Belief {
     Free,
     Occupied,
     Unknown,
+}
+
+
+#[derive(Eq, PartialEq)]
+pub struct MinNode {
+    // All costs should be non negative
+    pub cost: usize,
+    pub coord: Coord,
+}
+
+impl MinNode {
+    pub fn new(cost: usize, coord: Coord) -> Self {
+        Self { cost, coord }
+    }
+}
+
+impl Ord for MinNode {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+impl PartialOrd for MinNode {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }

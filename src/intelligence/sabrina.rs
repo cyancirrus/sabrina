@@ -1,34 +1,7 @@
 use crate::environment::grid::Grid;
-use crate::global::types::Belief;
+use crate::global::types::{Belief, MinNode, Coord};
 use crate::sensor::lidar::{Lidar, Status};
-use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap, HashSet};
-
-type Coord = (isize, isize);
-#[derive(Eq, PartialEq)]
-pub struct MinNode {
-    // All costs should be non negative
-    cost: usize,
-    coord: Coord,
-}
-
-impl MinNode {
-    pub fn new(cost: usize, coord: Coord) -> Self {
-        Self { cost, coord }
-    }
-}
-
-impl Ord for MinNode {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.cost.cmp(&self.cost)
-    }
-}
-
-impl PartialOrd for MinNode {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
 
 pub struct Sabrina {
     pub position: Coord,

@@ -2,7 +2,7 @@
 use sabrina::environment::grid::Grid;
 use sabrina::global::types::Bounds;
 use sabrina::intelligence::sabrina::Sabrina;
-use sabrina::parser::grid::readmap;
+use sabrina::parser::grid::read_grid;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::HashMap;
 
@@ -11,7 +11,7 @@ fn main() {
     println!("      Example navigation            ");
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
-    match readmap(path) {
+    match read_grid(path) {
         Ok(oracle) => {
             let position = (1, 1);
             let target = (18, 3);

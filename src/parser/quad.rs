@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
-pub fn readquad(path: &str, levels: isize) -> Result<QuadTree, Box<dyn Error>> {
+pub fn read_quad(path: &str, levels: isize) -> Result<QuadTree, Box<dyn Error>> {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,
         Err(e) => return Err(format!("Unable to read path {path:?}\n{e:?}").into()),

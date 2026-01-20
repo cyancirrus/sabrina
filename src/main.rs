@@ -131,6 +131,15 @@ fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
     neighbors
 }
 
+
+fn astar(quad:&QuadTree, source:&Coord, target:&Coord) {
+
+
+
+
+
+}
+
 fn main() {
     let x = encode_morton(&(0, 0), 1);
     assert_eq!((2, 2), point(&x));
