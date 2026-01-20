@@ -4,8 +4,8 @@ use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts::{LEVELS, PARTITION};
 use sabrina::global::types::{Belief, Coord};
 use sabrina::intelligence::sabrina::Sabrina;
-use sabrina::parser::grid::readmap;
-use sabrina::parser::quad::readquad;
+use sabrina::parser::grid::read_grid;
+use sabrina::parser::quad::read_quad;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::HashMap;
 
@@ -168,7 +168,7 @@ fn main() {
     // quad.display_with_levels();
 
     // let path = "./data/sample/test_quad0.map";
-    // match (readmap(path), readquad(path, consts::LEVELS)) {
+    // match (read_grid(path), read_quad(path, consts::LEVELS)) {
     //     (Ok(oracle_grid), Ok(oracle_quad)) => {
     //         println!("Oracle Quad\n{oracle_quad}");
     //         println!("-------------------------------");
