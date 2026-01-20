@@ -96,24 +96,6 @@ pub fn south_morton(morton: &Coord) -> [Coord; 2] {
     ]
 }
 
-fn edge_up(m_coord: &Coord) -> [Coord; 4] {
-    // clockwise e,n,w,s
-    // find the largest bounding box which does not contain coord
-    let level = m_coord.0 >> PARTITION;
-    let mask = (1 << PARTITION) - 1;
-    let mut cards = cardinals(m_coord);
-    for dh in 0..4 {
-        for lvl in level + 1..LEVELS {
-            let p_coord = encode_morton(&cards[dh], lvl);
-            if encode_morton(m_coord, lvl) == p_coord {
-                break;
-            }
-            cards[dh] = p_coord;
-        }
-    }
-    cards
-}
-
 fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
     // neighbor and filter need to be opposites ie (neigh east -> filter west);
     let cardinals = cardinals(m_coord);
@@ -137,26 +119,6 @@ fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
         if found {
             break;
         }
-        stack.push(*cardinal);
-        while let Some(p_coord) = stack.pop() {
-            if quad.information.contains_key(&p_coord) {
-                neighbors.push(p_coord);
-            } else {
-                stack.extend(filter(&p_coord));
-            }
-        }
-    }
-    neighbors
-}
-
-// TODO: split this into going up search and going down
-fn edge_down(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
-    // neighbor and filter need to be opposites ie (neigh east -> filter west);
-    let cardinals = cardinals(m_coord);
-    let filters = [west_morton, south_morton, east_morton, north_morton];
-    let mut neighbors = Vec::new();
-    let mut stack = Vec::new();
-    for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
         stack.push(*cardinal);
         while let Some(p_coord) = stack.pop() {
             if quad.information.contains_key(&p_coord) {
