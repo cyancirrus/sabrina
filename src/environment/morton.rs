@@ -60,11 +60,13 @@ pub fn grid_morton(coord: &Coord, level: isize) -> [Coord; 4] {
 
 pub fn print_morton(morton: &Coord) {
     let level = morton.0 >> PARTITION;
+    println!("-------------");
     println!("level: {level:?}");
-    println!("(x: {}, y: {})", morton.0, morton.1,);
+    println!("or: (x: {}, y: {})", morton.0, morton.1,);
     println!(
-        "(x: {}, y: {})",
+        "hr: (x: {}, y: {})",
         morton.0 & ((1 << PARTITION) - 1),
         morton.1 & ((1 << PARTITION) - 1),
     );
+    println!("-------------");
 }

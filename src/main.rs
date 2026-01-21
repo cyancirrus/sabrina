@@ -111,22 +111,18 @@ pub fn south_morton(morton: &Coord) -> [Coord; 2] {
 fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
     // neighbor and filter need to be opposites ie (neigh east -> filter west);
     let cardinals = find_cardinals(m_coord);
-    println!("Cardinals {cardinals:?}");
     let filters = [west_morton, south_morton, east_morton, north_morton];
     let level = m_coord.0 >> PARTITION;
     let mut neighbors = Vec::new();
     let mut stack = Vec::new();
     let mut found;
     for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
-        println!("cardinal: {cardinal:?}");
         found = false;
         for lvl in level..LEVELS {
-            println!("level {lvl:?}");
             let p_coord = encode_morton(&cardinal, lvl);
-            println!("next after level");
             if quad.information.contains_key(&p_coord) {
                 neighbors.push(p_coord);
-                found = false;
+                found = true;
                 break;
             } else if encode_morton(m_coord, lvl) == p_coord {
                 break;
@@ -134,16 +130,17 @@ fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
         }
         if found {
             println!("found");
-            break;
+            continue;
         }
         stack.push(*cardinal);
         while let Some(p_coord) = stack.pop() {
             println!("drilling down");
             if quad.information.contains_key(&p_coord) {
-                println!("here");
+                println!("Success!");
                 neighbors.push(p_coord);
             } else {
-                println!("there");
+                println!("error with");
+                print_morton(&p_coord);
                 stack.extend(filter(&p_coord));
             }
             println!("done?");
@@ -204,17 +201,19 @@ fn main() {
     let x = encode_morton(&(3, 3), 2);
     assert_eq!((4, 4), point(&x));
 
-    let cardinals = find_cardinals(&(3,3));
-    assert_eq!((4, 3), cardinals[0]);
-    assert_eq!((3, 4), cardinals[1]);
-    assert_eq!((2, 3), cardinals[2]);
-    assert_eq!((3, 2), cardinals[3]);
-
     let cardinals = find_cardinals(&(2,2));
     assert_eq!((3, 2), cardinals[0]);
     assert_eq!((2, 3), cardinals[1]);
     assert_eq!((1, 2), cardinals[2]);
     assert_eq!((2, 1), cardinals[3]);
+    
+    let x = encode_morton(&(2,2), 1);
+    let cardinals = find_cardinals(&x);
+    assert_eq!(encode_morton(&(5,2), 1), cardinals[0]);
+    assert_eq!(encode_morton(&(2,5), 1), cardinals[1]);
+    assert_eq!(encode_morton(&(0,2), 1), cardinals[2]);
+    assert_eq!(encode_morton(&(2,0), 1), cardinals[3]);
+
     let origin = (0,0);
     let m_origin = encode_morton(&origin, 1);;
     assert_eq!([(1,0), (1,1)], east_morton(&m_origin));
@@ -222,14 +221,16 @@ fn main() {
     assert_eq!([(0,1), (0,0)], west_morton(&m_origin));
     assert_eq!([(0,0), (1,0)], south_morton(&m_origin));
 
-    let source = (3,3);
-    let target = (3,5);
-    let source = (9,3);
-    let target = (11,3);
+
+
+
+    let source = (1,1);
+    let target = (1,2);
 
     let path = "./data/sample/test_quad0.map";
     match (read_grid(path), read_quad(path, LEVELS)) {
         (Ok(oracle_grid), Ok(oracle_quad)) => {
+            println!("Oracle Quad\n{oracle_quad:?}");
             println!("Oracle Quad\n{oracle_quad}");
             println!("-------------------------------");
             oracle_quad.display_with_levels();
