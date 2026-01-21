@@ -222,9 +222,9 @@ fn main() {
     let position = (1, 1);
     let target = (18, 3);
 
-    let path = "./data/sample/test_nav0.map";
-    // TODO: need to see why this doesn't work, should just be like hey none
-    // let path = "./data/sample/test_quad0.map";
+    // let path = "./data/sample/test_nav0.map";
+    // // TODO: need to see why this doesn't work, should just be like hey none
+    let path = "./data/sample/test_quad0.map";
     match (read_grid(path), read_quad(path, LEVELS)) {
         (Ok(oracle_grid), Ok(oracle_quad)) => {
             println!("Oracle Quad\n{oracle_quad:?}");
