@@ -119,57 +119,61 @@ fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
     for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
         found = false;
         for lvl in level..LEVELS {
+            println!("at top here");
+            println!("Cardinal {cardinal:?}, lvl {lvl:}");
             let p_coord = encode_morton(&cardinal, lvl);
             if quad.information.contains_key(&p_coord) {
+                println!("in if");
                 neighbors.push(p_coord);
                 found = true;
                 break;
             } else if encode_morton(m_coord, lvl) == p_coord {
+                println!("in else");
                 break;
             }
         }
         if found {
             continue;
         }
+        println!("now done");
         stack.push(*cardinal);
         while let Some(p_coord) = stack.pop() {
+            println!("p_coord {p_coord:?}");
             if quad.information.contains_key(&p_coord) {
                 neighbors.push(p_coord);
             } else {
                 stack.extend(filter(&p_coord));
             }
         }
+        println!("done with while");
     }
+    println!("done with this");
     neighbors
 }
 
 
 fn astar(quad:&QuadTree, source:&Coord, target:&Coord) -> Vec<Coord> {
     let mut pqueue: BinaryHeap<MinNode> = BinaryHeap::new();
-    let mut cache: HashSet<Coord> = HashSet::new();
     let mut plan:HashMap<Coord, Coord> = HashMap::new();
-    cache.insert(*source);
+    plan.insert(*source, *source);
     
     for n in edge_neighbors(quad, source) {
+        if quad.information[&n].belief == Belief::Occupied { continue; }
         pqueue.push(MinNode {
             cost: centroid_estimate(source, target),
             coord: n,
         });
-        cache.insert(n);
         plan.insert(n, *source);
     }
-    println!("initialization good");
-
     while let Some(n) = pqueue.pop() {
         if n.coord == *target {break;}
         for c in edge_neighbors(quad, &n.coord) {
-            if quad.information[&c].belief == Belief::Occupied { continue; }
+            if plan.contains_key(&c) || quad.information[&c].belief == Belief::Occupied { continue; }
             pqueue.push(MinNode {
                 cost: centroid_estimate(&c, target),
                 coord: c,
             });
             plan.insert(c, n.coord);
-            cache.insert(c);
         }
     }
     reconstruct(&plan, source, target)
@@ -213,13 +217,14 @@ fn main() {
     assert_eq!([(0,1), (0,0)], west_morton(&m_origin));
     assert_eq!([(0,0), (1,0)], south_morton(&m_origin));
 
-
-
-
     let source = (1,1);
     let target = (1,2);
+    let position = (1, 1);
+    let target = (18, 3);
 
-    let path = "./data/sample/test_quad0.map";
+    let path = "./data/sample/test_nav0.map";
+    // TODO: need to see why this doesn't work, should just be like hey none
+    // let path = "./data/sample/test_quad0.map";
     match (read_grid(path), read_quad(path, LEVELS)) {
         (Ok(oracle_grid), Ok(oracle_quad)) => {
             println!("Oracle Quad\n{oracle_quad:?}");
@@ -233,6 +238,7 @@ fn main() {
             for l in plan.iter().rev() {
                 println!("{l:?}");
             }
+            println!("Plan Ended");
         }
         _ => {
             println!("Unexpected Error");

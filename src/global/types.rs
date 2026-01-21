@@ -28,7 +28,7 @@ pub enum Belief {
 }
 
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct MinNode {
     // All costs should be non negative
     pub cost: usize,
