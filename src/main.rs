@@ -129,23 +129,16 @@ fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
             }
         }
         if found {
-            println!("found");
             continue;
         }
         stack.push(*cardinal);
         while let Some(p_coord) = stack.pop() {
-            println!("drilling down");
             if quad.information.contains_key(&p_coord) {
-                println!("Success!");
                 neighbors.push(p_coord);
             } else {
-                println!("error with");
-                print_morton(&p_coord);
                 stack.extend(filter(&p_coord));
             }
-            println!("done?");
         }
-        println!("Neighbors {neighbors:?}");
     }
     neighbors
 }
@@ -158,7 +151,6 @@ fn astar(quad:&QuadTree, source:&Coord, target:&Coord) -> Vec<Coord> {
     cache.insert(*source);
     
     for n in edge_neighbors(quad, source) {
-        println!("hello");
         pqueue.push(MinNode {
             cost: centroid_estimate(source, target),
             coord: n,
