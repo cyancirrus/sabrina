@@ -14,7 +14,7 @@ pub struct QuadNode {
 
 #[derive(Debug)]
 pub struct QuadTree {
-    levels: isize,
+    pub levels: isize,
     pub bounds: Bounds,
     pub padding: Bounds,
     pub information: Information,

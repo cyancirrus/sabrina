@@ -27,7 +27,6 @@ pub enum Belief {
     Unknown,
 }
 
-
 #[derive(Eq, PartialEq, Debug)]
 pub struct MinNode {
     // All costs should be non negative

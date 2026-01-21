@@ -1,8 +1,8 @@
 use crate::environment::grid::Grid;
-use crate::global::types::{Belief, MinNode, Coord};
+use crate::environment::info::reconstruct;
+use crate::global::types::{Belief, Coord, MinNode};
 use crate::sensor::lidar::{Lidar, Status};
 use std::collections::{BinaryHeap, HashMap, HashSet};
-use crate::environment::info::reconstruct;
 
 pub struct Sabrina {
     pub position: Coord,

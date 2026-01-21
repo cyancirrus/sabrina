@@ -34,4 +34,10 @@ impl Grid {
         self.bounds.max_y = self.bounds.max_y.max(coord.1);
         self.information.insert(coord, obj);
     }
+    pub fn get_cell(&self, xy: &Coord) -> Option<Belief> {
+        match self.information.get(xy) {
+            Some(&b) => Some(b),
+            None => Some(Belief::Free),
+        }
+    }
 }

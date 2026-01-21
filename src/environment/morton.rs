@@ -2,12 +2,8 @@ const PARTITION: usize = 32;
 type Coord = (isize, isize);
 
 pub fn encode_morton(coord: &Coord, level: isize) -> Coord {
-    println!("in encode morton");
-    debug_assert!(
-            level < (1 << isize::BITS as usize - PARTITION)
-    );
-    println!("done encode morton");
-    let mask = !((1 << level) - 1);
+    debug_assert!(level < (1 << isize::BITS as usize - PARTITION));
+    let mask = ((1 << PARTITION) - 1) & !((1 << level) - 1);
     (
         (coord.0 & mask) | (level << PARTITION),
         (coord.1 & mask) | (level << PARTITION),
