@@ -222,27 +222,27 @@ fn main() {
     assert_eq!([(0,1), (0,0)], west_morton(&m_origin));
     assert_eq!([(0,0), (1,0)], south_morton(&m_origin));
 
-    // let source = (3,3);
-    // let target = (3,5);
-    // let source = (9,3);
-    // let target = (11,3);
+    let source = (3,3);
+    let target = (3,5);
+    let source = (9,3);
+    let target = (11,3);
 
-    // let path = "./data/sample/test_quad0.map";
-    // match (read_grid(path), read_quad(path, LEVELS)) {
-    //     (Ok(oracle_grid), Ok(oracle_quad)) => {
-    //         println!("Oracle Quad\n{oracle_quad}");
-    //         println!("-------------------------------");
-    //         oracle_quad.display_with_levels();
-    //         println!("-------------------------------");
-    //         // routing with perfect information
-    //         let plan = astar(&oracle_quad, &source, &target);
-    //         println!("Plan Starting");
-    //         for l in plan.iter().rev() {
-    //             println!("{l:?}");
-    //         }
-    //     }
-    //     _ => {
-    //         println!("Unexpected Error");
-    //     }
-    // }
+    let path = "./data/sample/test_quad0.map";
+    match (read_grid(path), read_quad(path, LEVELS)) {
+        (Ok(oracle_grid), Ok(oracle_quad)) => {
+            println!("Oracle Quad\n{oracle_quad}");
+            println!("-------------------------------");
+            oracle_quad.display_with_levels();
+            println!("-------------------------------");
+            // routing with perfect information
+            let plan = astar(&oracle_quad, &source, &target);
+            println!("Plan Starting");
+            for l in plan.iter().rev() {
+                println!("{l:?}");
+            }
+        }
+        _ => {
+            println!("Unexpected Error");
+        }
+    }
 }
