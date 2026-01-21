@@ -2,6 +2,7 @@ use crate::environment::grid::Grid;
 use crate::global::types::{Belief, MinNode, Coord};
 use crate::sensor::lidar::{Lidar, Status};
 use std::collections::{BinaryHeap, HashMap, HashSet};
+use crate::environment::info::reconstruct;
 
 pub struct Sabrina {
     pub position: Coord,
@@ -33,21 +34,6 @@ impl Sabrina {
         target.0.abs_diff(source.0) + target.1.abs_diff(source.1)
     }
 
-    fn reconstruct(
-        precursor: &HashMap<Coord, Coord>,
-        source: &Coord,
-        target: &Coord,
-    ) -> Vec<Coord> {
-        // Ensure this is synchronized with action as this returns reversed plan
-        let mut plan = vec![];
-        let mut node = *target;
-        while node != *source {
-            plan.push(node);
-            node = precursor[&node];
-        }
-        plan
-    }
-
     pub fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
         if !self.environment.path_clear(&target) {
             return None;
@@ -65,7 +51,7 @@ impl Sabrina {
 
         while let Some(node) = p_queue.pop() {
             if node.coord == target {
-                let plan = Self::reconstruct(&precursor, &self.position, &target);
+                let plan = reconstruct(&precursor, &self.position, &target);
                 return Some(plan);
             }
             for (dx, dy) in neighbors {

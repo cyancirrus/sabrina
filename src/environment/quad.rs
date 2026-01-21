@@ -9,7 +9,7 @@ type Information = HashMap<Coord, QuadNode>;
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct QuadNode {
     homogenous: bool,
-    belief: Belief,
+    pub belief: Belief,
 }
 
 #[derive(Debug)]
