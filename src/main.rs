@@ -113,50 +113,32 @@ fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
     let mut found;
     for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
         if let Some(n) = quad.information.get(&cardinal) { if n.belief == Belief::Occupied { continue; } }
-
-        if *cardinal == (0,1) { assert!(false, "---------- INTENTIONALLY BREAKING------------------");}
-        println!("cardinal {cardinal:?}");
         found = false;
         for lvl in level..quad.levels {
-            println!("DISLPLAY PCOORD HERE");
-            println!("internal lvl LEVEL {lvl:?}");
-            // println!("at top here");
-            println!("Cardinal {cardinal:?}, lvl {lvl:}");
             let p_coord = encode_morton(&cardinal, lvl);
             print_morton(&p_coord);
-            println!("END DISLPLAY HERE");
             if let Some(n) = quad.information.get(&p_coord) {
-                println!("PUSHING!");
                 if n.belief != Belief::Occupied {
                     neighbors.push(p_coord);
                 }
                 found = true;
                 break;
             } else if encode_morton(m_coord, lvl) == p_coord {
-                println!("in else");
                 break;
             }
         }
         if found {
-            println!("found");
             continue;
         }
-        println!("Starting while with point {cardinal:?}");
         stack.push(*cardinal);
         while let Some(p_coord) = stack.pop() {
-            println!("in while");
             print_morton(&p_coord);
             if let Some(n) = quad.information.get(&p_coord) {
                 if n.belief == Belief::Occupied {
                     continue;
                 }
-                println!("THIS SHOULDNT EXECUTE");
                 neighbors.push(p_coord);
             } else {
-                println!("EXTENDING STACK FOR 4,4");
-                print_morton(&p_coord);
-                println!("what is this value {:?}", quad.information.get(&p_coord));
-                println!("ENDING FOR BE HERE FOR 4,4");
                 stack.extend(filter(&p_coord));
             }
         }
