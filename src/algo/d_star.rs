@@ -5,7 +5,7 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 
 // // key := (min(g, rhs) + heur, min(g, rhs))
-type Star = HashMap<Coord, (G, Rhs)>;
+pub type Star = HashMap<Coord, (G, Rhs)>;
 // Independent current estimate of cost to go
 type G = usize;
 // Estimate of cost given neighbors belief
