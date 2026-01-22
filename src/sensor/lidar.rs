@@ -1,4 +1,5 @@
 use crate::environment::grid::Grid;
+use crate::global::consts::AXIS_MAX;
 use crate::global::types::Coord;
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
@@ -41,7 +42,7 @@ impl Lidar {
                 position.0.wrapping_add(delta.0 * h),
                 position.1.wrapping_add(delta.1 * h),
             );
-            if n_xy.0 < (1 << 32) && n_xy.1 < (1 << 32) {
+            if n_xy.0 < AXIS_MAX && n_xy.1 < AXIS_MAX {
                 if !self.oracle.path_clear(&n_xy) {
                     // denomralize b/c is oracle and needs to be relative
                     let denorm_xy = (n_xy.0 - position.0, n_xy.1 - position.1);

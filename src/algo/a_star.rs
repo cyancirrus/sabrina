@@ -12,16 +12,10 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 use std::time::Instant;
 
-// // NOTE: Bit-level Quadtree Fixes (Off-by-one/Masks)
-// // Unknown State Initialization + Visual Debugger (Essential for visibility)
 // // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
 // // Multi-ray LiDAR & Planner Implementation.
 // // Hestereses or defered clean up
 // // Consdier implementing a jump iter
-
-// okay this makes sense, so now i just need a couple of functions
-// - second if it is at lower level of granularity use the those connected by the edge and ensure that we recurse until we find the nodes which actually exist
-// - lastly implement a*
 
 // TODO: Think through whether the boundary case exists where we aren't surrounded by wall
 

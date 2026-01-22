@@ -63,7 +63,7 @@ pub struct KeyNode {
 impl KeyNode {
     pub fn new(coord: Coord, g: usize, rhs: usize, h: usize) -> Self {
         let cost_dfs = g.min(rhs);
-        let cost_astar = cost_dfs.wrapping_add(h);
+        let cost_astar = cost_dfs.saturating_add(h);
         Self {
             cost_astar,
             cost_dfs,
