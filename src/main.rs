@@ -139,18 +139,13 @@ fn compute_shortest_path(
 ) {
     star.insert(target, (usize::MAX, 0));
     star.insert(source, (centroid_estimate(source, target), usize::MAX));
-    // star.insert(source, (usize::MAX, usize::MAX));
     loop {
-        // println!("update_queue\n{update_queue:?}");
         match (star.get(&source), update_queue.peek()) {
             (Some(&(g, rhs)), Some(top_key)) => {
                 let h = centroid_estimate(source, target);
                 let start_key = KeyNode::new(source, g, rhs, h);
-                // NOTE: Reversed order for binaryheap, need to refactor this b/c sign is reversed
-                // if *top_key > start_key || g != rhs {
-                // debug_assert!(*top_key < start_key, "the issue is start key somehow less");
+                // inverted compare logic because min-heap reverses compare
                 if *top_key > start_key || g != rhs {
-                    // println!("popping!");
                     improve_and_invalidate(quad, star, update_queue, target);
                 } else {
                     break;
