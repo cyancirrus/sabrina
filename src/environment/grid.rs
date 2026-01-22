@@ -14,7 +14,7 @@ pub struct Grid {
 pub trait SpatialSource<T> {
     fn get_bounds(&self) -> Bounds;
     fn get_cell(&self, coord: &Coord) -> T;
-    fn set_sell(&mut self, coord: &Coord, object: T);
+    fn set_cell(&mut self, coord: &Coord, object: T);
 }
 
 impl Grid {

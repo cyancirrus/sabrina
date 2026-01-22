@@ -1,3 +1,4 @@
+pub mod algo;
 pub mod environment;
 pub mod global;
 pub mod intelligence;

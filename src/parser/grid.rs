@@ -26,10 +26,10 @@ pub fn read_grid(path: &str) -> Result<Grid, Box<dyn Error>> {
                     );
                 }
             };
-            mirrored_objects.push(((idx_x as isize, idx_y as isize), obj));
-            max_x = max_x.max(idx_x as isize);
+            mirrored_objects.push(((idx_x, idx_y), obj));
+            max_x = max_x.max(idx_x);
         }
-        max_y = max_y.max(idx_y as isize);
+        max_y = max_y.max(idx_y);
     }
     let mut information = HashMap::new();
     let bounds = Bounds::new(0, 0, max_x, max_y);

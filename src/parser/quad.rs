@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
-pub fn read_quad(path: &str, levels: isize) -> Result<QuadTree, Box<dyn Error>> {
+pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,
         Err(e) => return Err(format!("Unable to read path {path:?}\n{e:?}").into()),
@@ -25,10 +25,10 @@ pub fn read_quad(path: &str, levels: isize) -> Result<QuadTree, Box<dyn Error>> 
                     );
                 }
             };
-            mirrored_objects.push(((idx_x as isize, idx_y as isize), obj));
-            max_x = max_x.max(idx_x as isize);
+            mirrored_objects.push(((idx_x, idx_y), obj));
+            max_x = max_x.max(idx_x);
         }
-        max_y = max_y.max(idx_y as isize);
+        max_y = max_y.max(idx_y);
     }
     let information = HashMap::new();
     let bounds = Bounds::new(0, 0, max_x, max_y);

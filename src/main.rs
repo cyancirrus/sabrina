@@ -1,293 +1,292 @@
 #![allow(unused)]
+use sabrina::algo::a_star::{astar, centroid_estimate, edge_neighbors};
 use sabrina::environment::info::reconstruct;
 use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
 use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts::{LEVELS, PARTITION};
-use sabrina::global::types::{Belief, Coord, MinNode};
+use sabrina::global::types::{Belief, Coord, KeyNode, MinNode};
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::mem;
+use std::time::Instant;
 
-// // NOTE: Bit-level Quadtree Fixes (Off-by-one/Masks)
-// // Unknown State Initialization + Visual Debugger (Essential for visibility)
-// // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
-// // Multi-ray LiDAR & Planner Implementation.
-// // Hestereses or defered clean up
-// // Consdier implementing a jump iter
+// // key := (min(g, rhs) + heur, min(g, rhs))
+type Star = HashMap<Coord, (G, Rhs)>;
+// Independent current estimate of cost to go
+type G = usize;
+// Estimate of cost given neighbors belief
+type Rhs = usize;
+type Heur = usize;
+type Cost = usize;
 
-// okay this makes sense, so now i just need a couple of functions
-// - second if it is at lower level of granularity use the those connected by the edge and ensure that we recurse until we find the nodes which actually exist
-// - lastly implement a*
-
-// TODO: refactor this the double integer scaling just would need a bottom up refactor of entire morton
-// interface
-
-fn point(m_coord: &Coord) -> Coord {
-    // An interface for retrieving purely for retrieving distance
-    // retrieves the centroid scaled by two in order to prevent half-integers
-    let level = m_coord.0 >> PARTITION;
-    let mask = (1 << PARTITION) - 1;
-    (
-        ((m_coord.0 & mask) << 1) + (1 << level),
-        ((m_coord.1 & mask) << 1) + (1 << level),
-    )
-}
-fn centroid_estimate(sm_coord: &Coord, tm_coord: &Coord) -> usize {
-    // distance between source-centroid and target-centroid
-    let (s_centr, t_centr) = (point(sm_coord), point(tm_coord));
-    s_centr.0.abs_diff(t_centr.0) + s_centr.1.abs_diff(t_centr.1)
+#[derive(Debug)]
+pub struct LazyPQueue {
+    heap: BinaryHeap<KeyNode>,
+    lazy: HashSet<Coord>,
 }
 
-fn find_cardinals(m_coord: &Coord) -> [Coord; 4] {
-    // space is double to avoid halfints on the quadtree for centroids
-    let dh = 1 << (m_coord.0 >> PARTITION);
-    // clockwise e,n,w,s
-    [
-        (m_coord.0 + dh, m_coord.1),
-        (m_coord.0, m_coord.1 + dh),
-        (m_coord.0 - dh, m_coord.1),
-        (m_coord.0, m_coord.1 - dh),
-    ]
-}
-pub fn east_morton(morton: &Coord) -> [Coord; 2] {
-    // child filtered east neighbors; dx := 1
-    let level = (morton.0 >> PARTITION) - 1;
-    [
-        (
-            (morton.0 - (1 << PARTITION)) | 1 << level,
-            (morton.1 - (1 << PARTITION)),
-        ),
-        (
-            (morton.0 - (1 << PARTITION)) | 1 << level,
-            (morton.1 - (1 << PARTITION)) | 1 << level,
-        ),
-    ]
-}
-pub fn north_morton(morton: &Coord) -> [Coord; 2] {
-    // child filtered west neighbors; dy := 1
-    let level = (morton.0 >> PARTITION) - 1;
-    [
-        (
-            (morton.0 - (1 << PARTITION)) | 1 << level,
-            (morton.1 - (1 << PARTITION)) | 1 << level,
-        ),
-        (
-            (morton.0 - (1 << PARTITION)),
-            (morton.1 - (1 << PARTITION)) | 1 << level,
-        ),
-    ]
-}
-pub fn west_morton(morton: &Coord) -> [Coord; 2] {
-    // child filtered west neighbors; dx := 0
-    let level = (morton.0 >> PARTITION) - 1;
-    [
-        (
-            (morton.0 - (1 << PARTITION)),
-            (morton.1 - (1 << PARTITION)) | 1 << level,
-        ),
-        ((morton.0 - (1 << PARTITION)), (morton.1 - (1 << PARTITION))),
-    ]
-}
-pub fn south_morton(morton: &Coord) -> [Coord; 2] {
-    // child filtered south neighbors; dy := 0
-    let level = (morton.0 >> PARTITION) - 1;
-    [
-        ((morton.0 - (1 << PARTITION)), (morton.1 - (1 << PARTITION))),
-        (
-            (morton.0 - (1 << PARTITION)) | 1 << level,
-            (morton.1 - (1 << PARTITION)),
-        ),
-    ]
-}
-
-fn edge_neighbors(quad: &QuadTree, m_coord: &Coord) -> Vec<Coord> {
-    // neighbor and filter need to be opposites ie (neigh east -> filter west);
-    let cardinals = find_cardinals(m_coord);
-    // opposite of clockwise iteration
-    let filters = [west_morton, south_morton, east_morton, north_morton];
-    let level = m_coord.0 >> PARTITION;
-    let mut neighbors = Vec::new();
-    let mut stack = Vec::new();
-    let mut found;
-    for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
-        if let Some(n) = quad.information.get(&cardinal) { if n.belief == Belief::Occupied { continue; } }
-        found = false;
-        for lvl in level..quad.levels {
-            let p_coord = encode_morton(&cardinal, lvl);
-            print_morton(&p_coord);
-            if let Some(n) = quad.information.get(&p_coord) {
-                if n.belief != Belief::Occupied {
-                    neighbors.push(p_coord);
-                }
-                found = true;
-                break;
-            } else if encode_morton(m_coord, lvl) == p_coord {
-                break;
-            }
+impl LazyPQueue {
+    fn new() -> Self {
+        Self {
+            heap: BinaryHeap::new(),
+            lazy: HashSet::new(),
         }
-        if found {
-            continue;
-        }
-        stack.push(*cardinal);
-        while let Some(p_coord) = stack.pop() {
-            print_morton(&p_coord);
-            if let Some(n) = quad.information.get(&p_coord) {
-                if n.belief == Belief::Occupied {
-                    continue;
+    }
+    fn push(&mut self, node: KeyNode) {
+        self.heap.push(node)
+    }
+    fn peek(&mut self) -> Option<&KeyNode> {
+        loop {
+            let mut remove = false;
+            if let Some(node) = self.heap.peek() {
+                if self.lazy.contains(&node.coord) {
+                    remove = true;
+                } else {
+                    return self.heap.peek();
                 }
-                neighbors.push(p_coord);
             } else {
-                stack.extend(filter(&p_coord));
+                return None;
+            }
+            if remove {
+                let node = self.heap.pop()?;
+                self.lazy.remove(&node.coord);
             }
         }
-        println!("done while");
     }
-    neighbors
+    fn remove(&mut self, coord: Coord) {
+        self.lazy.insert(coord);
+    }
+    fn pop(&mut self) -> Option<KeyNode> {
+        while let Some(node) = self.heap.pop() {
+            if self.lazy.contains(&node.coord) {
+                self.lazy.remove(&node.coord);
+            } else {
+                return Some(node);
+            }
+        }
+        None
+    }
 }
 
-fn astar(quad: &QuadTree, source: &Coord, target: &Coord) -> HashMap<Coord, Coord> {
-    let mut pqueue: BinaryHeap<MinNode> = BinaryHeap::new();
-    let mut plan: HashMap<Coord, Coord> = HashMap::new();
-    plan.insert(*source, *source);
-
-    for n in edge_neighbors(quad, source) {
-        if quad.information[&n].belief == Belief::Occupied {
-            continue;
-        }
-        pqueue.push(MinNode {
-            cost: centroid_estimate(source, target),
-            coord: n,
-        });
-        plan.insert(n, *source);
+fn update_vertex(
+    quad: &QuadTree,
+    star: &mut Star,
+    update_queue: &mut LazyPQueue,
+    coord: Coord,
+    target: Coord,
+) {
+    if coord == target {
+        return;
     }
-    while let Some(n) = pqueue.pop() {
-        if n.coord == *target {
+    let mut min_distance = usize::MAX;
+    for neigh in edge_neighbors(&quad, coord) {
+        let h = centroid_estimate(neigh, coord);
+        if let Some(&(g, rhs)) = star.get(&neigh) {
+            min_distance = min_distance.min(g.saturating_add(h));
+        }
+    }
+    match star.get_mut(&coord) {
+        Some((g, rhs)) => {
+            *rhs = min_distance;
+            if g != rhs {
+                let h = centroid_estimate(coord, target);
+                update_queue.push(KeyNode::new(coord, *g, *rhs, h));
+            } else {
+                update_queue.remove(coord);
+            }
+        }
+        None => {
+            star.insert(coord, (usize::MAX, min_distance));
+            update_queue.push(KeyNode {
+                cost_astar: min_distance.saturating_add(centroid_estimate(coord, target)),
+                cost_dfs: min_distance,
+                coord,
+            });
+        }
+    }
+}
+
+fn improve_and_invalidate(
+    quad: &QuadTree,
+    star: &mut Star,
+    mut update_queue: &mut LazyPQueue,
+    target: Coord,
+) {
+    let u = update_queue.pop().unwrap();
+    let (g_u, rhs_u) = star.get_mut(&u.coord).unwrap();
+    if g_u > rhs_u {
+        // improvement
+        *g_u = *rhs_u;
+    } else {
+        // invalidation
+        *g_u = usize::MAX;
+        update_vertex(quad, star, update_queue, u.coord, target);
+    }
+    for p in edge_neighbors(quad, u.coord) {
+        update_vertex(quad, star, update_queue, p, target);
+    }
+}
+
+fn compute_shortest_path(
+    quad: &QuadTree,
+    star: &mut Star,
+    mut update_queue: &mut LazyPQueue,
+    source: Coord,
+    target: Coord,
+) {
+    star.insert(target, (usize::MAX, 0));
+    star.insert(source, (centroid_estimate(source, target), usize::MAX));
+    // star.insert(source, (usize::MAX, usize::MAX));
+    loop {
+        // println!("update_queue\n{update_queue:?}");
+        match (star.get(&source), update_queue.peek()) {
+            (Some(&(g, rhs)), Some(top_key)) => {
+                let h = centroid_estimate(source, target);
+                let start_key = KeyNode::new(source, g, rhs, h);
+                // NOTE: Reversed order for binaryheap, need to refactor this b/c sign is reversed
+                // if *top_key > start_key || g != rhs {
+                // debug_assert!(*top_key < start_key, "the issue is start key somehow less");
+                if *top_key > start_key || g != rhs {
+                    // println!("popping!");
+                    improve_and_invalidate(quad, star, update_queue, target);
+                } else {
+                    break;
+                }
+            }
+            // (Some(&(g, rhs)), None) => {
+            //     if g!= rhs {
+            //         update_vertex(quad, star, update_queue, source, target);
+            //     } else {
+            //         break;
+            //     }
+            // },
+            _ => break,
+        }
+    }
+}
+
+pub fn dstar_lite(
+    quad: &QuadTree,
+    star: &mut Star,
+    update: &mut LazyPQueue,
+    source: Coord,
+    target: Coord,
+) -> Vec<Coord> {
+    update.push(KeyNode::new(target, 0, 0, 0));
+    compute_shortest_path(quad, star, update, source, target);
+    let mut plan = Vec::new();
+    let mut node_curr = Some(source);
+    let mut node_next = None;
+    while let Some(current) = node_curr {
+        plan.push(current);
+        if target == current {
             break;
         }
-        for c in edge_neighbors(quad, &n.coord) {
-            if plan.contains_key(&c) || quad.information[&c].belief == Belief::Occupied {
-                continue;
+        node_next = None;
+        let mut min_cost = usize::MAX;
+        for neigh in edge_neighbors(quad, current) {
+            if let Some(&(g_n, rhs_n)) = star.get(&neigh) {
+                let cost = rhs_n.saturating_add(centroid_estimate(current, neigh));
+                if cost <= min_cost {
+                    min_cost = cost;
+                    node_next = Some(neigh);
+                }
             }
-            pqueue.push(MinNode {
-                cost: n.cost + centroid_estimate(&c, target),
-                coord: c,
-            });
-            plan.insert(c, n.coord);
         }
+        mem::swap(&mut node_curr, &mut node_next);
     }
     plan
 }
 
 fn main() {
-    let origin = (4, 4);
-    let x = encode_morton(&origin, 1);
-    print_morton(&x);
-    assert_eq!(x, encode_morton(&x, 1));
-    assert_eq!(encode_morton(&origin, 1), encode_morton(&x, 1));
-    assert_eq!(encode_morton(&origin, 2), encode_morton(&x, 2));
-    // point is interface only for distance, does not maintain scale
-    let x = encode_morton(&(1, 1), 0);
-    assert_eq!((3, 3), point(&x));
-    let x = encode_morton(&(2, 2), 0);
-    assert_eq!((5, 5), point(&x));
-    let x = encode_morton(&(1, 3), 0);
-    assert_eq!((3, 7), point(&x));
-    // -------------
-    let x = encode_morton(&(0, 0), 1);
-    assert_eq!((2, 2), point(&x));
-    let x = encode_morton(&(1, 0), 1);
-    assert_eq!((2, 2), point(&x));
-    let x = encode_morton(&(2, 0), 1);
-    assert_eq!((6, 2), point(&x));
-    let x = encode_morton(&(3, 3), 2);
-    assert_eq!((4, 4), point(&x));
-
-    let cardinals = find_cardinals(&(2, 2));
-    assert_eq!((3, 2), cardinals[0]);
-    assert_eq!((2, 3), cardinals[1]);
-    assert_eq!((1, 2), cardinals[2]);
-    assert_eq!((2, 1), cardinals[3]);
-
-    let x = encode_morton(&(2, 2), 1);
-    let cardinals = find_cardinals(&x);
-    assert_eq!(encode_morton(&(5, 2), 1), cardinals[0]);
-    assert_eq!(encode_morton(&(2, 5), 1), cardinals[1]);
-    assert_eq!(encode_morton(&(0, 2), 1), cardinals[2]);
-    assert_eq!(encode_morton(&(2, 0), 1), cardinals[3]);
-
-    let origin = (0, 0);
-    let m_origin = encode_morton(&origin, 1);
-    assert_eq!([(1, 0), (1, 1)], east_morton(&m_origin));
-    assert_eq!([(1, 1), (0, 1)], north_morton(&m_origin));
-    assert_eq!([(0, 1), (0, 0)], west_morton(&m_origin));
-    assert_eq!([(0, 0), (1, 0)], south_morton(&m_origin));
-
-    let x = encode_morton(&(4, 4), 2);
-    // // south edge
-    assert_eq!(
-        [encode_morton(&(4, 4), 1), encode_morton(&(6, 4), 1)],
-        south_morton(&x)
-    );
-
-    let origin = (4, 2);
-    let m_origin = encode_morton(&origin, 1);
-    assert_eq!([(5, 2), (5, 3)], east_morton(&m_origin));
-    assert_eq!([(5, 3), (4, 3)], north_morton(&m_origin));
-    assert_eq!([(4, 3), (4, 2)], west_morton(&m_origin));
-    assert_eq!([(4, 2), (5, 2)], south_morton(&m_origin));
-
     let origin = (5, 2);
 
     let source = (1, 1);
     let target = (18, 3);
     let source = (1, 1);
-    let target = (5, 2);
+    // let target = (5, 2);
+    // let target = (5, 1);
+    let target = (3, 6);
+    // let target = (1, 3);
+    let source = (1, 1);
+    let target = (18, 3);
 
-    // let path = "./data/sample/test_nav0.map";
-    // TODO: need to see why this doesn't work, should just be like hey none
-    let path = "./data/sample/test_quad0.map";
-    match (read_grid(path), read_quad(path, LEVELS)) {
-        (Ok(oracle_grid), Ok(oracle_quad)) => {
-            assert!(oracle_quad.information.contains_key(&encode_morton(&(4,4), 2)));
-            println!("Oracle Quad\n{oracle_quad:?}");
+    let path = "./data/sample/test_nav0.map";
+    // let path = "./data/sample/test_quad0.map";
+    match read_quad(path, LEVELS) {
+        Ok(oracle_quad) => {
             println!("Oracle Quad\n{oracle_quad}");
             println!("-------------------------------");
             oracle_quad.display_with_levels();
             println!("-------------------------------");
-            // routing with perfect information
-            let plan = astar(&oracle_quad, &source, &target);
-            println!("plan {plan:?}");
-            // println!("Plan Starting");
-            // for l in plan.iter().rev() {
-            //     println!("{l:?}");
+            let mut star = Star::new();
+            let mut update = LazyPQueue::new();
+            let start = Instant::now();
+            // let plan = astar(&oracle_quad, source, target);
+            let plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
+            println!("Duration D*Lite {:?}", start.elapsed());
+            let start = Instant::now();
+            let plan = astar(&oracle_quad, source, target);
+            println!("Duration A* {:?}", start.elapsed());
+            println!("Star\n{star:?}");
+            // for (k,v) in star.iter() {
+            //     println!("------");
+            //     print_morton(k);
+            //     println!("value: {v:?}");
             // }
+            println!("------------------------------");
+            println!("------------------------------");
+            println!("plan {plan:?}");
             // // println!("Plan Ended");
         }
         _ => {
             println!("Unexpected Error");
         }
     }
+    // // let path = "./data/sample/test_quad0.map";
+    // match (read_grid(path), read_quad(path, LEVELS)) {
+    //     (Ok(oracle_grid), Ok(oracle_quad)) => {
+    //         println!("Oracle Quad\n{oracle_quad}");
+    //         println!("-------------------------------");
+    //         oracle_quad.display_with_levels();
+    //         println!("-------------------------------");
+    //         // routing with perfect information
+    //         let start = Instant::now();
+    //         let plan = astar(&oracle_quad, source, target);
+    //         println!("Duration {:?}", start.elapsed());
+    //         println!("plan {plan:?}");
+    //         // println!("Plan Starting");
+    //         // for l in plan.iter().rev() {
+    //         //     println!("{l:?}");
+    //         // }
+    //         // // println!("Plan Ended");
+    //     }
+    //     _ => {
+    //         println!("Unexpected Error");
+    //     }
+    // }
 }
 
-// Oracle Quad
-// [#][#][#][ ][#][#][#][#]
-// [#][#][#][ ][#][#][#][#]
-// [#][ ][ ][ ][#][#][#][#]
-// [#][#][#][ ][#][#][#][#]
-// [#][ ][#][ ][ ][ ][#][#]
-// [#][ ][ ][ ][ ][ ][#][#]
-// [#][ ][#][#][ ][ ][ ][ ]
-// [#][#][#][#][#][#][#][#]
+// // // Oracle Quad
+// // // [#][#][#][ ][#][#][#][#]
+// // // [#][#][#][ ][#][#][#][#]
+// // // [#][ ][ ][ ][#][#][#][#]
+// // // [#][#][#][ ][#][#][#][#]
+// // // [#][ ][#][ ][ ][ ][#][#]
+// // // [#][ ][ ][ ][ ][ ][#][#]
+// // // [#][ ][#][#][ ][ ][ ][ ]
+// // // [#][#][#][#][#][#][#][#]
 
-// -------------------------------
-// [1][1][0][0][2][2][2][2]
-// [1][1][0][0][2][2][2][2]
-// [0][0][0][0][2][2][2][2]
-// [0][0][0][0][2][2][2][2]
-// [0][0][0][0][1][1][1][1]
-// [0][0][0][0][1][1][1][1]
-// [0][0][1][1][0][0][0][0]
-// [0][0][1][1][0][0][0][0]
-// -------------------------------
+// // // -------------------------------
+// // // [1][1][0][0][2][2][2][2]
+// // // [1][1][0][0][2][2][2][2]
+// // // [0][0][0][0][2][2][2][2]
+// // // [0][0][0][0][2][2][2][2]
+// // // [0][0][0][0][1][1][1][1]
+// // // [0][0][0][0][1][1][1][1]
+// // // [0][0][1][1][0][0][0][0]
+// // // [0][0][1][1][0][0][0][0]
+// // // -------------------------------

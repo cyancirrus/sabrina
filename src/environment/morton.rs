@@ -1,8 +1,8 @@
+use crate::global::types::Coord;
 const PARTITION: usize = 32;
-type Coord = (isize, isize);
 
-pub fn encode_morton(coord: &Coord, level: isize) -> Coord {
-    debug_assert!(level < (1 << isize::BITS as usize - PARTITION));
+pub fn encode_morton(coord: &Coord, level: usize) -> Coord {
+    debug_assert!(level < (1 << usize::BITS as usize - PARTITION));
     let mask = ((1 << PARTITION) - 1) & !((1 << level) - 1);
     (
         (coord.0 & mask) | (level << PARTITION),
@@ -30,7 +30,7 @@ pub fn child_morton(morton: &Coord) -> [Coord; 4] {
     ]
 }
 
-pub fn grid_morton(coord: &Coord, level: isize) -> [Coord; 4] {
+pub fn grid_morton(coord: &Coord, level: usize) -> [Coord; 4] {
     // last bit of this level cleared as well, lvl + 1
     let mask = !((1 << (level + 1)) - 1);
     // clockwise navigation through grid

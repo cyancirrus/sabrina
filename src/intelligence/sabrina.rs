@@ -1,5 +1,6 @@
 use crate::environment::grid::Grid;
 use crate::environment::info::reconstruct;
+use crate::global::consts::AXIS_MAX;
 use crate::global::types::{Belief, Coord, MinNode};
 use crate::sensor::lidar::{Lidar, Status};
 use std::collections::{BinaryHeap, HashMap, HashSet};
@@ -47,7 +48,7 @@ impl Sabrina {
             self.position,
         ));
         enqueue.insert(self.position);
-        let neighbors = [(1, 0), (0, 1), (-1, 0), (0, -1)];
+        let neighbors = [(1, 0), (0, 1), (!0, 0), (0, !0)];
 
         while let Some(node) = p_queue.pop() {
             if node.coord == target {
@@ -55,12 +56,16 @@ impl Sabrina {
                 return Some(plan);
             }
             for (dx, dy) in neighbors {
-                let nxy = (node.coord.0 + dx, node.coord.1 + dy);
-                if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
-                    precursor.insert(nxy, node.coord);
-                    enqueue.insert(nxy);
-                    let cost = node.cost + Self::estimate(&nxy, &target);
-                    p_queue.push(MinNode::new(cost, nxy));
+                let nxy = (node.coord.0.wrapping_add(dx), node.coord.1.wrapping_add(dy));
+                if nxy.0 < AXIS_MAX && nxy.1 < AXIS_MAX {
+                    if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
+                        precursor.insert(nxy, node.coord);
+                        enqueue.insert(nxy);
+                        let cost = node.cost + Self::estimate(&nxy, &target);
+                        p_queue.push(MinNode::new(cost, nxy));
+                    }
+                } else {
+                    assert!(false, "replacement of usize with isize");
                 }
             }
         }

@@ -14,19 +14,19 @@ pub struct QuadNode {
 
 #[derive(Debug)]
 pub struct QuadTree {
-    pub levels: isize,
+    pub levels: usize,
     pub bounds: Bounds,
     pub padding: Bounds,
     pub information: Information,
 }
 impl QuadTree {
-    pub fn new(m: usize, n: usize, levels: isize) -> Self {
+    pub fn new(m: usize, n: usize, levels: usize) -> Self {
         let mut information = HashMap::new();
         let stride = 1 << (levels - 1);
         for i in (0..m).step_by(stride) {
             for j in (0..n).step_by(stride) {
                 information.insert(
-                    encode_morton(&(i as isize, j as isize), levels - 1),
+                    encode_morton(&(i, j), levels - 1),
                     QuadNode {
                         belief: Belief::Unknown,
                         homogenous: true,
@@ -37,14 +37,14 @@ impl QuadTree {
         let padding = Bounds {
             min_x: 0,
             min_y: 0,
-            max_x: ((m as usize + stride - 1) / stride * stride) as isize - 1,
-            max_y: ((n as usize + stride - 1) / stride * stride) as isize - 1,
+            max_x: ((m + stride - 1) / stride * stride) - 1,
+            max_y: ((n + stride - 1) / stride * stride) - 1,
         };
         let bounds = Bounds {
             min_x: 0,
             min_y: 0,
-            max_x: m as isize - 1,
-            max_y: n as isize - 1,
+            max_x: m - 1,
+            max_y: n - 1,
         };
         Self {
             levels: levels,
@@ -53,7 +53,7 @@ impl QuadTree {
             information,
         }
     }
-    pub fn initialize(information: Information, bounds: Bounds, levels: isize) -> Self {
+    pub fn initialize(information: Information, bounds: Bounds, levels: usize) -> Self {
         Self {
             levels,
             bounds,
@@ -148,7 +148,7 @@ impl QuadTree {
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
     }
-    pub fn split_cell(&mut self, coord: &Coord, level: isize) {
+    pub fn split_cell(&mut self, coord: &Coord, level: usize) {
         // level > 0;
         let m_coord = encode_morton(coord, level);
         if let Some(ancestor) = self.information.remove(&m_coord) {
@@ -180,7 +180,7 @@ impl QuadTree {
             },
         );
     }
-    pub fn get_cell(&self, coord: &Coord) -> Option<(isize, Belief)> {
+    pub fn get_cell(&self, coord: &Coord) -> Option<(usize, Belief)> {
         for lvl in (0..self.levels).rev() {
             let m_coord = encode_morton(coord, lvl);
             if let Some(n) = self.information.get(&m_coord) {
