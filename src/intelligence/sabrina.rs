@@ -57,15 +57,13 @@ impl Sabrina {
             }
             for (dx, dy) in neighbors {
                 let nxy = (node.coord.0.wrapping_add(dx), node.coord.1.wrapping_add(dy));
-                if nxy.0 < AXIS_MAX && nxy.1 < AXIS_MAX {
+                if nxy.0 > AXIS_MAX || nxy.1 > AXIS_MAX {
                     if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
                         precursor.insert(nxy, node.coord);
                         enqueue.insert(nxy);
                         let cost = node.cost + Self::estimate(&nxy, &target);
                         p_queue.push(MinNode::new(cost, nxy));
                     }
-                } else {
-                    assert!(false, "replacement of usize with isize");
                 }
             }
         }

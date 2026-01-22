@@ -19,8 +19,6 @@ type Star = HashMap<Coord, (G, Rhs)>;
 type G = usize;
 // Estimate of cost given neighbors belief
 type Rhs = usize;
-type Heur = usize;
-type Cost = usize;
 
 #[derive(Debug)]
 pub struct LazyPQueue {
@@ -151,13 +149,6 @@ fn compute_shortest_path(
                     break;
                 }
             }
-            // (Some(&(g, rhs)), None) => {
-            //     if g!= rhs {
-            //         update_vertex(quad, star, update_queue, source, target);
-            //     } else {
-            //         break;
-            //     }
-            // },
             _ => break,
         }
     }
@@ -241,6 +232,7 @@ fn main() {
             println!("Unexpected Error");
         }
     }
+
     // // let path = "./data/sample/test_quad0.map";
     // match (read_grid(path), read_quad(path, LEVELS)) {
     //     (Ok(oracle_grid), Ok(oracle_quad)) => {
