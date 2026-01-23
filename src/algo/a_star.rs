@@ -3,7 +3,7 @@ use crate::environment::info::reconstruct;
 use crate::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
 use crate::environment::quad::QuadTree;
 use crate::global::consts::{LEVELS, PARTITION};
-use crate::global::types::{Belief, Coord, MinNode};
+use crate::global::types::{Belief, Coord, MinNode, HeurMinNode};
 use crate::intelligence::sabrina::Sabrina;
 use crate::parser::grid::read_grid;
 use crate::parser::quad::read_quad;
@@ -139,7 +139,7 @@ pub fn edge_neighbors(quad: &QuadTree, m_coord: Coord) -> Vec<Coord> {
 }
 
 pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Coord> {
-    let mut pqueue: BinaryHeap<MinNode> = BinaryHeap::new();
+    let mut pqueue: BinaryHeap<HeurMinNode> = BinaryHeap::new();
     let mut plan: HashMap<Coord, Coord> = HashMap::new();
     plan.insert(source, source);
 
@@ -147,9 +147,10 @@ pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Co
         if quad.information[&n].belief == Belief::Occupied {
             continue;
         }
-        pqueue.push(MinNode {
-            cost: centroid_estimate(source, target),
+        pqueue.push(HeurMinNode {
             coord: n,
+            cost: centroid_estimate(source, target),
+            incurred: 0,
         });
         plan.insert(n, source);
     }
@@ -161,10 +162,12 @@ pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Co
             if plan.contains_key(&c) || quad.information[&c].belief == Belief::Occupied {
                 continue;
             }
-            // TODO: I think i'm adding more need raw distance
-            pqueue.push(MinNode {
-                cost: n.cost + centroid_estimate(c, target),
+            let known_cost = n.incurred + centroid_estimate(c, n.coord);
+            let heuristic = centroid_estimate(c, target);
+            pqueue.push(HeurMinNode {
                 coord: c,
+                cost: known_cost + heuristic,
+                incurred: known_cost,
             });
             plan.insert(c, n.coord);
         }

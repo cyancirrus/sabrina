@@ -86,3 +86,30 @@ impl PartialOrd for KeyNode {
         Some(self.cmp(other))
     }
 }
+
+// Used for weighted descent
+#[derive(Eq, PartialEq, Debug)]
+pub struct HeurMinNode {
+    // All costs should be non negative
+    pub coord: Coord,
+    pub cost: usize,
+    pub incurred: usize
+}
+
+impl HeurMinNode {
+    pub fn new(cost: usize, coord: Coord) -> Self {
+        Self { cost, coord, incurred:0 }
+    }
+}
+
+impl Ord for HeurMinNode {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+impl PartialOrd for HeurMinNode {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
