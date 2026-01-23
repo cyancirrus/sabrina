@@ -91,7 +91,7 @@ fn update_vertex(
             star.insert(coord, (usize::MAX, min_distance));
             update_queue.push(KeyNode {
                 cost_astar: min_distance.saturating_add(centroid_estimate(coord, target)),
-                cost_dfs: min_distance,
+                cost_dijkstra: min_distance,
                 coord,
             });
         }

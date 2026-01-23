@@ -56,17 +56,17 @@ impl PartialOrd for MinNode {
 pub struct KeyNode {
     // All costs should be non negative
     pub cost_astar: usize,
-    pub cost_dfs: usize,
+    pub cost_dijkstra: usize,
     pub coord: Coord,
 }
 
 impl KeyNode {
     pub fn new(coord: Coord, g: usize, rhs: usize, h: usize) -> Self {
-        let cost_dfs = g.min(rhs);
-        let cost_astar = cost_dfs.saturating_add(h);
+        let cost_dijkstra = g.min(rhs);
+        let cost_astar = cost_dijkstra.saturating_add(h);
         Self {
             cost_astar,
-            cost_dfs,
+            cost_dijkstra,
             coord,
         }
     }
@@ -77,7 +77,7 @@ impl Ord for KeyNode {
         other
             .cost_astar
             .cmp(&self.cost_astar)
-            .then_with(|| other.cost_dfs.cmp(&self.cost_dfs))
+            .then_with(|| other.cost_dijkstra.cmp(&self.cost_dijkstra))
     }
 }
 
