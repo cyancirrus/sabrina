@@ -141,35 +141,34 @@ pub fn edge_neighbors(quad: &QuadTree, m_coord: Coord) -> Vec<Coord> {
 pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Coord> {
     let mut pqueue: BinaryHeap<HeurMinNode> = BinaryHeap::new();
     let mut plan: HashMap<Coord, Coord> = HashMap::new();
+    let mut best_cost: HashMap<Coord, usize> = HashMap::new();
+    best_cost.insert(source, 0);
     plan.insert(source, source);
 
-    for n in edge_neighbors(quad, source) {
-        if quad.information[&n].belief == Belief::Occupied {
-            continue;
-        }
-        pqueue.push(HeurMinNode {
-            coord: n,
-            cost: centroid_estimate(source, target),
-            incurred: 0,
-        });
-        plan.insert(n, source);
-    }
-    while let Some(n) = pqueue.pop() {
-        if n.coord == target {
+    pqueue.push(HeurMinNode {
+        coord: source,
+        cost: centroid_estimate(source, target),
+        incurred: 0,
+    });
+    while let Some(node) = pqueue.pop() {
+        if node.coord == target {
             break;
         }
-        for c in edge_neighbors(quad, n.coord) {
-            if plan.contains_key(&c) || quad.information[&c].belief == Belief::Occupied {
+        for new_coord in edge_neighbors(quad, node.coord) {
+            if quad.information[&new_coord].belief == Belief::Occupied {
                 continue;
             }
-            let known_cost = n.incurred + centroid_estimate(c, n.coord);
-            let heuristic = centroid_estimate(c, target);
-            pqueue.push(HeurMinNode {
-                coord: c,
-                cost: known_cost + heuristic,
-                incurred: known_cost,
-            });
-            plan.insert(c, n.coord);
+            let known_cost = node.incurred + centroid_estimate(new_coord, node.coord);
+            let heuristic = centroid_estimate(new_coord, target);
+            if known_cost < *best_cost.get(&new_coord).unwrap_or(&usize::MAX) {
+                best_cost.insert(new_coord, known_cost);
+                pqueue.push(HeurMinNode {
+                    coord: new_coord,
+                    cost: known_cost + heuristic,
+                    incurred: known_cost,
+                });
+                plan.insert(new_coord, node.coord);
+            }
         }
     }
     plan
