@@ -21,11 +21,12 @@ impl Sabrina {
     }
     fn scan(&mut self) {
         // These will need to be rotated in order to account for orrientation
-        let measure = self.lidar.measure(&self.position);
+        let measure = self.lidar.measure(self.position);
         for m in measure.data {
+            // println!("measure data {:?}", measure.data);
             if let Some((nx, ny)) = m {
                 self.environment.insert_object(
-                    (nx + self.position.0, ny + self.position.1),
+                    (nx.wrapping_add(self.position.0), ny.wrapping_add(self.position.1)),
                     Belief::Unknown,
                 );
             }
@@ -36,33 +37,36 @@ impl Sabrina {
     }
 
     pub fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
-        if !self.environment.path_clear(&target) {
+        if !self.environment.path_clear(target) {
             return None;
         };
         let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
-
+        println!("in plan what's my position {:?}", self.position);
         p_queue.push(MinNode::new(
             Self::estimate(&self.position, &target),
+            // self.position,
             self.position,
         ));
         enqueue.insert(self.position);
         let neighbors = [(1, 0), (0, 1), (!0, 0), (0, !0)];
 
         while let Some(node) = p_queue.pop() {
+            // println!("node {:?}", node.coord);
             if node.coord == target {
+                println!("here what's position {:?}", self.position);
                 let plan = reconstruct(&precursor, &self.position, &target);
                 return Some(plan);
             }
             for (dx, dy) in neighbors {
-                let nxy = (node.coord.0.wrapping_add(dx), node.coord.1.wrapping_add(dy));
-                if nxy.0 > AXIS_MAX || nxy.1 > AXIS_MAX {
-                    if !enqueue.contains(&nxy) && self.environment.path_clear(&nxy) {
-                        precursor.insert(nxy, node.coord);
-                        enqueue.insert(nxy);
-                        let cost = node.cost + Self::estimate(&nxy, &target);
-                        p_queue.push(MinNode::new(cost, nxy));
+                let n_xy = (node.coord.0.wrapping_add(dx), node.coord.1.wrapping_add(dy));
+                if n_xy.0 < AXIS_MAX && n_xy.1 < AXIS_MAX {
+                    if !enqueue.contains(&n_xy) && self.environment.path_clear(n_xy) {
+                        precursor.insert(n_xy, node.coord);
+                        enqueue.insert(n_xy);
+                        let cost = node.cost + Self::estimate(&n_xy, &target);
+                        p_queue.push(MinNode::new(cost, n_xy));
                     }
                 }
             }
@@ -71,10 +75,12 @@ impl Sabrina {
     }
 
     pub fn action(&mut self, plan: Vec<Coord>) -> Status {
+        println!("plan {:?}", plan.iter().rev());
         for &pos in plan.iter().rev() {
             self.scan();
-            if self.environment.path_clear(&pos) {
+            if self.environment.path_clear(pos) {
                 self.position = pos;
+                println!("new position {:?}", self.position);
             } else {
                 return Status::Blocked;
             }
@@ -85,6 +91,7 @@ impl Sabrina {
     pub fn navigate(&mut self, target: Coord) -> Status {
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
+            println!("position {:?}", self.position);
             println!("{}", self.environment);
             println!("-------------------------------");
             let plan = self.plan(target);

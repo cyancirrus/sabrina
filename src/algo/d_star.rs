@@ -29,7 +29,7 @@ impl LazyPQueue {
     }
     pub fn peek(&mut self) -> Option<&KeyNode> {
         loop {
-            let remove ;
+            let remove;
             if let Some(node) = self.heap.peek() {
                 if self.lazy.contains(&node.coord) {
                     remove = true;
@@ -156,7 +156,7 @@ pub fn dstar_lite(
     compute_shortest_path(quad, star, update, source, target);
     let mut plan = Vec::new();
     let mut node_curr = Some(source);
-    let mut node_next ;
+    let mut node_next;
     while let Some(current) = node_curr {
         plan.push(current);
         if target == current {
@@ -179,6 +179,7 @@ pub fn dstar_lite(
 }
 
 // fn main() {
+
 //     let origin = (5, 2);
 
 //     let source = (1, 1);
@@ -190,6 +191,7 @@ pub fn dstar_lite(
 //     // let target = (1, 3);
 //     let source = (1, 1);
 //     let target = (18, 3);
+//     println!("Navigating from {source:?} -> {target:?}");
 
 //     let path = "./data/sample/test_nav0.map";
 //     // let path = "./data/sample/test_quad0.map";
@@ -204,67 +206,18 @@ pub fn dstar_lite(
 //             let start = Instant::now();
 //             // let plan = astar(&oracle_quad, source, target);
 //             let plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
+//             println!("plan {plan:?}");
 //             println!("Duration D*Lite {:?}", start.elapsed());
 //             let start = Instant::now();
 //             let plan = astar(&oracle_quad, source, target);
 //             println!("Duration A* {:?}", start.elapsed());
-//             println!("Star\n{star:?}");
-//             // for (k,v) in star.iter() {
-//             //     println!("------");
-//             //     print_morton(k);
-//             //     println!("value: {v:?}");
-//             // }
+//             // println!("Star\n{star:?}");
 //             println!("------------------------------");
 //             println!("------------------------------");
-//             println!("plan {plan:?}");
 //             // // println!("Plan Ended");
 //         }
 //         _ => {
 //             println!("Unexpected Error");
 //         }
 //     }
-
-//     // // let path = "./data/sample/test_quad0.map";
-//     // match (read_grid(path), read_quad(path, LEVELS)) {
-//     //     (Ok(oracle_grid), Ok(oracle_quad)) => {
-//     //         println!("Oracle Quad\n{oracle_quad}");
-//     //         println!("-------------------------------");
-//     //         oracle_quad.display_with_levels();
-//     //         println!("-------------------------------");
-//     //         // routing with perfect information
-//     //         let start = Instant::now();
-//     //         let plan = astar(&oracle_quad, source, target);
-//     //         println!("Duration {:?}", start.elapsed());
-//     //         println!("plan {plan:?}");
-//     //         // println!("Plan Starting");
-//     //         // for l in plan.iter().rev() {
-//     //         //     println!("{l:?}");
-//     //         // }
-//     //         // // println!("Plan Ended");
-//     //     }
-//     //     _ => {
-//     //         println!("Unexpected Error");
-//     //     }
-//     // }
 // }
-
-// // // // Oracle Quad
-// // // // [#][#][#][ ][#][#][#][#]
-// // // // [#][#][#][ ][#][#][#][#]
-// // // // [#][ ][ ][ ][#][#][#][#]
-// // // // [#][#][#][ ][#][#][#][#]
-// // // // [#][ ][#][ ][ ][ ][#][#]
-// // // // [#][ ][ ][ ][ ][ ][#][#]
-// // // // [#][ ][#][#][ ][ ][ ][ ]
-// // // // [#][#][#][#][#][#][#][#]
-
-// // // // -------------------------------
-// // // // [1][1][0][0][2][2][2][2]
-// // // // [1][1][0][0][2][2][2][2]
-// // // // [0][0][0][0][2][2][2][2]
-// // // // [0][0][0][0][2][2][2][2]
-// // // // [0][0][0][0][1][1][1][1]
-// // // // [0][0][0][0][1][1][1][1]
-// // // // [0][0][1][1][0][0][0][0]
-// // // // [0][0][1][1][0][0][0][0]
-// // // // -------------------------------

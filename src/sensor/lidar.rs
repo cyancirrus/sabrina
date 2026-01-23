@@ -34,28 +34,38 @@ impl Lidar {
     pub fn new(max_range: usize, oracle: Grid) -> Self {
         Self { max_range, oracle }
     }
-    fn beam(&self, position: &Coord, delta: &Coord) -> Option<Coord> {
+    fn beam(&self, position: Coord, delta: Coord) -> Option<Coord> {
         // Mock interface owning interface don't need dynamic changing env at the moment
         // RcRefcell or ArcMutex if doing pathing with multiple as extensions
-        for h in 1..self.max_range {
-            let n_xy = (
-                position.0.wrapping_add(delta.0 * h),
-                position.1.wrapping_add(delta.1 * h),
-            );
-            if n_xy.0 > AXIS_MAX || n_xy.1 > AXIS_MAX {
-                if !self.oracle.path_clear(&n_xy) {
+        let mut n_xy = position;
+        for _ in 1..self.max_range {
+            n_xy.0 = n_xy.0.wrapping_add(delta.0);
+            n_xy.1 = n_xy.1.wrapping_add(delta.1);
+            if n_xy.0 < AXIS_MAX && n_xy.1 < AXIS_MAX {
+            // if n_xy.0 < !0 && n_xy.1 < !0 {
+                // println!("n_xy {n_xy:?}");
+                if !self.oracle.path_clear(n_xy) {
                     // denomralize b/c is oracle and needs to be relative
-                    let denorm_xy = (n_xy.0 - position.0, n_xy.1 - position.1);
+                    let denorm_xy = (
+                        n_xy.0.wrapping_sub(position.0),
+                        n_xy.1.wrapping_sub(position.1),
+                    );
+                    // println!("denorm_xy {denorm_xy:?}");
+                    // println!("denorm_xy {denorm_xy:?}");
+                    // return Some(n_xy);
                     return Some(denorm_xy);
                 }
+            } else {
+                return None;
             }
         }
+        println!("--------");
         None
     }
-    pub fn measure(&self, position: &Coord) -> Measurement {
+    pub fn measure(&self, position: Coord) -> Measurement {
         let mut data = [None; GRAIN];
         // Polar order of scan ie counter-clockwise
-        for (h, d) in [(1, 0), (0, 1), (!0, 0), (0, !0)].iter().enumerate() {
+        for (h, &d) in [(1, 0), (0, 1), (!0, 0), (0, !0)].iter().enumerate() {
             data[h] = self.beam(position, d);
         }
         Measurement { data }

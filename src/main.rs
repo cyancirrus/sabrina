@@ -1,11 +1,12 @@
 #![allow(unused)]
 use sabrina::algo::a_star::{astar, centroid_estimate, edge_neighbors};
 use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
+use sabrina::environment::grid::Grid;
 use sabrina::environment::info::reconstruct;
 use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
 use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts::{LEVELS, PARTITION};
-use sabrina::global::types::{Belief, Coord, KeyNode, MinNode};
+use sabrina::global::types::{Belief, Bounds, Coord, KeyNode, MinNode};
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
@@ -14,8 +15,10 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 use std::time::Instant;
 
-
+type MinHeap = BinaryHeap<MinNode>;
+// TODO: refactoring from usize -> isize caused neighbors to not be propegated properly
 fn main() {
+
     let origin = (5, 2);
 
     let source = (1, 1);
@@ -27,6 +30,7 @@ fn main() {
     // let target = (1, 3);
     let source = (1, 1);
     let target = (18, 3);
+    println!("Navigating from {source:?} -> {target:?}");
 
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_quad0.map";
@@ -56,3 +60,37 @@ fn main() {
         }
     }
 }
+
+// fn main() {
+//     println!("------------------------------------");
+//     println!("      Example navigation            ");
+//     println!("------------------------------------");
+//     let path = "./data/sample/test_nav0.map";
+//     match read_grid(path) {
+//         Ok(oracle) => {
+//             let position = (1, 1);
+//             let target = (5, 2);
+//             // let position = (1, 1);
+//             // let target = (18, 3);
+//             // let target = (4, 2);
+//             // let target = (1, 2);
+//             // println!("Test oracle pathclear 0, 1 {:?}", oracle.path_clear(&(1,2)));
+//             let bounds = Bounds::new(0, 0, 32, 32);
+//             let environment = Grid::new(HashMap::new(), bounds);
+//             let lidar = Lidar::new(8, oracle.clone());
+//             let mut sabby = Sabrina::new(position, environment, lidar);
+//             println!("absolute_environment\n{oracle}");
+//             println!("-------------------------------");
+//             println!("    Starting Navigation        ");
+//             println!("-------------------------------");
+
+//             // sabby.scan();
+//             println!("Final Status {:?}", sabby.navigate(target));
+//             println!("Final map\n{}", sabby.environment);
+//             println!("Final bounds\n{:?}", sabby.environment.seen);
+//         }
+//         Err(e) => {
+//             println!("Err\n{e:?}");
+//         }
+//     }
+// }

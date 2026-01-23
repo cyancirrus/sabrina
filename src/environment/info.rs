@@ -6,6 +6,7 @@ pub fn reconstruct(
     source: &Coord,
     target: &Coord,
 ) -> Vec<Coord> {
+    println!("in reconstruct position {:?}", source);
     // Ensure this is synchronized with action as this returns reversed plan
     let mut plan = vec![];
     let mut node = *target;
@@ -13,5 +14,7 @@ pub fn reconstruct(
         plan.push(node);
         node = precursor[&node];
     }
+    println!("in reconstruct plan {:?}", plan);
+    println!("in reconstruct node {:?}", node);
     plan
 }

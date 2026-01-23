@@ -161,6 +161,7 @@ pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Co
             if plan.contains_key(&c) || quad.information[&c].belief == Belief::Occupied {
                 continue;
             }
+            // TODO: I think i'm adding more need raw distance
             pqueue.push(MinNode {
                 cost: n.cost + centroid_estimate(c, target),
                 coord: c,
