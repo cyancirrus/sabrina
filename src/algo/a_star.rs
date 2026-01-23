@@ -160,15 +160,16 @@ pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Co
             }
             let known_cost = node.incurred + centroid_estimate(new_coord, node.coord);
             let heuristic = centroid_estimate(new_coord, target);
-            if known_cost < *best_cost.get(&new_coord).unwrap_or(&usize::MAX) {
-                best_cost.insert(new_coord, known_cost);
-                pqueue.push(HeurMinNode {
-                    coord: new_coord,
-                    cost: known_cost + heuristic,
-                    incurred: known_cost,
-                });
-                adjacency.insert(new_coord, node.coord);
+            if known_cost >= *best_cost.get(&new_coord).unwrap_or(&usize::MAX) {
+                continue;
             }
+            best_cost.insert(new_coord, known_cost);
+            pqueue.push(HeurMinNode {
+                coord: new_coord,
+                cost: known_cost + heuristic,
+                incurred: known_cost,
+            });
+            adjacency.insert(new_coord, node.coord);
         }
     }
     adjacency
