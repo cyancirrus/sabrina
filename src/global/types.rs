@@ -55,8 +55,8 @@ impl PartialOrd for MinNode {
 #[derive(Eq, PartialEq, Debug)]
 pub struct KeyNode {
     // All costs should be non negative
-    pub cost_astar: usize,
-    pub cost_dijkstra: usize,
+    pub cost_astar: usize, // min(g, rhs) + h(s, end);
+    pub cost_dijkstra: usize, // min(g, rhs)
     pub coord: Coord,
 }
 
