@@ -19,7 +19,7 @@ pub trait SpatialSource<T> {
     fn set_cell(&mut self, coord: &Coord, object: T);
 }
 pub fn translate(xy: Coord) -> Coord {
-    (xy.0 + GRID_OFFSET, xy.1 + GRID_OFFSET)
+    (xy.0.wrapping_add(GRID_OFFSET), xy.1.wrapping_add(GRID_OFFSET))
 }
 
 impl Grid {
@@ -52,7 +52,7 @@ impl Grid {
     }
     pub fn get_cell(&self, xy: &Coord) -> Option<Belief> {
         let coord = translate(*xy);
-        match self.information.get(xy) {
+        match self.information.get(&coord) {
             Some(&b) => Some(b),
             None => Some(Belief::Free),
         }

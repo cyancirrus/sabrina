@@ -23,7 +23,6 @@ impl Sabrina {
         // These will need to be rotated in order to account for orrientation
         let measure = self.lidar.measure(self.position);
         for m in measure.data {
-            // println!("measure data {:?}", measure.data);
             if let Some((nx, ny)) = m {
                 self.environment.insert_object(
                     (nx.wrapping_add(self.position.0), ny.wrapping_add(self.position.1)),
@@ -43,7 +42,6 @@ impl Sabrina {
         let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
-        println!("in plan what's my position {:?}", self.position);
         p_queue.push(MinNode::new(
             Self::estimate(&self.position, &target),
             // self.position,
@@ -53,9 +51,7 @@ impl Sabrina {
         let neighbors = [(1, 0), (0, 1), (!0, 0), (0, !0)];
 
         while let Some(node) = p_queue.pop() {
-            // println!("node {:?}", node.coord);
             if node.coord == target {
-                println!("here what's position {:?}", self.position);
                 let plan = reconstruct(&precursor, &self.position, &target);
                 return Some(plan);
             }
@@ -75,12 +71,10 @@ impl Sabrina {
     }
 
     pub fn action(&mut self, plan: Vec<Coord>) -> Status {
-        println!("plan {:?}", plan.iter().rev());
         for &pos in plan.iter().rev() {
             self.scan();
             if self.environment.path_clear(pos) {
                 self.position = pos;
-                println!("new position {:?}", self.position);
             } else {
                 return Status::Blocked;
             }
@@ -91,7 +85,6 @@ impl Sabrina {
     pub fn navigate(&mut self, target: Coord) -> Status {
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
-            println!("position {:?}", self.position);
             println!("{}", self.environment);
             println!("-------------------------------");
             let plan = self.plan(target);
