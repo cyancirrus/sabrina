@@ -140,10 +140,10 @@ pub fn edge_neighbors(quad: &QuadTree, m_coord: Coord) -> Vec<Coord> {
 
 pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Coord> {
     let mut pqueue: BinaryHeap<HeurMinNode> = BinaryHeap::new();
-    let mut plan: HashMap<Coord, Coord> = HashMap::new();
+    let mut adjacency: HashMap<Coord, Coord> = HashMap::new();
     let mut best_cost: HashMap<Coord, usize> = HashMap::new();
     best_cost.insert(source, 0);
-    plan.insert(source, source);
+    adjacency.insert(source, source);
 
     pqueue.push(HeurMinNode {
         coord: source,
@@ -167,11 +167,11 @@ pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Co
                     cost: known_cost + heuristic,
                     incurred: known_cost,
                 });
-                plan.insert(new_coord, node.coord);
+                adjacency.insert(new_coord, node.coord);
             }
         }
     }
-    plan
+    adjacency
 }
 
 // pub fn main() {
