@@ -1,5 +1,12 @@
 use crate::global::types::Coord;
+use crate::algo::a_star::point;
 const PARTITION: usize = 32;
+
+pub fn decode_morton(coord: Coord) -> (f32, f32) {
+    let dp = point(coord);
+    (
+        (dp.0 - 1) as f32 / 2.0, (dp.0 - 1) as f32 / 2.0 )
+}
 
 pub fn encode_morton(coord: &Coord, level: usize) -> Coord {
     debug_assert!(level < (1 << usize::BITS as usize - PARTITION));

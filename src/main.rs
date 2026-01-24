@@ -1,9 +1,9 @@
 #![allow(unused)]
-use sabrina::algo::a_star::{astar, centroid_estimate, edge_neighbors};
+use sabrina::algo::a_star::{astar, centroid_estimate, edge_neighbors, point};
 use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
 use sabrina::environment::grid::Grid;
 use sabrina::environment::info::reconstruct;
-use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
+use sabrina::environment::morton::{child_morton, encode_morton, grid_morton, print_morton, decode_morton};
 use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts::{LEVELS, PARTITION};
 use sabrina::global::types::{Belief, Bounds, Coord, KeyNode, MinNode};
@@ -45,14 +45,19 @@ fn main() {
             // let plan = astar(&oracle_quad, source, target);
             let plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
             println!("Duration D*Lite {:?}", start.elapsed());
-            println!("plan {plan:?}");
+            
             let start = Instant::now();
-            let plan = astar(&oracle_quad, source, target);
+            let _ = astar(&oracle_quad, source, target);
             println!("Duration A* {:?}", start.elapsed());
-            // println!("Star\n{star:?}");
             println!("------------------------------");
             println!("------------------------------");
-            // // println!("Plan Ended");
+            println!("--------------");
+            println!("Plan ");
+            for p in plan {
+                let (x, y) = decode_morton(p);
+                print!("({}, {})), ", x, y);
+            }
+            print!("\n");
         }
         _ => {
             println!("Unexpected Error");
