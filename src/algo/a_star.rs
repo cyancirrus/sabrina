@@ -3,7 +3,7 @@ use crate::environment::info::reconstruct;
 use crate::environment::morton::{child_morton, encode_morton, grid_morton, print_morton};
 use crate::environment::quad::QuadTree;
 use crate::global::consts::{LEVELS, PARTITION};
-use crate::global::types::{Belief, Coord, MinNode, HeurMinNode};
+use crate::global::types::{Belief, Coord, HeurMinNode, MinNode};
 use crate::intelligence::sabrina::Sabrina;
 use crate::parser::grid::read_grid;
 use crate::parser::quad::read_quad;

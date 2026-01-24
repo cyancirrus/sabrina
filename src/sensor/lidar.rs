@@ -41,14 +41,14 @@ impl Lidar {
             n_xy.0 = n_xy.0.wrapping_add(delta.0);
             n_xy.1 = n_xy.1.wrapping_add(delta.1);
             // needs to fit wrt the underlying grid
-                if !self.oracle.path_clear(n_xy) {
-                    // denomralize b/c is oracle and needs to be relative
-                    let denorm_xy = (
-                        n_xy.0.wrapping_sub(position.0),
-                        n_xy.1.wrapping_sub(position.1),
-                    );
-                    return Some(denorm_xy);
-                }
+            if !self.oracle.path_clear(n_xy) {
+                // denomralize b/c is oracle and needs to be relative
+                let denorm_xy = (
+                    n_xy.0.wrapping_sub(position.0),
+                    n_xy.1.wrapping_sub(position.1),
+                );
+                return Some(denorm_xy);
+            }
         }
         println!("--------");
         None

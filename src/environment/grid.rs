@@ -10,7 +10,7 @@ use std::fs;
 pub struct Grid {
     pub information: HashMap<Coord, Belief>,
     pub seen: Bounds,
-    bounds: Bounds,
+    pub bounds: Bounds,
 }
 
 pub trait SpatialSource<T> {
@@ -19,13 +19,19 @@ pub trait SpatialSource<T> {
     fn set_cell(&mut self, coord: &Coord, object: T);
 }
 pub fn translate(xy: Coord) -> Coord {
-    (xy.0.wrapping_add(GRID_OFFSET), xy.1.wrapping_add(GRID_OFFSET))
+    (
+        xy.0.wrapping_add(GRID_OFFSET),
+        xy.1.wrapping_add(GRID_OFFSET),
+    )
 }
 
 impl Grid {
     pub fn new(information: HashMap<Coord, Belief>, bounds: Bounds) -> Self {
         let seen = Bounds {
-            min_x:usize::MAX, min_y:usize::MAX, max_x:0, max_y:0
+            min_x: usize::MAX,
+            min_y: usize::MAX,
+            max_x: 0,
+            max_y: 0,
         };
         Self {
             information,
@@ -34,9 +40,7 @@ impl Grid {
         }
     }
     pub fn path_clear(&self, xy: Coord) -> bool {
-        !self.information.contains_key(
-            &translate(xy)
-        )
+        !self.information.contains_key(&translate(xy))
     }
     pub fn insert_object(&mut self, coord: Coord, obj: Belief) {
         let coord = translate(coord);

@@ -25,7 +25,10 @@ impl Sabrina {
         for m in measure.data {
             if let Some((nx, ny)) = m {
                 self.environment.insert_object(
-                    (nx.wrapping_add(self.position.0), ny.wrapping_add(self.position.1)),
+                    (
+                        nx.wrapping_add(self.position.0),
+                        ny.wrapping_add(self.position.1),
+                    ),
                     Belief::Unknown,
                 );
             }

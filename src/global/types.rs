@@ -55,7 +55,7 @@ impl PartialOrd for MinNode {
 #[derive(Eq, PartialEq, Debug)]
 pub struct KeyNode {
     // All costs should be non negative
-    pub cost_astar: usize, // min(g, rhs) + h;
+    pub cost_astar: usize,    // min(g, rhs) + h;
     pub cost_dijkstra: usize, // min(g, rhs)
     pub coord: Coord,
 }
@@ -93,12 +93,16 @@ pub struct HeurMinNode {
     // All costs should be non negative
     pub coord: Coord,
     pub cost: usize,
-    pub incurred: usize
+    pub incurred: usize,
 }
 
 impl HeurMinNode {
     pub fn new(cost: usize, coord: Coord) -> Self {
-        Self { cost, coord, incurred:0 }
+        Self {
+            cost,
+            coord,
+            incurred: 0,
+        }
     }
 }
 

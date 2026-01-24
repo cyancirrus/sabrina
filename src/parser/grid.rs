@@ -1,5 +1,5 @@
 use crate::environment::grid::Grid;
-use crate::global::consts::{GRID_OFFSET};
+use crate::global::consts::GRID_OFFSET;
 use crate::global::types::{Belief, Bounds};
 use std::collections::HashMap;
 use std::error::Error;
@@ -38,8 +38,17 @@ pub fn read_grid(path: &str) -> Result<Grid, Box<dyn Error>> {
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
         let coord = (idx_x + GRID_OFFSET, max_y - mir_idx_y + GRID_OFFSET);
         information.insert(coord, obj);
-        // information.insert((idx_x, max_y - mir_idx_y), obj);
     }
+    let seen = Bounds {
+        min_x: GRID_OFFSET,
+        min_y: GRID_OFFSET,
+        max_x: max_x + GRID_OFFSET,
+        max_y: max_y + GRID_OFFSET,
+    };
 
-    Ok(Grid::new(information, bounds))
+    Ok(Grid {
+        information,
+        seen,
+        bounds,
+    })
 }

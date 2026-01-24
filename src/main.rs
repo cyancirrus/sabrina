@@ -18,7 +18,6 @@ use std::time::Instant;
 type MinHeap = BinaryHeap<MinNode>;
 // TODO: refactoring from usize -> isize caused neighbors to not be propegated properly
 fn main() {
-
     let origin = (5, 2);
 
     let source = (1, 1);
