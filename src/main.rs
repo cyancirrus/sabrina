@@ -17,8 +17,9 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 use std::time::Instant;
 
-type MinHeap = BinaryHeap<MinNode>;
-// TODO: refactoring from usize -> isize caused neighbors to not be propegated properly
+
+
+
 fn main() {
     let origin = (5, 2);
 
