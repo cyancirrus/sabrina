@@ -70,10 +70,10 @@ src
 ```bash
 git clone <repo-url>
 cd sabrina
-cargo run
+cargo run --example simple_navigation
 ```
 
-This will run the example map `data/sample/test0.map` and simulate Sabrina navigating from a start position to a target.
+This will run the example map `data/sample/test_nav0.map` and simulate Sabrina navigating from a start position to a target.
 
 ### Map Format
 
