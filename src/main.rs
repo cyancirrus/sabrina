@@ -3,8 +3,8 @@ use sabrina::algo::a_star::{astar, centroid_estimate, edge_neighbors, point};
 use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
 use sabrina::environment::grid::Grid;
 use sabrina::environment::info::reconstruct;
-use sabrina::environment::morton::{
-    child_morton, decode_morton, encode_morton, grid_morton, print_morton,
+use sabrina::environment::hier::{
+    child_hier, decode_hier, encode_hier, grid_hier, print_hier,
 };
 use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts::{LEVELS, PARTITION};
@@ -53,7 +53,7 @@ fn main() {
             println!("--------------");
             println!("Plan ");
             for p in plan {
-                let (x, y) = decode_morton(p);
+                let (x, y) = decode_hier(p);
                 print!("({}, {})), ", x, y);
             }
             print!("\n");

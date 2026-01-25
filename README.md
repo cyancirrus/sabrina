@@ -23,7 +23,7 @@ src
 │   ├── grid_display.rs
 │   ├── info.rs
 │   ├── mod.rs
-│   ├── morton.rs
+│   ├── hier.rs
 │   ├── quad.rs
 │   └── quad_display.rs
 ├── global

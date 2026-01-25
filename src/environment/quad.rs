@@ -1,4 +1,4 @@
-use crate::environment::morton::{child_morton, encode_morton, grid_morton};
+use crate::environment::hier::{child_hier, encode_hier, grid_hier};
 use crate::global::consts::{LEVELS, PARTITION};
 use crate::global::types::{Belief, Bounds, Coord};
 use std::collections::HashMap;
@@ -26,7 +26,7 @@ impl QuadTree {
         // level 0 contains no shift and level is inclusive
         let stride = 1 << (levels - 1);
         information.insert(
-            encode_morton(&(0, 0), levels - 1),
+            encode_hier(&(0, 0), levels - 1),
             QuadNode {
                 belief: Belief::Unknown,
                 homogenous: true,
@@ -68,7 +68,7 @@ impl QuadTree {
 
 impl QuadTree {
     pub fn update_seen(&mut self, coord: &Coord) {
-        let m_coord = encode_morton(coord, self.levels - 1);
+        let m_coord = encode_hier(coord, self.levels - 1);
         let s_coord = (
             m_coord.0 & ((1 << PARTITION) - 1),
             m_coord.1 & ((1 << PARTITION) - 1),
@@ -94,7 +94,7 @@ impl QuadTree {
     }
     pub fn bubble_belief(&mut self, coord: &Coord, belief: Belief) {
         for lvl in 0..self.levels - 1 {
-            for g in grid_morton(&coord, lvl) {
+            for g in grid_hier(&coord, lvl) {
                 if let Some(qnode) = self.information.get(&g) {
                     if qnode.belief != belief {
                         return;
@@ -103,7 +103,7 @@ impl QuadTree {
                     return;
                 }
             }
-            let m_coord = encode_morton(&coord, lvl + 1);
+            let m_coord = encode_hier(&coord, lvl + 1);
             if let Some(ancestor) = self.information.get_mut(&m_coord) {
                 ancestor.homogenous = true;
                 ancestor.belief = belief;
@@ -121,10 +121,10 @@ impl QuadTree {
     pub fn cleanse_repres(&mut self, coord: &Coord) {
         let mut stack = Vec::new();
         for lvl in (1..self.levels).rev() {
-            let m_coord = encode_morton(coord, lvl);
+            let m_coord = encode_hier(coord, lvl);
             if let Some(n) = self.information.get(&m_coord) {
                 if n.homogenous {
-                    for g in child_morton(&m_coord) {
+                    for g in child_hier(&m_coord) {
                         stack.push((lvl - 1, g));
                     }
                     break;
@@ -134,7 +134,7 @@ impl QuadTree {
         while let Some((lvl, m)) = stack.pop() {
             self.information.remove(&m);
             if lvl > 0 {
-                for g in child_morton(&m) {
+                for g in child_hier(&m) {
                     stack.push((lvl - 1, g));
                 }
             }
@@ -148,9 +148,9 @@ impl QuadTree {
     }
     pub fn split_cell(&mut self, coord: &Coord, level: usize) {
         // level > 0;
-        let m_coord = encode_morton(coord, level);
+        let m_coord = encode_hier(coord, level);
         if let Some(ancestor) = self.information.remove(&m_coord) {
-            for g in child_morton(&m_coord) {
+            for g in child_hier(&m_coord) {
                 self.information.insert(
                     g,
                     QuadNode {
@@ -180,7 +180,7 @@ impl QuadTree {
     }
     pub fn get_cell(&self, coord: &Coord) -> Option<(usize, Belief)> {
         for lvl in (0..self.levels).rev() {
-            let m_coord = encode_morton(coord, lvl);
+            let m_coord = encode_hier(coord, lvl);
             if let Some(n) = self.information.get(&m_coord) {
                 if n.homogenous {
                     return Some((lvl, n.belief));
