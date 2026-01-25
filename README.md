@@ -13,21 +13,35 @@
 ## Project Structure
 
 ```
-sabrina/
-├── Cargo.toml             # Rust package configuration
-├── Cargo.lock
-├── data/
-│   └── sample/
-│       └── test0.map      # Example map
-├── src/
-│   ├── main.rs            # Entry point / demo navigation
-│   ├── lib.rs
-│   ├── environment/       # Grid representation
-│   │   ├── mod.rs
-│   │   └── representation.rs
-│   └── parser/            # Map parsing
-│       ├── mod.rs
-│       └── map.rs
+src
+├── algo
+│   ├── a_star.rs
+│   ├── d_star.rs
+│   └── mod.rs
+├── environment
+│   ├── grid.rs
+│   ├── grid_display.rs
+│   ├── info.rs
+│   ├── mod.rs
+│   ├── morton.rs
+│   ├── quad.rs
+│   └── quad_display.rs
+├── global
+│   ├── consts.rs
+│   ├── mod.rs
+│   └── types.rs
+├── intelligence
+│   ├── mod.rs
+│   └── sabrina.rs
+├── lib.rs
+├── main.rs
+├── parser
+│   ├── grid.rs
+│   ├── mod.rs
+│   └── quad.rs
+└── sensor
+    ├── lidar.rs
+    └── mod.rs
 ```
 
 ### Core Components
@@ -78,15 +92,15 @@ Each line in the file corresponds to a row in the environment grid.
 ```
 Final Status Complete
 Final map
-[ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][?][ ][ ][ ][ ][?][ ][ ][ ][ ]
-[ ][ ][ ][ ][ ][?][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
+[ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][#][ ][ ][ ][ ][#][ ][ ][ ][ ]
+[ ][ ][ ][ ][ ][#][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-[?][ ][ ][ ][ ][ ][?][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][?][ ]
-[ ][?][ ][ ][?][ ][?][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-[ ][ ][?][?][ ][ ][?][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-[?][ ][ ][ ][ ][ ][?][?][?][?][ ][?][?][?][?][ ][?][?][ ][?]
-[?][ ][?][?][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][?]
-[ ][?][ ][ ][?][?][?][?][?][?][?][?][?][?][?][?][?][?][?][ ]
+[#][ ][ ][ ][ ][ ][#][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][#][ ]
+[ ][#][ ][ ][#][ ][#][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
+[ ][ ][#][#][ ][ ][#][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
+[#][ ][ ][ ][ ][ ][#][#][#][#][ ][#][#][#][#][ ][#][#][ ][#]
+[#][ ][#][#][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][#]
+[ ][#][ ][ ][#][#][#][#][#][#][#][#][#][#][#][#][#][#][#][ ]
 ```
 
 ## Next Steps / TODO

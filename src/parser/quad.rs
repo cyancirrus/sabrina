@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
+/// Reads the quadrant has to mirror around the y axis to align with intuition
 pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,

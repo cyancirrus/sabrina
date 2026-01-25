@@ -37,7 +37,6 @@ impl Sabrina {
     fn estimate(source: &Coord, target: &Coord) -> usize {
         target.0.abs_diff(source.0) + target.1.abs_diff(source.1)
     }
-
     pub fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
         if !self.environment.path_clear(target) {
             return None;
@@ -52,7 +51,6 @@ impl Sabrina {
         ));
         enqueue.insert(self.position);
         let neighbors = [(1, 0), (0, 1), (!0, 0), (0, !0)];
-
         while let Some(node) = p_queue.pop() {
             if node.coord == target {
                 let plan = reconstruct(&precursor, &self.position, &target);
@@ -72,7 +70,6 @@ impl Sabrina {
         }
         None
     }
-
     pub fn action(&mut self, plan: Vec<Coord>) -> Status {
         for &pos in plan.iter().rev() {
             self.scan();
@@ -84,7 +81,6 @@ impl Sabrina {
         }
         Status::Complete
     }
-
     pub fn navigate(&mut self, target: Coord) -> Status {
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {

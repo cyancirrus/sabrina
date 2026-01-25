@@ -52,6 +52,12 @@ impl PartialOrd for MinNode {
     }
 }
 
+/// Represents the underlying DStarLite Estimates
+///
+/// # Arguments
+/// * cost_star := min(g, rhs) + h;
+/// * cost_dijsktra := min(g, rhs);
+/// * coord := (x, y) cordinate
 #[derive(Eq, PartialEq, Debug)]
 pub struct KeyNode {
     // All costs should be non negative

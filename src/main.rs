@@ -17,9 +17,6 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 use std::time::Instant;
 
-
-
-
 fn main() {
     let origin = (5, 2);
 
