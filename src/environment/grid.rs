@@ -12,12 +12,6 @@ pub struct Grid {
     pub seen: Bounds,
     pub bounds: Bounds,
 }
-
-pub trait SpatialSource<T> {
-    fn get_bounds(&self) -> Bounds;
-    fn get_cell(&self, coord: &Coord) -> T;
-    fn set_cell(&mut self, coord: &Coord, object: T);
-}
 pub fn translate(xy: Coord) -> Coord {
     (
         xy.0.wrapping_add(GRID_OFFSET),
@@ -26,15 +20,21 @@ pub fn translate(xy: Coord) -> Coord {
 }
 
 impl Grid {
-    pub fn new(information: HashMap<Coord, Belief>, bounds: Bounds) -> Self {
+    pub fn new() -> Self {
         let seen = Bounds {
             min_x: usize::MAX,
             min_y: usize::MAX,
             max_x: 0,
             max_y: 0,
         };
+        let bounds = Bounds {
+            min_x: 0,
+            min_y: 0,
+            max_x: 4,
+            max_y: 4,
+        };
         Self {
-            information,
+            information: HashMap::new(),
             bounds,
             seen,
         }

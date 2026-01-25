@@ -5,10 +5,9 @@ use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
 
 fn main() {
-    // let mut quad = QuadTree::new(8, 4, 4);
-    let mut quad = QuadTree::new(4, 4, 3);
+    let mut quad = QuadTree::new();
     quad.display_with_levels();
-    println!("----------------------------------");
+    println!("--------------------------------");
     quad.insert_cell(&(1, 1), Belief::Occupied);
     quad.display_with_levels();
     println!("----------------------------------");
@@ -20,7 +19,7 @@ fn main() {
     println!("----------------------------------");
     quad.display_with_levels();
 
-    let path = "./data/sample/test_quad0.map";
+    let path = "./data/sample/test_nav0.map";
     match (read_grid(path), read_quad(path, consts::LEVELS)) {
         (Ok(_oracle_grid), Ok(oracle_quad)) => {
             println!("Oracle Quad\n{oracle_quad}");

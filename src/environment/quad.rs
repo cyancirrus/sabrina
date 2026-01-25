@@ -1,5 +1,5 @@
 use crate::environment::morton::{child_morton, encode_morton, grid_morton};
-use crate::global::consts::PARTITION;
+use crate::global::consts::{LEVELS, PARTITION};
 use crate::global::types::{Belief, Bounds, Coord};
 use std::collections::HashMap;
 
@@ -15,48 +15,46 @@ pub struct QuadNode {
 #[derive(Debug)]
 pub struct QuadTree {
     pub levels: usize,
-    pub bounds: Bounds,
+    pub seen: Bounds,
     pub padding: Bounds,
     pub information: Information,
 }
 impl QuadTree {
-    pub fn new(m: usize, n: usize, levels: usize) -> Self {
+    pub fn new() -> Self {
+        let levels = LEVELS;
         let mut information = HashMap::new();
+        // level 0 contains no shift and level is inclusive
         let stride = 1 << (levels - 1);
-        for i in (0..m).step_by(stride) {
-            for j in (0..n).step_by(stride) {
-                information.insert(
-                    encode_morton(&(i, j), levels - 1),
-                    QuadNode {
-                        belief: Belief::Unknown,
-                        homogenous: true,
-                    },
-                );
-            }
-        }
+        information.insert(
+            encode_morton(&(0, 0), levels - 1),
+            QuadNode {
+                belief: Belief::Unknown,
+                homogenous: true,
+            },
+        );
         let padding = Bounds {
             min_x: 0,
             min_y: 0,
-            max_x: ((m + stride - 1) / stride * stride) - 1,
-            max_y: ((n + stride - 1) / stride * stride) - 1,
+            max_x: stride - 1,
+            max_y: stride - 1,
         };
-        let bounds = Bounds {
-            min_x: 0,
-            min_y: 0,
-            max_x: m - 1,
-            max_y: n - 1,
+        let seen = Bounds {
+            min_x: usize::MAX,
+            min_y: usize::MAX,
+            max_x: 0,
+            max_y: 0,
         };
         Self {
             levels: levels,
-            bounds,
+            seen,
             padding,
             information,
         }
     }
-    pub fn initialize(information: Information, bounds: Bounds, levels: usize) -> Self {
+    pub fn initialize(information: Information, seen: Bounds, levels: usize) -> Self {
         Self {
             levels,
-            bounds,
+            seen,
             padding: Bounds {
                 min_x: 0,
                 min_y: 0,
@@ -69,7 +67,7 @@ impl QuadTree {
 }
 
 impl QuadTree {
-    pub fn update_bounds(&mut self, coord: &Coord) {
+    pub fn update_seen(&mut self, coord: &Coord) {
         let m_coord = encode_morton(coord, self.levels - 1);
         let s_coord = (
             m_coord.0 & ((1 << PARTITION) - 1),
@@ -79,10 +77,10 @@ impl QuadTree {
         self.padding.min_y = self.padding.min_y.min(s_coord.1);
         self.padding.max_x = self.padding.max_x.max(s_coord.0 + (1 << (self.levels - 1)));
         self.padding.max_y = self.padding.max_y.max(s_coord.1 + (1 << (self.levels - 1)));
-        self.bounds.min_x = self.bounds.min_x.min(coord.0);
-        self.bounds.min_y = self.bounds.min_y.min(coord.1);
-        self.bounds.max_x = self.bounds.max_x.max(coord.0);
-        self.bounds.max_y = self.bounds.max_y.max(coord.1);
+        self.seen.min_x = self.seen.min_x.min(coord.0);
+        self.seen.min_y = self.seen.min_y.min(coord.1);
+        self.seen.max_x = self.seen.max_x.max(coord.0);
+        self.seen.max_y = self.seen.max_y.max(coord.1);
         if self.get_cell(coord).is_some() {
             return;
         }
@@ -143,7 +141,7 @@ impl QuadTree {
         }
     }
     pub fn insert_cell(&mut self, coord: &Coord, belief: Belief) {
-        self.update_bounds(coord);
+        self.update_seen(coord);
         self.set_cell(coord, belief);
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
