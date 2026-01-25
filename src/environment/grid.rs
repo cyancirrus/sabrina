@@ -42,6 +42,26 @@ impl Grid {
     pub fn path_clear(&self, xy: Coord) -> bool {
         !self.information.contains_key(&translate(xy))
     }
+    pub fn raycast(&self, position: Coord, delta: Coord, max_range:usize) -> Option<Coord> {
+        // mock interface owning interface don't need dynamic changing env at the moment
+        // RcRefcell or ArcMutex if doing pathing with multiple as extensions
+        let mut n_xy = position;
+        for _ in 1..max_range {
+            n_xy.0 = n_xy.0.wrapping_add(delta.0);
+            n_xy.1 = n_xy.1.wrapping_add(delta.1);
+            // needs to fit wrt the underlying grid
+            if !self.path_clear(n_xy) {
+                // denomralize b/c is oracle and needs to be relative
+                let denorm_xy = (
+                    n_xy.0.wrapping_sub(position.0),
+                    n_xy.1.wrapping_sub(position.1),
+                );
+                return Some(denorm_xy);
+            }
+        }
+        println!("--------");
+        None
+    }
     pub fn insert_object(&mut self, coord: Coord, obj: Belief) {
         let coord = translate(coord);
         self.seen.min_x = self.seen.min_x.min(coord.0);
