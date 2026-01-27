@@ -53,23 +53,10 @@ impl QuadTree {
             levels: levels,
         }
     }
-    // pub fn initialize(information: Information, seen: Bounds, levels: usize) -> Self {
-    //     Self {
-    //         levels,
-    //         seen,
-    //         padding: Bounds {
-    //             min_x: 0,
-    //             min_y: 0,
-    //             max_x: 0,
-    //             max_y: 0,
-    //         },
-    //         information,
-    //     }
-    // }
 }
 
 impl QuadTree {
-    pub fn update_seen(&mut self, coord: &Coord) {
+    fn update_seen(&mut self, coord: &Coord) {
         let m_coord = encode_hier(coord, self.levels - 1);
         let s_coord = (
             m_coord.0 & ((1 << PARTITION) - 1),
@@ -94,7 +81,7 @@ impl QuadTree {
             },
         );
     }
-    pub fn bubble_belief(&mut self, coord: &Coord, belief: Belief) {
+    fn bubble_belief(&mut self, coord: &Coord, belief: Belief) {
         for lvl in 0..self.levels - 1 {
             for g in grid_hier(&coord, lvl) {
                 if let Some(qnode) = self.information.get(&g) {
@@ -120,7 +107,7 @@ impl QuadTree {
             }
         }
     }
-    pub fn cleanse_repres(&mut self, coord: &Coord) {
+    fn cleanse_repres(&mut self, coord: &Coord) {
         let mut stack = Vec::new();
         for lvl in (1..self.levels).rev() {
             let m_coord = encode_hier(coord, lvl);
@@ -142,13 +129,13 @@ impl QuadTree {
             }
         }
     }
-    pub fn unknown(&mut self, coord: &Coord, belief: Belief) {
+    fn insert_unknown(&mut self, coord: &Coord, belief: Belief) {
         self.update_seen(coord);
         self.set_cell(coord, belief);
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
     }
-    pub fn known(&mut self, coord: &Coord, belief: Belief) -> bool {
+    fn insert_known(&mut self, coord: &Coord, belief: Belief) -> bool {
         if let Some((_, current_belief)) = self.get_cell(coord) {
             // belief aligns
             return current_belief == belief;
@@ -160,13 +147,13 @@ impl QuadTree {
         }
         false
     }
-    pub fn insert_cell(&mut self, coord: &Coord, belief: Belief) {
-        if self.known(coord, belief) {
+    pub fn update_belief(&mut self, coord: &Coord, belief: Belief) {
+        if self.insert_known(coord, belief) {
             return;
         }
-        self.unknown(coord, belief);
+        self.insert_unknown(coord, belief);
     }
-    pub fn split_cell(&mut self, coord: &Coord, level: usize) {
+    fn split_cell(&mut self, coord: &Coord, level: usize) {
         // level > 0;
         let m_coord = encode_hier(coord, level);
         if let Some(ancestor) = self.information.remove(&m_coord) {
@@ -181,7 +168,7 @@ impl QuadTree {
             }
         };
     }
-    pub fn set_cell(&mut self, coord: &Coord, belief: Belief) {
+    fn set_cell(&mut self, coord: &Coord, belief: Belief) {
         if let Some((level, h_belief)) = self.get_cell(coord) {
             if h_belief == belief {
                 return;

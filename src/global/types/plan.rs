@@ -53,6 +53,17 @@ impl<'a> Iterator for ForwardIter<'a> {
     }
 }
 
+/// ------------------------------------------
+/// Common trait interface for plan iteration
+///
+/// # Example Usage
+/// ```
+///  # use sabrina::global::types::PlanIter;
+///     fn example<P: PlanIter>(plan: &P) {
+///         for p in plan.iter() { println!("{p:?}"); }
+///     }
+/// ```
+/// ------------------------------------------
 #[allow(dead_code)]
 pub trait PlanIter {
     fn iter(&self) -> impl Iterator<Item = &Coord>;

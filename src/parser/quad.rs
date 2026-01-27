@@ -56,7 +56,7 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
 
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
-        quadtree.insert_cell(&(idx_x, max_y - mir_idx_y), obj);
+        quadtree.update_belief(&(idx_x, max_y - mir_idx_y), obj);
     }
 
     Ok(quadtree)

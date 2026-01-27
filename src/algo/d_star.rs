@@ -1,27 +1,36 @@
 use crate::environment::quad::QuadTree;
-use crate::global::types::{Coord, DStarPlan, KeyNode};
+use crate::global::types::{Coord, DStarPlan, KeyHeap, KeyNode};
 use crate::hierarchy::encoding::centroid_estimate;
 use crate::hierarchy::proximity::edge_neighbors;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::mem;
 
-// // key := (min(g, rhs) + heur, min(g, rhs))
+/// Distance Map for DStarLite : Coord -> (G, Rhs)
+///
+/// # Data Types
+/// * Coord :: x, y coordinates
+/// * (G, Rhs) ~ (usize, usize)
+///
+/// # Definitions
+/// * G ~Independent current estimate of cost to go
+/// * Rhs ~ Estimate of cost given neighbors belief
+
 pub type Star = HashMap<Coord, (G, Rhs)>;
-// Independent current estimate of cost to go
+/// Independent current estimate of cost to go
 type G = usize;
 // Estimate of cost given neighbors belief
 type Rhs = usize;
 
 #[derive(Debug)]
 pub struct LazyPQueue {
-    heap: BinaryHeap<KeyNode>,
+    heap: KeyHeap,
     lazy: HashSet<Coord>,
 }
 
 impl LazyPQueue {
     pub fn new() -> Self {
         Self {
-            heap: BinaryHeap::new(),
+            heap: KeyHeap::new(),
             lazy: HashSet::new(),
         }
     }

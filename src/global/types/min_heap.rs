@@ -4,6 +4,11 @@ use std::collections::BinaryHeap;
 
 pub type MinHeap = BinaryHeap<MinNode>;
 
+/// Min Heap all costs should be non negative
+///
+/// #Attributes#
+/// * cost
+/// * cord : XY Location
 #[derive(Eq, PartialEq, Debug)]
 pub struct MinNode {
     // All costs should be non negative

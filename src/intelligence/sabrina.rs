@@ -1,9 +1,9 @@
 use crate::environment::grid::Grid;
 use crate::environment::info::reconstruct;
 use crate::global::consts::AXIS_MAX;
-use crate::global::types::{Belief, Coord, MinNode, Status};
+use crate::global::types::{Belief, Coord, MinHeap, MinNode, Status};
 use crate::sensor::lidar::Lidar;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 pub struct Sabrina {
     pub position: Coord,
@@ -24,12 +24,12 @@ impl Sabrina {
         let measure = self.lidar.measure(self.position);
         for m in measure.data {
             if let Some((nx, ny)) = m {
-                self.environment.insert_object(
+                self.environment.insert_ray(
+                    self.position,
                     (
                         nx.wrapping_add(self.position.0),
                         ny.wrapping_add(self.position.1),
                     ),
-                    Belief::Unknown,
                 );
             }
         }
@@ -38,10 +38,11 @@ impl Sabrina {
         target.0.abs_diff(source.0) + target.1.abs_diff(source.1)
     }
     pub fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
-        if !self.environment.path_clear(target) {
+        // NOTE: This is not AStar
+        if Belief::Occupied == *self.environment.belief(target) {
             return None;
         };
-        let mut p_queue: BinaryHeap<MinNode> = BinaryHeap::new();
+        let mut p_queue: MinHeap = MinHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
         p_queue.push(MinNode::new(
