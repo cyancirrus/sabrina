@@ -123,3 +123,11 @@ impl PartialOrd for HeurMinNode {
         Some(self.cmp(other))
     }
 }
+
+#[derive(Eq, PartialEq, Debug)]
+pub enum Status {
+    Enroute,
+    Blocked,
+    Impossible,
+    Complete,
+}

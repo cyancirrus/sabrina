@@ -1,5 +1,5 @@
 use crate::environment::grid::Grid;
-use crate::global::types::Coord;
+use crate::global::types::{Coord, Status};
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
 //TODO: When finally make quadtree, create a hazard like cost a hazard will be used as a cost
@@ -20,15 +20,6 @@ pub struct Measurement {
     // closest objects eventually need to refactor with theta
     pub data: [Option<Coord>; GRAIN],
 }
-
-#[derive(Eq, PartialEq, Debug)]
-pub enum Status {
-    Enroute,
-    Blocked,
-    Impossible,
-    Complete,
-}
-
 impl Lidar {
     pub fn new(max_range: usize, oracle: Grid) -> Self {
         Self { max_range, oracle }

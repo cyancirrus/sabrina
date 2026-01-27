@@ -138,7 +138,7 @@ pub fn edge_neighbors(quad: &QuadTree, m_coord: Coord) -> Vec<Coord> {
     neighbors
 }
 
-pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Coord> {
+pub fn astar_precursor(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Coord> {
     let mut pqueue: BinaryHeap<HeurMinNode> = BinaryHeap::new();
     let mut adjacency: HashMap<Coord, Coord> = HashMap::new();
     let mut best_cost: HashMap<Coord, usize> = HashMap::new();
@@ -173,6 +173,15 @@ pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> HashMap<Coord, Co
         }
     }
     adjacency
+}
+
+pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> Vec<Coord> {
+    let precursor = astar_precursor(
+        quad,
+        source,
+        target
+    );
+    reconstruct(&precursor, source, target)
 }
 
 // pub fn main() {

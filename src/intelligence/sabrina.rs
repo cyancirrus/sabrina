@@ -1,8 +1,8 @@
 use crate::environment::grid::Grid;
 use crate::environment::info::reconstruct;
 use crate::global::consts::AXIS_MAX;
-use crate::global::types::{Belief, Coord, MinNode};
-use crate::sensor::lidar::{Lidar, Status};
+use crate::global::types::{Belief, Coord, MinNode, Status};
+use crate::sensor::lidar::{Lidar};
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
 pub struct Sabrina {
@@ -53,7 +53,7 @@ impl Sabrina {
         let neighbors = [(1, 0), (0, 1), (!0, 0), (0, !0)];
         while let Some(node) = p_queue.pop() {
             if node.coord == target {
-                let plan = reconstruct(&precursor, &self.position, &target);
+                let plan = reconstruct(&precursor, self.position, target);
                 return Some(plan);
             }
             for (dx, dy) in neighbors {

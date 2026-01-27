@@ -158,7 +158,9 @@ pub fn dstar_lite(
     let mut node_curr = Some(source);
     let mut node_next;
     while let Some(current) = node_curr {
-        plan.push(current);
+        if current != source {
+            plan.push(current);
+        }
         if target == current {
             break;
         }
