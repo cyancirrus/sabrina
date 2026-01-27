@@ -109,7 +109,12 @@ impl PlanIter for DStarPlan {
 }
 
 
+fn run_plan<P: PlanIter>(plan: &P) {
+    for c in plan.iter() {
+        println!("{c:?}");
+    }
 
+}
 
 
 
@@ -173,16 +178,9 @@ impl PlanIter for DStarPlan {
 fn main() {
     let x = vec![(1,1), (2,2), (3,3)];
     let astar_plan = AStarPlan { plan: x.clone() };
+    let x = vec![(3,3), (2,2), (1,1)];
     let dstar_plan = DStarPlan { plan: x.clone() };
-    
-    println!("AStar plan!");
-    for c in astar_plan.iter() {
-        println!("{c:?}");
-    }
-    println!("DStar plan!");
-    for c in dstar_plan.iter() {
-        println!("{c:?}");
-    }
-
-
+    assert!(
+        astar_plan.iter().zip(dstar_plan.iter()).all(|(a, d)| a == d),
+    );
 }
