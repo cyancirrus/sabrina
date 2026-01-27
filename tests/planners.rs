@@ -1,3 +1,4 @@
+use sabrina::global::types::PlanIter;
 use sabrina::algo::a_star::astar;
 use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
 use sabrina::global::consts::LEVELS;
@@ -17,15 +18,15 @@ fn test_star_planners() {
             let dstar_plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
             println!("astar {astar_plan:?}");
             println!("dstar {dstar_plan:?}");
-            assert!(astar_plan.len() > 0);
-            assert!(dstar_plan.len() > 0);
+            assert!(astar_plan.plan.len() > 0);
+            assert!(dstar_plan.plan.len() > 0);
             assert!(
                 astar_plan
                     .iter()
-                    .rev()
                     .zip(dstar_plan.iter())
-                    .all(|(a, b)| a == b)
+                    .all(|(a, d)| a == d),
             );
+
         }
         Err(_) => {
             assert!(false, "Unexpected error in star planners");

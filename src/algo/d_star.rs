@@ -1,6 +1,6 @@
 use crate::algo::a_star::{centroid_estimate, edge_neighbors};
 use crate::environment::quad::QuadTree;
-use crate::global::types::{Coord, KeyNode};
+use crate::global::types::{Coord, DStarPlan, KeyNode};
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 
@@ -151,7 +151,7 @@ pub fn dstar_lite(
     update: &mut LazyPQueue,
     source: Coord,
     target: Coord,
-) -> Vec<Coord> {
+) -> DStarPlan {
     update.push(KeyNode::new(target, 0, 0, 0));
     compute_shortest_path(quad, star, update, source, target);
     let mut plan = Vec::new();
@@ -177,7 +177,9 @@ pub fn dstar_lite(
         }
         mem::swap(&mut node_curr, &mut node_next);
     }
-    plan
+    DStarPlan {
+        plan: plan
+    }
 }
 
 // fn main() {

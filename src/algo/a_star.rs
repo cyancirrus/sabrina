@@ -1,17 +1,9 @@
-#![allow(unused)]
-use crate::environment::hier::{child_hier, encode_hier, grid_hier, print_hier};
+use crate::environment::hier::encode_hier;
 use crate::environment::info::reconstruct;
 use crate::environment::quad::QuadTree;
-use crate::global::consts::{LEVELS, PARTITION};
-use crate::global::types::{Belief, Coord, HeurMinNode, MinNode};
-use crate::intelligence::sabrina::Sabrina;
-use crate::parser::grid::read_grid;
-use crate::parser::quad::read_quad;
-use crate::sensor::lidar::Lidar;
-use std::collections::{BinaryHeap, HashMap, HashSet};
-use std::mem;
-use std::time::Instant;
-
+use crate::global::consts::{PARTITION};
+use crate::global::types::{AStarPlan, Belief, Coord, HeurMinNode};
+use std::collections::{BinaryHeap, HashMap};
 // // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
 // // Multi-ray LiDAR & Planner Implementation.
 // // Hestereses or defered clean up
@@ -175,9 +167,11 @@ pub fn astar_precursor(quad: &QuadTree, source: Coord, target: Coord) -> HashMap
     adjacency
 }
 
-pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> Vec<Coord> {
+pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> AStarPlan {
     let precursor = astar_precursor(quad, source, target);
-    reconstruct(&precursor, source, target)
+    AStarPlan {
+        plan: reconstruct(&precursor, source, target)
+    }
 }
 
 // pub fn main() {

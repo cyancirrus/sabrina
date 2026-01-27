@@ -59,10 +59,12 @@ pub trait PlanIter {
     fn nodes(&self) -> &[Coord];
 }
 
+#[derive(Debug)]
 pub struct AStarPlan {
     pub plan: Vec<Coord>,
 }
 
+#[derive(Debug)]
 pub struct DStarPlan {
     pub plan: Vec<Coord>,
 }
