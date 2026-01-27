@@ -13,20 +13,6 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 use std::time::Instant;
 
-// testing interface
-trait SpatialMap {
-    type Encoded: Copy;
-    // sensor-facing (world space)
-    fn insert_ray(&mut self, pos: Coord, hit: Coord, belief: Belief);
-    // planner-facing (encoded space)
-    fn get_belief(&self, node: Self::Encoded) -> Belief;
-    fn neighbors(&self, node: Self::Encoded) -> Vec<Self::Encoded>;
-    fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize;
-    // bridge
-    fn encode(&self, coord: Coord) -> Self::Encoded;
-    fn decode(&self, node: Self::Encoded) -> Coord;
-}
-
 fn main() {
     let x = vec![(1, 1), (2, 2), (3, 3)];
     let astar_plan = AStarPlan { plan: x.clone() };

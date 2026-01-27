@@ -1,18 +1,22 @@
-use crate::environment::grid::Grid;
+use std::fmt::Display;
 use crate::environment::info::reconstruct;
 use crate::global::consts::AXIS_MAX;
-use crate::global::types::{Belief, Coord, MinHeap, MinNode, Status};
+use crate::global::types::{Coord, MinHeap, MinNode, Status, SpatialMap};
 use crate::sensor::lidar::Lidar;
 use std::collections::{HashMap, HashSet};
 
-pub struct Sabrina {
+pub struct Sabrina<S>
+where S:SpatialMap
+{
     pub position: Coord,
-    pub environment: Grid,
+    pub environment: S,
     lidar: Lidar,
 }
 
-impl Sabrina {
-    pub fn new(position: Coord, environment: Grid, lidar: Lidar) -> Self {
+impl <S> Sabrina<S>
+where S: SpatialMap + Display
+{
+    pub fn new(position: Coord, environment: S, lidar: Lidar) -> Self {
         Self {
             position,
             environment,
@@ -34,20 +38,15 @@ impl Sabrina {
             }
         }
     }
-    fn estimate(source: &Coord, target: &Coord) -> usize {
-        target.0.abs_diff(source.0) + target.1.abs_diff(source.1)
-    }
-    pub fn plan(&self, target: Coord) -> Option<Vec<Coord>> {
-        // NOTE: This is not AStar
-        if Belief::Occupied == *self.environment.belief(target) {
+    pub fn best_first_plan(&self, target: Coord) -> Option<Vec<Coord>> {
+        if self.environment.obstructed(target) {
             return None;
         };
         let mut p_queue: MinHeap = MinHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
         p_queue.push(MinNode::new(
-            Self::estimate(&self.position, &target),
-            // self.position,
+            0,
             self.position,
         ));
         enqueue.insert(self.position);
@@ -60,10 +59,13 @@ impl Sabrina {
             for (dx, dy) in neighbors {
                 let n_xy = (node.coord.0.wrapping_add(dx), node.coord.1.wrapping_add(dy));
                 if n_xy.0 < AXIS_MAX && n_xy.1 < AXIS_MAX {
-                    if !enqueue.contains(&n_xy) && self.environment.path_clear(n_xy) {
+                    if !enqueue.contains(&n_xy) && !self.environment.obstructed(n_xy) {
                         precursor.insert(n_xy, node.coord);
                         enqueue.insert(n_xy);
-                        let cost = node.cost + Self::estimate(&n_xy, &target);
+                        let cost = self.environment.distance(
+                            self.environment.encode(n_xy),
+                            self.environment.encode(target)
+                        );
                         p_queue.push(MinNode::new(cost, n_xy));
                     }
                 }
@@ -74,7 +76,7 @@ impl Sabrina {
     pub fn action(&mut self, plan: Vec<Coord>) -> Status {
         for &pos in plan.iter().rev() {
             self.scan();
-            if self.environment.path_clear(pos) {
+            if !self.environment.obstructed(pos) {
                 self.position = pos;
             } else {
                 return Status::Blocked;
@@ -87,7 +89,7 @@ impl Sabrina {
         while status != Status::Complete && status != Status::Impossible {
             println!("{}", self.environment);
             println!("-------------------------------");
-            let plan = self.plan(target);
+            let plan = self.best_first_plan(target);
             status = match plan {
                 Some(p) => self.action(p),
                 None => Status::Impossible,

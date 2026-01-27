@@ -13,12 +13,12 @@ fn main() {
             let position = (1, 1);
             let target = (18, 3);
             let environment = Grid::new();
-            let lidar = Lidar::new(100, oracle.clone());
+            let lidar = Lidar::new(12, oracle.clone());
             let mut sabby = Sabrina::new(position, environment, lidar);
             println!("absolute_environment\n{oracle}");
-            println!("-------------------------------");
-            println!("    Starting Navigation        ");
-            println!("-------------------------------");
+            // println!("-------------------------------");
+            // println!("    Starting Navigation        ");
+            // println!("-------------------------------");
             println!("Final Status {:?}", sabby.navigate(target));
             println!("Final map\n{}", sabby.environment);
         }

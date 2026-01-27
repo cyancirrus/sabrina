@@ -34,6 +34,7 @@ impl SpatialMap for Grid {
         let (del_y, del_x) = (dy.signum(), dx.signum());
         let mut e_pos = self.encode(pos);
         let e_hit = self.encode(hit);
+        self.update_bounds(e_hit);
         while e_pos != e_hit {
             e_pos = (
                 e_pos.0.wrapping_add(del_x as usize),
@@ -42,6 +43,10 @@ impl SpatialMap for Grid {
             self.information.remove(&e_pos);
         }
         self.information.insert(e_hit, Belief::Occupied);
+    }
+    fn obstructed(&self, coord: Coord) -> bool {
+        // false
+        *self.belief(self.encode(coord)) == Belief::Occupied
     }
     fn encode(&self, coord: Coord) -> TCoord {
         (
@@ -59,12 +64,15 @@ impl SpatialMap for Grid {
         a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
     }
     fn neighbors(&self, node: TCoord) -> Vec<TCoord> {
-        vec![
-            (node.0.wrapping_add(1), node.1),
-            (node.0, node.1.wrapping_add(1)),
-            (node.0.wrapping_sub(1), node.1),
-            (node.0, node.1.wrapping_sub(1)),
-        ]
+        let mut valid = Vec::new();
+        let delta = [(1,0), (0, 1), (!0, 0), (0, !0)];
+        for (dx, dy) in delta {
+            let n_xy = (node.0 + dx, node.1 + dy);
+            if *self.belief(n_xy) == Belief::Free {
+                valid.push(n_xy);
+            }
+        }
+        valid
     }
     fn belief(&self, node: Self::Encoded) -> Belief {
         match self.information.get(&node) {
@@ -94,6 +102,16 @@ impl Grid {
             seen,
         }
     }
+    pub fn update_bounds(&mut self, node:TCoord) {
+        self.seen.min_x = self.seen.min_x.min(node.0);
+        self.seen.min_y = self.seen.min_y.min(node.1);
+        self.seen.max_x = self.seen.max_x.max(node.0);
+        self.seen.max_y = self.seen.max_y.max(node.1);
+        self.bounds.min_x = self.bounds.min_x.min(node.0);
+        self.bounds.min_y = self.bounds.min_y.min(node.1);
+        self.bounds.max_x = self.bounds.max_x.max(node.0);
+        self.bounds.max_y = self.bounds.max_y.max(node.1);
+    }
     pub fn path_clear(&self, xy: Coord) -> bool {
         !self.information.contains_key(&translate(xy))
     }
@@ -120,13 +138,12 @@ impl Grid {
                 return Some(denorm_xy);
             }
         }
-        println!("--------");
         None
     }
-    pub fn insert_ray(&mut self, current: Coord, object: Coord) {
-        // grid only inserts found objects dont need to trace
-        self.insert_object(object, Belief::Occupied);
-    }
+    // pub fn insert_ray(&mut self, current: Coord, object: Coord) {
+    //     // grid only inserts found objects dont need to trace
+    //     self.insert_object(object, Belief::Occupied);
+    // }
     pub fn insert_object(&mut self, coord: Coord, obj: Belief) {
         let coord = translate(coord);
         self.seen.min_x = self.seen.min_x.min(coord.0);
