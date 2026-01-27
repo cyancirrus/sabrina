@@ -1,11 +1,9 @@
 #![allow(unused)]
-use sabrina::algo::a_star::{astar, centroid_estimate, edge_neighbors, point};
-use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
 use sabrina::environment::grid::Grid;
-use sabrina::environment::hier::{child_hier, decode_hier, encode_hier, grid_hier, print_hier};
 use sabrina::environment::info::reconstruct;
 use sabrina::environment::quad::{QuadNode, QuadTree};
 use sabrina::global::consts::{LEVELS, PARTITION};
+use sabrina::global::types::plan::{AStarPlan, DStarPlan, PlanIter};
 use sabrina::global::types::{Belief, Bounds, Coord, KeyNode, MinNode};
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
@@ -14,7 +12,6 @@ use sabrina::sensor::lidar::Lidar;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 use std::time::Instant;
-use sabrina::global::types::plan::{AStarPlan, DStarPlan, PlanIter};
 
 // use std::slice::Iter;
 
@@ -23,13 +20,11 @@ use sabrina::global::types::plan::{AStarPlan, DStarPlan, PlanIter};
 /// * Forward := planner creates nodes from source -> target,
 /// * Backward := planner creates nodes from target -> source,
 
-
 fn run_plan<P: PlanIter>(plan: &P) {
     for c in plan.iter() {
         println!("{c:?}");
     }
 }
-
 
 fn main() {
     let x = vec![(1, 1), (2, 2), (3, 3)];

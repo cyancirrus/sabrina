@@ -1,7 +1,7 @@
-use sabrina::global::types::PlanIter;
 use sabrina::algo::a_star::astar;
 use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
 use sabrina::global::consts::LEVELS;
+use sabrina::global::types::PlanIter;
 use sabrina::parser::quad::read_quad;
 
 #[test]
@@ -26,7 +26,6 @@ fn test_star_planners() {
                     .zip(dstar_plan.iter())
                     .all(|(a, d)| a == d),
             );
-
         }
         Err(_) => {
             assert!(false, "Unexpected error in star planners");

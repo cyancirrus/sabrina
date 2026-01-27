@@ -86,4 +86,3 @@ impl PlanIter for DStarPlan {
         ForwardIter::new(self.nodes())
     }
 }
-

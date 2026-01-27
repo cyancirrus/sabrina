@@ -1,6 +1,28 @@
-use crate::algo::a_star::point;
+use crate::global::consts::PARTITION;
 use crate::global::types::Coord;
-const PARTITION: usize = 32;
+
+// // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
+// // Multi-ray LiDAR & Planner Implementation.
+// // Hestereses or defered clean up
+// // Consdier implementing a jump iter
+
+// TODO: Think through whether the boundary case exists where we aren't surrounded by wall
+
+pub fn point(m_coord: Coord) -> Coord {
+    // An interface for retrieving purely for retrieving distance
+    // retrieves the centroid scaled by two in order to prevent half-integers
+    let level = m_coord.0 >> PARTITION;
+    let mask = (1 << PARTITION) - 1;
+    (
+        ((m_coord.0 & mask) << 1) + (1 << level),
+        ((m_coord.1 & mask) << 1) + (1 << level),
+    )
+}
+pub fn centroid_estimate(sm_coord: Coord, tm_coord: Coord) -> usize {
+    // distance between source-centroid and target-centroid
+    let (s_centr, t_centr) = (point(sm_coord), point(tm_coord));
+    s_centr.0.abs_diff(t_centr.0) + s_centr.1.abs_diff(t_centr.1)
+}
 
 pub fn decode_hier(coord: Coord) -> (f32, f32) {
     let dp = point(coord);

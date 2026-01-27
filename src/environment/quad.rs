@@ -1,6 +1,6 @@
-use crate::environment::hier::{child_hier, encode_hier, grid_hier};
 use crate::global::consts::{LEVELS, PARTITION};
 use crate::global::types::{Belief, Bounds, Coord};
+use crate::hierarchy::encoding::{child_hier, encode_hier, grid_hier};
 use std::collections::HashMap;
 
 type Information = HashMap<Coord, QuadNode>;

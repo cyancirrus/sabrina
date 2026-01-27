@@ -1,6 +1,7 @@
-use crate::algo::a_star::{centroid_estimate, edge_neighbors};
 use crate::environment::quad::QuadTree;
 use crate::global::types::{Coord, DStarPlan, KeyNode};
+use crate::hierarchy::encoding::centroid_estimate;
+use crate::hierarchy::proximity::edge_neighbors;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::mem;
 
@@ -177,9 +178,7 @@ pub fn dstar_lite(
         }
         mem::swap(&mut node_curr, &mut node_next);
     }
-    DStarPlan {
-        plan: plan
-    }
+    DStarPlan { plan: plan }
 }
 
 // fn main() {
