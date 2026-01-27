@@ -10,7 +10,9 @@ impl BestFirstPlanner {
         env: &S,
         source: S::Encoded,
         target: S::Encoded,
-    ) -> Option<HashMap<S::Encoded, S::Encoded>> {
+    ) -> Option<HashMap<S::Encoded, S::Encoded>>
+    // where S::Encoded: std::fmt::Debug + Eq + std::hash::Hash + Copy
+    {
         let mut p_queue: MinHeap<S::Encoded> = MinHeap::new();
         let mut enqueue: HashSet<S::Encoded> = HashSet::new();
         let mut precursor = HashMap::new();
@@ -48,7 +50,9 @@ impl BestFirstPlanner {
     }
 }
 
-impl<S: SpatialMap> Planner<S> for BestFirstPlanner {
+impl<S: SpatialMap> Planner<S> for BestFirstPlanner
+    // where S::Encoded: std::fmt::Debug + Eq + std::hash::Hash + Copy
+{
     type Plan = BestFirstPlan;
     fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
         if env.obstructed(target) {

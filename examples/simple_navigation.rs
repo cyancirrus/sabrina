@@ -1,5 +1,6 @@
 use sabrina::environment::grid::Grid;
 use sabrina::intelligence::sabrina::Sabrina;
+use sabrina::algo::best_first::BestFirstPlanner;
 use sabrina::parser::grid::read_grid;
 use sabrina::sensor::lidar::Lidar;
 
@@ -14,7 +15,7 @@ fn main() {
             let target = (18, 3);
             let environment = Grid::new();
             let lidar = Lidar::new(12, oracle.clone());
-            let mut sabby = Sabrina::new(position, environment, lidar);
+            let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
             println!("absolute_environment\n{oracle}");
             // println!("-------------------------------");
             // println!("    Starting Navigation        ");
