@@ -1,6 +1,6 @@
 use crate::environment::quad::QuadTree;
 use crate::global::consts::PARTITION;
-use crate::global::types::{Belief, Coord,};
+use crate::global::types::{Belief, Coord};
 use crate::hierarchy::encoding::encode_hier;
 
 // // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
