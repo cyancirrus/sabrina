@@ -1,4 +1,5 @@
-use sabrina::algo::d_star::{LazyPQueue, Star, dstar_lite};
+use sabrina::algo::d_star::{Star, dstar_lite};
+use sabrina::global::types::LazyPQueue;
 use sabrina::algo::static_astar::astar;
 use sabrina::global::consts::LEVELS;
 use sabrina::parser::quad::read_quad;

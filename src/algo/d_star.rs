@@ -1,5 +1,6 @@
 use crate::environment::quad::QuadTree;
 use crate::global::types::{Coord, DStarPlan, KeyHeap, KeyNode};
+use crate::global::types::LazyPQueue;
 use crate::hierarchy::encoding::centroid_estimate;
 use crate::hierarchy::proximity::edge_neighbors;
 use std::collections::{HashMap, HashSet};
@@ -21,59 +22,59 @@ type G = usize;
 // Estimate of cost given neighbors belief
 type Rhs = usize;
 
-#[derive(Debug)]
-pub struct LazyPQueue {
-    heap: KeyHeap,
-    lazy: HashSet<Coord>,
-}
+// #[derive(Debug)]
+// pub struct LazyPQueue {
+//     heap: KeyHeap<Coord>,
+//     lazy: HashSet<Coord>,
+// }
 
-impl LazyPQueue {
-    pub fn new() -> Self {
-        Self {
-            heap: KeyHeap::new(),
-            lazy: HashSet::new(),
-        }
-    }
-    pub fn push(&mut self, node: KeyNode) {
-        self.heap.push(node)
-    }
-    pub fn peek(&mut self) -> Option<&KeyNode> {
-        loop {
-            let remove;
-            if let Some(node) = self.heap.peek() {
-                if self.lazy.contains(&node.coord) {
-                    remove = true;
-                } else {
-                    return self.heap.peek();
-                }
-            } else {
-                return None;
-            }
-            if remove {
-                let node = self.heap.pop()?;
-                self.lazy.remove(&node.coord);
-            }
-        }
-    }
-    pub fn remove(&mut self, coord: Coord) {
-        self.lazy.insert(coord);
-    }
-    pub fn pop(&mut self) -> Option<KeyNode> {
-        while let Some(node) = self.heap.pop() {
-            if self.lazy.contains(&node.coord) {
-                self.lazy.remove(&node.coord);
-            } else {
-                return Some(node);
-            }
-        }
-        None
-    }
-}
+// impl LazyPQueue {
+//     pub fn new() -> Self {
+//         Self {
+//             heap: KeyHeap::new(),
+//             lazy: HashSet::new(),
+//         }
+//     }
+//     pub fn push(&mut self, node: KeyNode<Coord>) {
+//         self.heap.push(node)
+//     }
+//     pub fn peek(&mut self) -> Option<&KeyNode<Coord>> {
+//         loop {
+//             let remove;
+//             if let Some(node) = self.heap.peek() {
+//                 if self.lazy.contains(&node.coord) {
+//                     remove = true;
+//                 } else {
+//                     return self.heap.peek();
+//                 }
+//             } else {
+//                 return None;
+//             }
+//             if remove {
+//                 let node = self.heap.pop()?;
+//                 self.lazy.remove(&node.coord);
+//             }
+//         }
+//     }
+//     pub fn remove(&mut self, coord: Coord) {
+//         self.lazy.insert(coord);
+//     }
+//     pub fn pop(&mut self) -> Option<KeyNode<Coord>> {
+//         while let Some(node) = self.heap.pop() {
+//             if self.lazy.contains(&node.coord) {
+//                 self.lazy.remove(&node.coord);
+//             } else {
+//                 return Some(node);
+//             }
+//         }
+//         None
+//     }
+// }
 
 fn update_vertex(
     quad: &QuadTree,
     star: &mut Star,
-    update_queue: &mut LazyPQueue,
+    update_queue: &mut LazyPQueue<Coord>,
     coord: Coord,
     target: Coord,
 ) {
@@ -111,7 +112,7 @@ fn update_vertex(
 fn improve_and_invalidate(
     quad: &QuadTree,
     star: &mut Star,
-    update_queue: &mut LazyPQueue,
+    update_queue: &mut LazyPQueue<Coord>,
     target: Coord,
 ) {
     let u = update_queue.pop().unwrap();
@@ -132,7 +133,7 @@ fn improve_and_invalidate(
 fn compute_shortest_path(
     quad: &QuadTree,
     star: &mut Star,
-    update_queue: &mut LazyPQueue,
+    update_queue: &mut LazyPQueue<Coord>,
     source: Coord,
     target: Coord,
 ) {
@@ -158,7 +159,7 @@ fn compute_shortest_path(
 pub fn dstar_lite(
     quad: &QuadTree,
     star: &mut Star,
-    update: &mut LazyPQueue,
+    update: &mut LazyPQueue<Coord>,
     source: Coord,
     target: Coord,
 ) -> DStarPlan {
