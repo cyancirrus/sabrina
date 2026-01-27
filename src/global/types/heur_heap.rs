@@ -1,4 +1,3 @@
-use crate::global::types::monolithic::Coord;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
@@ -8,7 +7,7 @@ use std::collections::BinaryHeap;
 /// * coord := (x, y) cordinate
 /// * cost := incurred_cost + heuristic(here, target);
 /// * incurred := cost so far;
-pub type HeurHeap = BinaryHeap<HeurMinNode>;
+pub type HeurHeap<T> = BinaryHeap<HeurNode<T>>;
 
 /// Heuristic Distance Based Priority
 ///
@@ -17,30 +16,26 @@ pub type HeurHeap = BinaryHeap<HeurMinNode>;
 /// * cost := incurred_cost + heuristic(here, target);
 /// * incurred := cost so far;
 #[derive(Eq, PartialEq, Debug)]
-pub struct HeurMinNode {
+pub struct HeurNode<T> {
     // All costs should be non negative
-    pub coord: Coord,
     pub cost: usize,
     pub incurred: usize,
+    pub coord: T,
 }
 
-impl HeurMinNode {
-    pub fn new(cost: usize, coord: Coord) -> Self {
-        Self {
-            cost,
-            coord,
-            incurred: 0,
-        }
-    }
-}
-
-impl Ord for HeurMinNode {
+impl<T> Ord for HeurNode<T>
+where
+    T: Eq + PartialEq,
+{
     fn cmp(&self, other: &Self) -> Ordering {
         other.cost.cmp(&self.cost)
     }
 }
 
-impl PartialOrd for HeurMinNode {
+impl<T> PartialOrd for HeurNode<T>
+where
+    T: Eq + PartialEq,
+{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }

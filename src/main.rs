@@ -3,31 +3,32 @@ use sabrina::environment::grid::Grid;
 use sabrina::environment::info::reconstruct;
 use sabrina::environment::quad::{QuadNode, QuadTree};
 use sabrina::global::consts::{AXIS_MAX, LEVELS, PARTITION};
-use sabrina::global::types::plan::{AStarPlan, BestFirstPlan, DStarPlan};
-use sabrina::global::types::plan::{ForwardIter, PlanIter};
-use sabrina::global::types::{Belief, Bounds, Coord, KeyNode, MinHeap, MinNode, SpatialMap};
+use sabrina::global::types::plan::{AStarPlan, DStarPlan};
+use sabrina::global::types::plan::{ForwardIter, PlanIter, Planner};
+use sabrina::global::types::{
+    Belief, Bounds, Coord, HeurHeap, HeurNode, KeyNode, MinHeap, MinNode, SpatialMap,
+};
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::sensor::lidar::Lidar;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
-trait Planner<S: SpatialMap> {
-    type Plan: PlanIter;
-    fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan>;
-}
+struct AStarPlanner;
 
-struct BestFirstPlanner;
-
-impl BestFirstPlanner {
+impl AStarPlanner {
     fn encode_plan<S: SpatialMap>(
         &self,
         env: &S,
         source: S::Encoded,
         target: S::Encoded,
     ) -> Option<HashMap<S::Encoded, S::Encoded>> {
-        let mut p_queue: MinHeap<S::Encoded> = MinHeap::new();
+        let mut p_queue: HeurHeap<S::Encoded> = HeurHeap::new();
         let mut enqueue: HashSet<S::Encoded> = HashSet::new();
         let mut precursor = HashMap::new();
-        p_queue.push(MinNode::new(0, source));
+        p_queue.push(HeurNode {
+            incurred: 0,
+            cost: env.distance(source, target),
+            coord: source,
+        });
         enqueue.insert(source);
         while let Some(node) = p_queue.pop() {
             if node.coord == target {
@@ -36,8 +37,13 @@ impl BestFirstPlanner {
             for n_xy in env.neighbors(node.coord) {
                 if enqueue.insert(n_xy) && env.belief(n_xy) != Belief::Occupied {
                     precursor.insert(n_xy, node.coord);
-                    let cost = env.distance(n_xy, target);
-                    p_queue.push(MinNode::new(cost, n_xy));
+                    let heuristic = env.distance(n_xy, target);
+                    let incurred = node.incurred + env.distance(node.coord, n_xy);
+                    p_queue.push(HeurNode {
+                        incurred,
+                        cost: incurred + heuristic,
+                        coord: n_xy,
+                    });
                 }
             }
         }
@@ -61,8 +67,8 @@ impl BestFirstPlanner {
     }
 }
 
-impl<S: SpatialMap> Planner<S> for BestFirstPlanner {
-    type Plan = BestFirstPlan;
+impl<S: SpatialMap> Planner<S> for AStarPlanner {
+    type Plan = AStarPlan;
     fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
         if env.obstructed(target) {
             return None;
@@ -79,36 +85,9 @@ impl<S: SpatialMap> Planner<S> for BestFirstPlanner {
         }
     }
 }
-// fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
-//     if env.obstructed(target) {
-//         return None;
-//     };
-//     let (s_encode, t_encode) = (env.encode(source), env.encode(target));
-//     let mut p_queue: MinHeap<S::Encoded> = MinHeap::new();
-//     let mut enqueue: HashSet<S::Encoded> = HashSet::new();
-//     let mut precursor = HashMap::new();
-//     p_queue.push(MinNode::new(0, s_encode));
-//     enqueue.insert(s_encode);
-//     while let Some(node) = p_queue.pop() {
-//         if node.coord == t_encode {
-//             let plan = reconstruct(&precursor, source, target);
-//             return Some(Self::Plan { plan: plan });
-//         }
-//         for n_xy_encoded in env.neighbors(node.coord) {
-//             if enqueue.insert(n_xy_encoded) && env.belief(n_xy_encoded) != Belief::Occupied {
-//                 let n_xy = env.decode(n_xy_encoded);
-//                 let p_xy = env.decode(node.coord);
-//                 precursor.insert(n_xy, p_xy);
-//                 let cost = env.distance(n_xy_encoded, t_encode);
-//                 p_queue.push(MinNode::new(cost, n_xy_encoded));
-//             }
-//         }
-//     }
-//     None
-// }
-// }
 
 fn main() {
+    use sabrina::global::types::plan::{AStarPlan, DStarPlan};
     let x = vec![(1, 1), (2, 2), (3, 3)];
     let astar_plan = AStarPlan { plan: x.clone() };
     let x = vec![(3, 3), (2, 2), (1, 1)];
