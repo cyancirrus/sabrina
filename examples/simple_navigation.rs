@@ -1,6 +1,6 @@
+use sabrina::algo::best_first::BestFirstPlanner;
 use sabrina::environment::grid::Grid;
 use sabrina::intelligence::sabrina::Sabrina;
-use sabrina::algo::best_first::BestFirstPlanner;
 use sabrina::parser::grid::read_grid;
 use sabrina::sensor::lidar::Lidar;
 

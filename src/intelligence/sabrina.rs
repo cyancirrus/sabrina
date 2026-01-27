@@ -1,4 +1,4 @@
-use crate::global::types::plan::{PlanIter};
+use crate::global::types::plan::PlanIter;
 use crate::global::types::{Coord, Status};
 use crate::global::types::{Planner, SpatialMap};
 use crate::sensor::lidar::Lidar;
@@ -21,7 +21,7 @@ where
     P: Planner<S>,
     // <P Plan::Planner<S>>::Plan>
 {
-    pub fn new(position: Coord, environment: S, lidar: Lidar, planner:P) -> Self {
+    pub fn new(position: Coord, environment: S, lidar: Lidar, planner: P) -> Self {
         Self {
             position,
             planner,
@@ -74,7 +74,7 @@ where
     //     }
     //     None
     // }
-    pub fn action<Q:PlanIter>(&mut self, plan: Q) -> Status {
+    pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status {
         for &pos in plan.iter() {
             self.scan();
             if !self.environment.obstructed(pos) {
@@ -90,11 +90,7 @@ where
         while status != Status::Complete && status != Status::Impossible {
             println!("{}", self.environment);
             println!("-------------------------------");
-            let plan = self.planner.plan(
-                &self.environment, 
-                self.position,
-                target
-            );
+            let plan = self.planner.plan(&self.environment, self.position, target);
             status = match plan {
                 Some(p) => self.action(p),
                 None => Status::Impossible,

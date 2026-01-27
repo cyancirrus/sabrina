@@ -68,7 +68,7 @@ impl SpatialMap for Grid {
         let delta = [(1, 0), (0, 1), (!0, 0), (0, !0)];
         for (dx, dy) in delta {
             // let n_xy = (node.0 + dx, node.1 + dy);
-            let n_xy = (node.0 .wrapping_add(dx), node.1.wrapping_add(dy));
+            let n_xy = (node.0.wrapping_add(dx), node.1.wrapping_add(dy));
             if *self.belief(n_xy) != Belief::Occupied {
                 valid.push(n_xy);
             }
