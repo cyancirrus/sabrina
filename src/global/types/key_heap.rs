@@ -2,6 +2,12 @@ use crate::global::types::monolithic::Coord;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
+/// Priority Queue for DStarLite
+///
+/// # Node :: Arguments
+/// * cost_star := min(g, rhs) + h;
+/// * cost_dijsktra := min(g, rhs);
+/// * coord := (x, y) cordinate
 pub type KeyHeap = BinaryHeap<KeyNode>;
 
 /// Represents the underlying DStarLite Estimates
