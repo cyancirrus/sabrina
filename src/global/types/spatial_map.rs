@@ -1,7 +1,8 @@
 use crate::global::types::{Belief, Coord};
+use std::hash::Hash;
 
 pub trait SpatialMap {
-    type Encoded: Copy;
+    type Encoded: Copy + Eq + PartialEq + Hash;
     // // sensor-facing (world space)
     fn insert_ray(&mut self, pos: Coord, hit: Coord);
     fn obstructed(&self, coord: Coord) -> bool;

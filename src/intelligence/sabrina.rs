@@ -44,7 +44,7 @@ where
         if self.environment.obstructed(target) {
             return None;
         };
-        let mut p_queue: MinHeap = MinHeap::new();
+        let mut p_queue: MinHeap<Coord> = MinHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
         p_queue.push(MinNode::new(0, self.position));
@@ -57,16 +57,14 @@ where
             }
             for (dx, dy) in neighbors {
                 let n_xy = (node.coord.0.wrapping_add(dx), node.coord.1.wrapping_add(dy));
-                if n_xy.0 < AXIS_MAX && n_xy.1 < AXIS_MAX {
-                    if !enqueue.contains(&n_xy) && !self.environment.obstructed(n_xy) {
-                        precursor.insert(n_xy, node.coord);
-                        enqueue.insert(n_xy);
-                        let cost = self.environment.distance(
-                            self.environment.encode(n_xy),
-                            self.environment.encode(target),
-                        );
-                        p_queue.push(MinNode::new(cost, n_xy));
-                    }
+                if !enqueue.contains(&n_xy) && !self.environment.obstructed(n_xy) {
+                    precursor.insert(n_xy, node.coord);
+                    enqueue.insert(n_xy);
+                    let cost = self.environment.distance(
+                        self.environment.encode(n_xy),
+                        self.environment.encode(target),
+                    );
+                    p_queue.push(MinNode::new(cost, n_xy));
                 }
             }
         }

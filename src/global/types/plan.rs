@@ -1,4 +1,5 @@
 use crate::global::types::Coord;
+use crate::global::types::SpatialMap;
 
 pub struct BackwardIter<'a> {
     nodes: &'a [Coord],
@@ -110,4 +111,9 @@ impl PlanIter for BestFirstPlan {
     fn iter(&self) -> impl Iterator<Item = &Coord> {
         BackwardIter::new(self.nodes())
     }
+}
+
+pub trait Planner<S: SpatialMap> {
+    type Plan: PlanIter;
+    fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan>;
 }
