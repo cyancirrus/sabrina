@@ -2,7 +2,7 @@ use crate::environment::grid::Grid;
 use crate::environment::info::reconstruct;
 use crate::global::consts::AXIS_MAX;
 use crate::global::types::{Belief, Coord, MinNode, Status};
-use crate::sensor::lidar::{Lidar};
+use crate::sensor::lidar::Lidar;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
 pub struct Sabrina {

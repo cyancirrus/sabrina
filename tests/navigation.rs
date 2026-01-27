@@ -1,10 +1,8 @@
 use sabrina::environment::grid::Grid;
-use sabrina::global::types::{Bounds, Status};
+use sabrina::global::types::Status;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
 use sabrina::sensor::lidar::Lidar;
-use std::collections::HashMap;
-
 
 #[test]
 fn test_navigation() {

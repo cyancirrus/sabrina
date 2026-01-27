@@ -20,7 +20,11 @@ fn test_star_planners() {
             assert!(astar_plan.len() > 0);
             assert!(dstar_plan.len() > 0);
             assert!(
-                astar_plan.iter().rev().zip(dstar_plan.iter()).all(|(a,b)| a == b)
+                astar_plan
+                    .iter()
+                    .rev()
+                    .zip(dstar_plan.iter())
+                    .all(|(a, b)| a == b)
             );
         }
         Err(_) => {

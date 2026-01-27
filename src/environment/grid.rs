@@ -42,7 +42,7 @@ impl Grid {
     pub fn path_clear(&self, xy: Coord) -> bool {
         !self.information.contains_key(&translate(xy))
     }
-    pub fn raycast(&self, position: Coord, delta: Coord, max_range:usize) -> Option<Coord> {
+    pub fn raycast(&self, position: Coord, delta: Coord, max_range: usize) -> Option<Coord> {
         // mock interface owning interface don't need dynamic changing env at the moment
         // RcRefcell or ArcMutex if doing pathing with multiple as extensions
         let mut n_xy = position;

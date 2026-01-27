@@ -1,6 +1,6 @@
 #![allow(unused)]
-use crate::environment::info::reconstruct;
 use crate::environment::hier::{child_hier, encode_hier, grid_hier, print_hier};
+use crate::environment::info::reconstruct;
 use crate::environment::quad::QuadTree;
 use crate::global::consts::{LEVELS, PARTITION};
 use crate::global::types::{Belief, Coord, HeurMinNode, MinNode};
@@ -176,11 +176,7 @@ pub fn astar_precursor(quad: &QuadTree, source: Coord, target: Coord) -> HashMap
 }
 
 pub fn astar(quad: &QuadTree, source: Coord, target: Coord) -> Vec<Coord> {
-    let precursor = astar_precursor(
-        quad,
-        source,
-        target
-    );
+    let precursor = astar_precursor(quad, source, target);
     reconstruct(&precursor, source, target)
 }
 

@@ -23,7 +23,7 @@ impl QuadTree {
     pub fn new() -> Self {
         Self::initialize(LEVELS)
     }
-    pub fn initialize(levels:usize) -> Self {
+    pub fn initialize(levels: usize) -> Self {
         let mut information = HashMap::new();
         // level 0 contains no shift and level is inclusive
         let stride = 1 << (levels - 1);
@@ -151,7 +151,7 @@ impl QuadTree {
     pub fn known(&mut self, coord: &Coord, belief: Belief) -> bool {
         if let Some((_, current_belief)) = self.get_cell(coord) {
             // belief aligns
-            return current_belief == belief
+            return current_belief == belief;
         }
         if let Some(node) = self.information.get_mut(coord) {
             // align belief
@@ -161,7 +161,9 @@ impl QuadTree {
         false
     }
     pub fn insert_cell(&mut self, coord: &Coord, belief: Belief) {
-        if self.known(coord, belief) { return; }
+        if self.known(coord, belief) {
+            return;
+        }
         self.unknown(coord, belief);
     }
     pub fn split_cell(&mut self, coord: &Coord, level: usize) {

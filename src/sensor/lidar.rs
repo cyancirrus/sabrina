@@ -1,5 +1,5 @@
 use crate::environment::grid::Grid;
-use crate::global::types::{Coord};
+use crate::global::types::Coord;
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
 //TODO: When finally make quadtree, create a hazard like cost a hazard will be used as a cost

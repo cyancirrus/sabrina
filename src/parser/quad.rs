@@ -32,10 +32,15 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
         max_y = max_y.max(idx_y);
     }
     let information = HashMap::new();
-    let seen = Bounds{ min_x: 0, min_y: 0, max_x: max_x, max_y: max_y};
+    let seen = Bounds {
+        min_x: 0,
+        min_y: 0,
+        max_x: max_x,
+        max_y: max_y,
+    };
 
     let padding = Bounds {
-        min_x:0,
+        min_x: 0,
         min_y: 0,
         max_x: max_x + (1 << (levels - 1)),
         max_y: max_y + (1 << (levels - 1)),

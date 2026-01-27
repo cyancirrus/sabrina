@@ -15,8 +15,6 @@ pub enum Belief {
     Unknown,
 }
 
-
-
 #[derive(Eq, PartialEq, Debug)]
 pub enum Status {
     Enroute,

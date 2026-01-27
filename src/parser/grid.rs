@@ -38,11 +38,12 @@ pub fn read_grid(path: &str) -> Result<Grid, Box<dyn Error>> {
         let coord = (idx_x + GRID_OFFSET, max_y - mir_idx_y + GRID_OFFSET);
         information.insert(coord, obj);
     }
-    let bounds = Bounds{
-        min_x:0,
-        min_y:0,
+    let bounds = Bounds {
+        min_x: 0,
+        min_y: 0,
         max_x: max_x,
-        max_y: max_y};
+        max_y: max_y,
+    };
     let seen = Bounds {
         min_x: GRID_OFFSET,
         min_y: GRID_OFFSET,

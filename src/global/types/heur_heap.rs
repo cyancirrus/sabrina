@@ -2,7 +2,7 @@ use crate::global::types::monolithic::Coord;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
-/// AStar Distance Based Priority Queue 
+/// AStar Distance Based Priority Queue
 ///
 /// # Node :: Arguments
 /// * coord := (x, y) cordinate
@@ -45,4 +45,3 @@ impl PartialOrd for HeurMinNode {
         Some(self.cmp(other))
     }
 }
-
