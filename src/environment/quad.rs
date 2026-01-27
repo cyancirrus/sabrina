@@ -8,16 +8,16 @@ type Information = HashMap<Coord, QuadNode>;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct QuadNode {
-    homogenous: bool,
+    pub homogenous: bool,
     pub belief: Belief,
 }
 
 #[derive(Debug)]
 pub struct QuadTree {
-    pub levels: usize,
-    pub seen: Bounds,
-    pub padding: Bounds,
     pub information: Information,
+    pub padding: Bounds,
+    pub seen: Bounds,
+    pub levels: usize,
 }
 impl QuadTree {
     pub fn new() -> Self {
@@ -45,25 +45,25 @@ impl QuadTree {
             max_y: 0,
         };
         Self {
-            levels: levels,
-            seen,
+            information,
             padding,
-            information,
-        }
-    }
-    pub fn initialize(information: Information, seen: Bounds, levels: usize) -> Self {
-        Self {
-            levels,
             seen,
-            padding: Bounds {
-                min_x: 0,
-                min_y: 0,
-                max_x: 0,
-                max_y: 0,
-            },
-            information,
+            levels: levels,
         }
     }
+    // pub fn initialize(information: Information, seen: Bounds, levels: usize) -> Self {
+    //     Self {
+    //         levels,
+    //         seen,
+    //         padding: Bounds {
+    //             min_x: 0,
+    //             min_y: 0,
+    //             max_x: 0,
+    //             max_y: 0,
+    //         },
+    //         information,
+    //     }
+    // }
 }
 
 impl QuadTree {
@@ -140,11 +140,27 @@ impl QuadTree {
             }
         }
     }
-    pub fn insert_cell(&mut self, coord: &Coord, belief: Belief) {
+    pub fn unknown(&mut self, coord: &Coord, belief: Belief) {
         self.update_seen(coord);
         self.set_cell(coord, belief);
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
+    }
+    pub fn known(&mut self, coord: &Coord, belief: Belief) -> bool {
+        if let Some((_, current_belief)) = self.get_cell(coord) {
+            // belief aligns
+            return current_belief == belief
+        }
+        if let Some(node) = self.information.get_mut(coord) {
+            // align belief
+            node.belief = belief;
+            return true;
+        }
+        false
+    }
+    pub fn insert_cell(&mut self, coord: &Coord, belief: Belief) {
+        if self.known(coord, belief) { return; }
+        self.unknown(coord, belief);
     }
     pub fn split_cell(&mut self, coord: &Coord, level: usize) {
         // level > 0;

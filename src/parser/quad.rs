@@ -32,8 +32,23 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
         max_y = max_y.max(idx_y);
     }
     let information = HashMap::new();
-    let bounds = Bounds::new(0, 0, max_x, max_y);
-    let mut quadtree = QuadTree::initialize(information, bounds, levels);
+    let seen = Bounds::new(0, 0, max_x, max_y);
+
+    let padding = Bounds ::new(
+        0,
+        0,
+        max_x + (1 << (levels - 1)),
+        max_y + (1 << (levels - 1)),
+    );
+
+    // let mut quadtree = QuadTree::initialize(information, bounds, levels);
+    let mut quadtree = QuadTree {
+        information,
+        padding,
+        seen,
+        levels,
+    };
+
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
         quadtree.insert_cell(&(idx_x, max_y - mir_idx_y), obj);
