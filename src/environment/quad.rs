@@ -21,7 +21,9 @@ pub struct QuadTree {
 }
 impl QuadTree {
     pub fn new() -> Self {
-        let levels = LEVELS;
+        Self::initialize(LEVELS)
+    }
+    pub fn initialize(levels:usize) -> Self {
         let mut information = HashMap::new();
         // level 0 contains no shift and level is inclusive
         let stride = 1 << (levels - 1);
