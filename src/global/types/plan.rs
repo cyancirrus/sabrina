@@ -80,6 +80,11 @@ pub struct DStarPlan {
     pub plan: Vec<Coord>,
 }
 
+#[derive(Debug)]
+pub struct BestFirstPlan {
+    pub plan: Vec<Coord>,
+}
+
 impl PlanIter for AStarPlan {
     fn nodes(&self) -> &[Coord] {
         &self.plan
@@ -95,5 +100,14 @@ impl PlanIter for DStarPlan {
     }
     fn iter(&self) -> impl Iterator<Item = &Coord> {
         ForwardIter::new(self.nodes())
+    }
+}
+
+impl PlanIter for BestFirstPlan {
+    fn nodes(&self) -> &[Coord] {
+        &self.plan
+    }
+    fn iter(&self) -> impl Iterator<Item = &Coord> {
+        BackwardIter::new(self.nodes())
     }
 }

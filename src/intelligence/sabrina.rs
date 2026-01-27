@@ -1,20 +1,22 @@
-use std::fmt::Display;
 use crate::environment::info::reconstruct;
 use crate::global::consts::AXIS_MAX;
-use crate::global::types::{Coord, MinHeap, MinNode, Status, SpatialMap};
+use crate::global::types::{Coord, MinHeap, MinNode, SpatialMap, Status};
 use crate::sensor::lidar::Lidar;
 use std::collections::{HashMap, HashSet};
+use std::fmt::Display;
 
 pub struct Sabrina<S>
-where S:SpatialMap
+where
+    S: SpatialMap,
 {
     pub position: Coord,
     pub environment: S,
     lidar: Lidar,
 }
 
-impl <S> Sabrina<S>
-where S: SpatialMap + Display
+impl<S> Sabrina<S>
+where
+    S: SpatialMap + Display,
 {
     pub fn new(position: Coord, environment: S, lidar: Lidar) -> Self {
         Self {
@@ -45,10 +47,7 @@ where S: SpatialMap + Display
         let mut p_queue: MinHeap = MinHeap::new();
         let mut enqueue: HashSet<Coord> = HashSet::new();
         let mut precursor = HashMap::new();
-        p_queue.push(MinNode::new(
-            0,
-            self.position,
-        ));
+        p_queue.push(MinNode::new(0, self.position));
         enqueue.insert(self.position);
         let neighbors = [(1, 0), (0, 1), (!0, 0), (0, !0)];
         while let Some(node) = p_queue.pop() {
@@ -64,7 +63,7 @@ where S: SpatialMap + Display
                         enqueue.insert(n_xy);
                         let cost = self.environment.distance(
                             self.environment.encode(n_xy),
-                            self.environment.encode(target)
+                            self.environment.encode(target),
                         );
                         p_queue.push(MinNode::new(cost, n_xy));
                     }

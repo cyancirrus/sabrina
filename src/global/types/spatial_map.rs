@@ -12,5 +12,4 @@ pub trait SpatialMap {
     // bridge
     fn encode(&self, coord: Coord) -> Self::Encoded;
     fn decode(&self, node: Self::Encoded) -> Coord;
-
 }

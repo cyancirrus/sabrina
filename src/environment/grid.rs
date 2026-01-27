@@ -65,7 +65,7 @@ impl SpatialMap for Grid {
     }
     fn neighbors(&self, node: TCoord) -> Vec<TCoord> {
         let mut valid = Vec::new();
-        let delta = [(1,0), (0, 1), (!0, 0), (0, !0)];
+        let delta = [(1, 0), (0, 1), (!0, 0), (0, !0)];
         for (dx, dy) in delta {
             let n_xy = (node.0 + dx, node.1 + dy);
             if *self.belief(n_xy) == Belief::Free {
@@ -102,7 +102,7 @@ impl Grid {
             seen,
         }
     }
-    pub fn update_bounds(&mut self, node:TCoord) {
+    pub fn update_bounds(&mut self, node: TCoord) {
         self.seen.min_x = self.seen.min_x.min(node.0);
         self.seen.min_y = self.seen.min_y.min(node.1);
         self.seen.max_x = self.seen.max_x.max(node.0);
@@ -139,28 +139,5 @@ impl Grid {
             }
         }
         None
-    }
-    // pub fn insert_ray(&mut self, current: Coord, object: Coord) {
-    //     // grid only inserts found objects dont need to trace
-    //     self.insert_object(object, Belief::Occupied);
-    // }
-    pub fn insert_object(&mut self, coord: Coord, obj: Belief) {
-        let coord = translate(coord);
-        self.seen.min_x = self.seen.min_x.min(coord.0);
-        self.seen.min_y = self.seen.min_y.min(coord.1);
-        self.seen.max_x = self.seen.max_x.max(coord.0);
-        self.seen.max_y = self.seen.max_y.max(coord.1);
-        self.bounds.min_x = self.bounds.min_x.min(coord.0);
-        self.bounds.min_y = self.bounds.min_y.min(coord.1);
-        self.bounds.max_x = self.bounds.max_x.max(coord.0);
-        self.bounds.max_y = self.bounds.max_y.max(coord.1);
-        self.information.insert(coord, obj);
-    }
-    pub fn get_cell(&self, xy: &Coord) -> Option<Belief> {
-        let coord = translate(*xy);
-        match self.information.get(&coord) {
-            Some(&b) => Some(b),
-            None => Some(Belief::Free),
-        }
     }
 }
