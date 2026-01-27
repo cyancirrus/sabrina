@@ -103,6 +103,14 @@ Final map
 [ ][#][ ][ ][#][#][#][#][#][#][#][#][#][#][#][#][#][#][#][ ]
 ```
 
+## Tests
+
+```bash
+
+cargo test
+```
+
+
 ## Next Steps / TODO
 
 * Incorporate orientation and beam rotation for more realistic sensing.
