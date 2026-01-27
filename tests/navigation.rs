@@ -18,7 +18,7 @@ fn test_navigation() {
             let mut sabby = Sabrina::new(position, environment, lidar);
             assert_eq!(Status::Complete, sabby.navigate(target));
         }
-        Err(e) => {
+        Err(_) => {
             assert!(false, "Error has occured in the navigation");
         }
     }

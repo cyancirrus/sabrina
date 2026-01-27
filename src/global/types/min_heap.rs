@@ -1,5 +1,9 @@
 use crate::global::types::monolithic::Coord;
 use std::cmp::Ordering;
+use std::collections::BinaryHeap;
+
+pub type MinHeap = BinaryHeap<MinNode>;
+
 #[derive(Eq, PartialEq, Debug)]
 pub struct MinNode {
     // All costs should be non negative

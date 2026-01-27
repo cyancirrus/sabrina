@@ -20,9 +20,10 @@ fn main() {
             let mut star = Star::new();
             let mut update = LazyPQueue::new();
             let start = Instant::now();
-            let plan = astar(&oracle_quad, source, target);
-            let plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
-            println!("plan {plan:?}");
+            let astar_plan = astar(&oracle_quad, source, target);
+            println!("astar_plan {astar_plan:?}");
+            let dstar_plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
+            println!("dstar_plan {dstar_plan:?}");
             println!("Duration D*Lite {:?}", start.elapsed());
             let start = Instant::now();
             let _plan = astar(&oracle_quad, source, target);

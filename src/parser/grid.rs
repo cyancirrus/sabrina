@@ -33,12 +33,16 @@ pub fn read_grid(path: &str) -> Result<Grid, Box<dyn Error>> {
         max_y = max_y.max(idx_y);
     }
     let mut information = HashMap::new();
-    let bounds = Bounds::new(0, 0, max_x, max_y);
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
         let coord = (idx_x + GRID_OFFSET, max_y - mir_idx_y + GRID_OFFSET);
         information.insert(coord, obj);
     }
+    let bounds = Bounds{
+        min_x:0,
+        min_y:0,
+        max_x: max_x,
+        max_y: max_y};
     let seen = Bounds {
         min_x: GRID_OFFSET,
         min_y: GRID_OFFSET,
