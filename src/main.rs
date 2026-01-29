@@ -20,15 +20,15 @@ fn main() {
     match read_grid(path) {
         Ok(oracle) => {
             let neighs = oracle.inspect_neighs((1, 1));
-            for n in neighs {
-                println!("n {n:?}");
-            }
             let position = (1, 1);
-            let target = (18, 3);
+            let target = (1, 5);
+            
             // let position = (1, 1);
-            // let target = (1, 5);
             // let target = (18, 3);
-            // let target = (3, 2);
+            
+            // let position = (1, 1);
+            // let target = (9, 3);
+            
             let environment = Grid::new();
             let lidar = Lidar::new(6, oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);

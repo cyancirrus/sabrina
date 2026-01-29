@@ -60,6 +60,11 @@ where
             println!("Environment\n{}", self.environment);
             println!("-------------------------------");
             let plan = self.planner.plan(&self.environment, self.position, target);
+            if plan.is_some() {
+                println!("some plan");
+            } else {
+                println!("no plan");
+            }
             status = match plan {
                 Some(p) => self.action(p),
                 None => Status::Impossible,
