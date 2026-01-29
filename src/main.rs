@@ -23,11 +23,11 @@ fn main() {
             let position = (1, 1);
             let target = (1, 5);
             
-            // let position = (1, 1);
-            // let target = (18, 3);
+            let position = (1, 1);
+            let target = (18, 3);
             
-            // let position = (1, 1);
-            // let target = (9, 3);
+            let position = (1, 1);
+            let target = (9, 3);
             
             let environment = Grid::new();
             let lidar = Lidar::new(6, oracle.clone());

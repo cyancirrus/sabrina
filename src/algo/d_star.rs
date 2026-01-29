@@ -51,7 +51,7 @@ where
         self.target = Some(target);
         let h = env.distance(source, target);
         self.star.insert(target, (h, 0));
-        self.star.insert(source, (usize::MAX, h));
+        self.star.insert(source, (usize::MAX, usize::MAX));
         self.pqueue.push(KeyNode {
             star_key: StarKey {
                 cost_astar: h,
@@ -61,13 +61,9 @@ where
         });
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
-        // println!("u {u:?}");
-
         let source =self.source.unwrap();
         let target =self.target.unwrap();
         if u == target { return; }
-
-
         if let Some((g, rhs)) = self.star.get(&u) {
             if g != rhs {
                 let key = StarKey::new(*g, *rhs, env.distance(u, source), self.k);
@@ -88,7 +84,7 @@ where
                 continue;
             }
             let rhs_new = env.distance(s, u).saturating_add(g_u);
-            if let Some((_, rhs)) = self.star.get_mut(&s) {
+            if let Some((g, rhs)) = self.star.get_mut(&s) {
                 *rhs = (*rhs).min(rhs_new);
             } else {
                 self.star.insert(s, (usize::MAX, rhs_new));
@@ -107,7 +103,7 @@ where
         }
         min_cost
     }
-    fn propogate_cost_g(&mut self, env: &S, g_old: usize, u:S::Encoded) {
+    fn propogate_cost_g(&mut self, env: &S,  u:S::Encoded, g_old: usize) {
         let target = self.target.unwrap();
         for n in env.neighbors(u) {
             if n == target {
@@ -127,19 +123,27 @@ where
             self.update_vertex(env, n);
         }
     }
+    fn update_costs(&mut self, env: &S, u: S::Encoded) {
+        if u == self.target.unwrap() || self.star.get(&u).is_none() {
+            return;
+        }
+        let (g_old, r_old) = self.star[&u];
+        self.propogate_cost_g(env, u, g_old);
+        self.propogate_cost_rhs(env, u);
+        self.update_vertex(env, u);
+        
+    }
     fn compute_shortest_path(&mut self, env: &S) {
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
+            let (g, rhs) = self.star[&source];
             if let Some(top_key_node) = self.pqueue.peek() {
                 let top_key= top_key_node.star_key;
-                let (g, rhs) = self.star[&source];
                 let start_key = StarKey::new(g, rhs, env.distance(source, target), self.k);
                 if g == rhs && top_key < start_key {
                     break;
                 }
-            } else {
-                break;
             }
             let u = self.pqueue.pop().unwrap();
             let &(g_u, rhs_u) = match self.star.get(&u.coord) {
@@ -155,16 +159,13 @@ where
                     coord: u.coord,
                 });
             } else if g_u > rhs_u {
-                if u.coord == source {
-                    break;
-                }
                 self.star.insert(u.coord, (rhs_u, rhs_u));
                 self.pqueue.remove(u.coord);
                 self.propogate_cost_rhs(env, u.coord);
-            } else {
+            } else if g_u < rhs_u {
                 let g_old = g_u;
                 self.star.insert(u.coord, (usize::MAX, rhs_u));
-                self.propogate_cost_g(env, g_old, u.coord);
+                self.propogate_cost_g(env, u.coord, g_old);
             }
         }
     }
@@ -172,6 +173,7 @@ where
         &mut self,
         env: &S,
     ) -> Option<Vec<Coord>> {
+        // assert!(false);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
@@ -212,8 +214,12 @@ where
         self.compute_shortest_path(env);
     }
     fn revise_plan(&mut self, env:&S) {
+        let source =self.source.unwrap();
+        let target =self.target.unwrap();
+        let h = env.distance(self.source.unwrap(), self.target.unwrap());
+        // self.star.insert(target, (h, 0));
+        self.star.insert(source, (usize::MAX, usize::MAX));
         self.compute_shortest_path(env);
-        let path = self.reconstruct_decode(env);
 
     }
 }
@@ -228,6 +234,9 @@ where
         if self.source.is_none() || self.target.is_none() {
             self.new_plan(env, source, target);
         } else {
+            // let s_encode = env.encode(source);
+            // self.k += env.distance(s_encode, self.source.unwrap());
+            // self.source = Some(s_encode);
             // self.revise_plan(env);
             self.new_plan(env, source, target);
         }
@@ -237,13 +246,15 @@ where
         }
     }
     fn update(&mut self, env: &S, obstacle: Coord) {
-        // let o_encode = env.encode(obstacle);
-        // self.k += 1;
-        // self.star.insert(o_encode, (usize::MAX, usize::MAX));
-        // self.update_vertex(env, o_encode);
-
-        // for neighbor in env.neighbors(o_encode) {
-        //     self.update_vertex(env, neighbor);
-        // }
+        if self.source.is_none() || self.target.is_none() {
+            return;
+        }
+        let o_encode = env.encode(obstacle);
+        self.star.insert(o_encode, (usize::MAX, usize::MAX));
+        
+        self.update_costs(env, o_encode);
+        for neighbor in env.neighbors(o_encode) {
+            self.update_costs(env, neighbor);
+        }
     }
 }
