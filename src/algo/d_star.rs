@@ -62,6 +62,7 @@ where
         });
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
+
         let source =self.source.unwrap();
         let target =self.target.unwrap();
         if u == target { return; }
@@ -170,19 +171,11 @@ where
     ) -> Option<Vec<Coord>> {
         let source = self.source.unwrap();
         let target = self.target.unwrap();
-        println!("Star Appears as {:?}", self.star);
-        println!("Working Reconstruction");
         let mut plan = Vec::new();
         let mut node_curr = Some(source);
         let mut node_next;
         let mut best_cost;
-        println!("Star at reconstruction:");
-        for (node, (g, rhs)) in self.star.iter().take(20) {
-            println!("  {:?}: g={}, rhs={}", node, g, rhs);
-        }
-        // (17, 17) -> (17, 18)
         while let Some(current) = node_curr {
-            // println!("Curr {current:?}");
             if current != source {
                 plan.push(env.decode(current));
             }
@@ -204,44 +197,23 @@ where
         }
         None
     }
-    // fn reconstruct_decode(
-    //     &mut self,
-    //     env: &S,
-    // ) -> Option<Vec<Coord>> {
-    //     let source = self.source.unwrap();
-    //     let target = self.target.unwrap();
-    //     println!("Star Appears as {:?}", self.star);
-    //     println!("Working Reconstruction");
-    //     let mut plan = Vec::new();
-    //     let mut node_curr = Some(source);
-    //     let mut node_next;
-    //     let mut best_cost;
-    //     println!("Star at reconstruction:");
-    //     for (node, (g, rhs)) in self.star.iter().take(20) {
-    //         println!("  {:?}: g={}, rhs={}", node, g, rhs);
-    //     }
-    //     while let Some(current) = node_curr {
-    //         if current != source {
-    //             plan.push(env.decode(current));
-    //         }
-    //         if target == current {
-    //             return Some(plan);
-    //         }
-    //         node_next = None;
-    //         best_cost = usize::MAX;
-    //         for neigh in env.neighbors(current) {
-    //             if let Some(&(g_n, _rhs)) = self.star.get(&neigh) {
-    //                 let cost = g_n;
-    //                 if cost < best_cost {
-    //                     best_cost = cost;
-    //                     node_next = Some(neigh);
-    //                 }
-    //             }
-    //         }
-    //         mem::swap(&mut node_curr, &mut node_next);
-    //     }
-    //     None
-    // }
+
+    fn new_plan(&mut self, env: &S, source: Coord, target: Coord){
+        println!("STARTED:: {source:?} -> {target:?}");
+        if env.obstructed(target) {
+            return
+        };
+        let s_encode = env.encode(source);
+        let t_encode = env.encode(target);
+        // encodes distance matrix
+        self.initialize(env, s_encode, t_encode);
+        self.compute_shortest_path(env);
+    }
+    fn revise_plan(&mut self, env:&S) {
+        self.compute_shortest_path(env);
+        let path = self.reconstruct_decode(env);
+
+    }
 }
 
 impl<S: SpatialMap> Planner<S> for DStarPlanner<S>
@@ -249,52 +221,26 @@ where
     S::Encoded: Eq + Hash + std::fmt::Debug + Eq,
 {
     type Plan = DStarPlan;
-    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
-        // self.pqueue.clear();
-        println!("STARTED:: {source:?} -> {target:?}");
-        if env.obstructed(target) {
-            return None;
-        };
-        let s_encode = env.encode(source);
-        let t_encode = env.encode(target);
-        // encodes distance matrix
-        self.initialize(env, s_encode, t_encode);
-        self.compute_shortest_path(env);
-        let path = self.reconstruct_decode(env);
-        match path {
-            Some(plan) => Some(Self::Plan { plan }),
-            None => None,
+    fn plan(&mut self, env: &S, source:Coord, target: Coord) -> Option<Self::Plan> {
+        if self.source.is_none() || self.target.is_none() {
+            self.new_plan(env, source, target);
+        } else {
+            // self.revise_plan(env);
+            self.new_plan(env, source, target);
+        }
+        match self.reconstruct_decode(env) {
+            Some(plan) => { Some(Self::Plan { plan }) },
+            None => None
         }
     }
     fn update(&mut self, env: &S, obstacle: Coord) {
-        if self.source.is_none() || self.target.is_none() {
-            return;
-        }
-        self.star.clear();
-        self.pqueue.clear();
-        self.k = 0;
-        // let o_encode = env.encode(obstacle);
-        // self.k += 1;
-        // self.star.insert(o_encode, (usize::MAX, usize::MAX));
+        let o_encode = env.encode(obstacle);
+        self.k += 1;
+        self.star.insert(o_encode, (usize::MAX, usize::MAX));
         // self.update_vertex(env, o_encode);
 
         // for neighbor in env.neighbors(o_encode) {
         //     self.update_vertex(env, neighbor);
         // }
-        // self.compute_shortest_path(env);
     }
-    // fn update(&mut self, env: &S, obstacle: Coord) {
-    //     if self.source.is_none() || self.target.is_none() {
-    //         return;
-    //     }
-    //     let o_encode = env.encode(obstacle);
-    //     self.k += 1;
-    //     self.star.insert(o_encode, (usize::MAX, usize::MAX));
-    //     self.update_vertex(env, o_encode);
-
-    //     for neighbor in env.neighbors(o_encode) {
-    //         self.update_vertex(env, neighbor);
-    //     }
-    //     self.compute_shortest_path(env);
-    // }
 }

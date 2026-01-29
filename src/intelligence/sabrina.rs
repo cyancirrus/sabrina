@@ -46,7 +46,6 @@ where
         for &pos in plan.iter() {
             self.scan();
             if !self.environment.obstructed(pos) {
-                println!("NEW POSITION {pos:?}");
                 self.position = pos;
             } else {
                 return Status::Blocked;
@@ -60,11 +59,7 @@ where
         while status != Status::Complete && status != Status::Impossible {
             println!("Environment\n{}", self.environment);
             println!("-------------------------------");
-            println!("Updated position {:?}", self.position);
             let plan = self.planner.plan(&self.environment, self.position, target);
-            for p in plan.iter() {
-                println!("Target {p:?}");
-            }
             status = match plan {
                 Some(p) => self.action(p),
                 None => Status::Impossible,
