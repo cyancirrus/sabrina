@@ -86,7 +86,7 @@ where
             if s == target {
                 continue;
             }
-            let rhs_new = env.distance(s, u).wrapping_add(g_u);
+            let rhs_new = env.distance(s, u).saturating_add(g_u);
             if let Some((_, rhs)) = self.star.get_mut(&s) {
                 *rhs = (*rhs).min(rhs_new);
             } else {
@@ -101,7 +101,7 @@ where
         for n in env.neighbors(s) {
             if n == target { continue; }
             if let Some(&(g, _)) = self.star.get(&n) {
-                min_cost = min_cost.min(env.distance(s, n).wrapping_add(g));
+                min_cost = min_cost.min(env.distance(s, n).saturating_add(g));
             }
         }
         min_cost
@@ -114,7 +114,7 @@ where
             }
             // only update if not equal
             let g = if let Some(&(g_s, rhs)) = self.star.get(&n) {
-                if rhs != env.distance(u, n).wrapping_add(g_old) {
+                if rhs != env.distance(u, n).saturating_add(g_old) {
                     continue;
                 }
                 g_s
