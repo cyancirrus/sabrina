@@ -7,14 +7,19 @@ pub struct LazyPQueue<T> {
     lazy: HashSet<T>,
 }
 
-impl <T> LazyPQueue <T>
-where T: Hash + Eq
+impl<T> LazyPQueue<T>
+where
+    T: Hash + Eq,
 {
     pub fn new() -> Self {
         Self {
             heap: KeyHeap::new(),
             lazy: HashSet::new(),
         }
+    }
+    pub fn clear(&mut self) {
+        self.heap.clear();
+        self.lazy.clear();
     }
     pub fn push(&mut self, node: KeyNode<T>) {
         self.heap.push(node)
@@ -51,4 +56,3 @@ where T: Hash + Eq
         None
     }
 }
-

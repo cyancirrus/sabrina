@@ -61,13 +61,12 @@ impl SpatialMap for Grid {
         )
     }
     fn distance(&self, a: TCoord, b: TCoord) -> usize {
-        a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
+        a.0.abs_diff(b.0).wrapping_add(a.1.abs_diff(b.1))
     }
     fn neighbors(&self, node: TCoord) -> Vec<TCoord> {
         let mut valid = Vec::new();
         let delta = [(1, 0), (0, 1), (!0, 0), (0, !0)];
         for (dx, dy) in delta {
-            // let n_xy = (node.0 + dx, node.1 + dy);
             let n_xy = (node.0.wrapping_add(dx), node.1.wrapping_add(dy));
             if *self.belief(n_xy) != Belief::Occupied {
                 valid.push(n_xy);
@@ -84,6 +83,10 @@ impl SpatialMap for Grid {
 }
 
 impl Grid {
+    pub fn inspect_neighs(&self, coord: Coord) -> Vec<TCoord> {
+        let node = self.encode(coord);
+        self.neighbors(node)
+    }
     pub fn new() -> Self {
         let seen = Bounds {
             min_x: usize::MAX,

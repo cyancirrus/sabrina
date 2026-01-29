@@ -2,3 +2,5 @@ examples
 data
 src/parser
 *display.rs
+src/algo/static_*
+backup

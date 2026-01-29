@@ -1,5 +1,6 @@
 use sabrina::algo::a_star::AStarPlanner;
 use sabrina::algo::best_first::BestFirstPlanner;
+use sabrina::algo::d_star::DStarPlanner;
 use sabrina::environment::grid::Grid;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
@@ -17,8 +18,9 @@ fn main() {
             let environment = Grid::new();
             let lidar = Lidar::new(12, oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
-            println!("USING ASTAR");
-            let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
+            // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
+            println!("DSTAR ACTIVEEEEEEEEEEEEEEEEEEEEEEEEE");
+            let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
             println!("absolute_environment\n{oracle}");
             // println!("-------------------------------");
             // println!("    Starting Navigation        ");

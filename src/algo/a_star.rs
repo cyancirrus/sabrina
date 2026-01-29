@@ -60,7 +60,7 @@ impl AStarPlanner {
 
 impl<S: SpatialMap> Planner<S> for AStarPlanner {
     type Plan = AStarPlan;
-    fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
+    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
         if env.obstructed(target) {
             return None;
         };
@@ -75,4 +75,5 @@ impl<S: SpatialMap> Planner<S> for AStarPlanner {
             None => None,
         }
     }
+    fn update(&mut self, _: &S, _: Coord) {}
 }

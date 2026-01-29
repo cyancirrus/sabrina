@@ -1,101 +1,47 @@
 #![allow(unused)]
+use sabrina::algo::a_star::AStarPlanner;
+use sabrina::algo::best_first::BestFirstPlanner;
+use sabrina::algo::d_star::DStarPlanner;
 use sabrina::environment::grid::Grid;
-use sabrina::environment::info::reconstruct;
-use sabrina::environment::quad::{QuadNode, QuadTree};
-use sabrina::global::consts::{AXIS_MAX, LEVELS, PARTITION};
-use sabrina::global::types::plan::{AStarPlan, DStarPlan};
-use sabrina::global::types::plan::{ForwardIter, PlanIter, Planner};
-use sabrina::global::types::{
-    Belief, Bounds, Coord, HeurHeap, HeurNode, KeyNode, MinHeap, MinNode, SpatialMap,
-};
 use sabrina::intelligence::sabrina::Sabrina;
+use sabrina::parser::grid::read_grid;
 use sabrina::sensor::lidar::Lidar;
-use std::collections::{BinaryHeap, HashMap, HashSet};
 
-struct AStarPlanner;
-
-impl AStarPlanner {
-    fn encode_plan<S: SpatialMap>(
-        &self,
-        env: &S,
-        source: S::Encoded,
-        target: S::Encoded,
-    ) -> Option<HashMap<S::Encoded, S::Encoded>> {
-        let mut p_queue: HeurHeap<S::Encoded> = HeurHeap::new();
-        let mut enqueue: HashSet<S::Encoded> = HashSet::new();
-        let mut precursor = HashMap::new();
-        p_queue.push(HeurNode {
-            incurred: 0,
-            cost: env.distance(source, target),
-            coord: source,
-        });
-        enqueue.insert(source);
-        while let Some(node) = p_queue.pop() {
-            if node.coord == target {
-                return Some(precursor);
-            }
-            for n_xy in env.neighbors(node.coord) {
-                if enqueue.insert(n_xy) && env.belief(n_xy) != Belief::Occupied {
-                    precursor.insert(n_xy, node.coord);
-                    let heuristic = env.distance(n_xy, target);
-                    let incurred = node.incurred + env.distance(node.coord, n_xy);
-                    p_queue.push(HeurNode {
-                        incurred,
-                        cost: incurred + heuristic,
-                        coord: n_xy,
-                    });
-                }
-            }
-        }
-        None
-    }
-    pub fn reconstruct_decode<S: SpatialMap>(
-        &self,
-        env: &S,
-        precursor: &HashMap<S::Encoded, S::Encoded>,
-        source: S::Encoded,
-        target: S::Encoded,
-    ) -> Vec<Coord> {
-        // Ensure this is synchronized with action as this returns reversed plan
-        let mut plan = vec![];
-        let mut node = target;
-        while node != source {
-            plan.push(env.decode(node));
-            node = precursor[&node];
-        }
-        plan
-    }
-}
-
-impl<S: SpatialMap> Planner<S> for AStarPlanner {
-    type Plan = AStarPlan;
-    fn plan(&self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
-        if env.obstructed(target) {
-            return None;
-        };
-        let (s_encode, t_encode) = (env.encode(source), env.encode(target));
-
-        let precursor = self.encode_plan(env, s_encode, t_encode);
-        match precursor {
-            Some(map) => {
-                let plan = self.reconstruct_decode(env, &map, s_encode, t_encode);
-                Some(Self::Plan { plan })
-            }
-            None => None,
-        }
-    }
-}
+// Target DStarPlan { plan: [(1, 2), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3), (6, 3), (7, 3), (8, 3), (9, 3), (10, 3), (11, 3), (12, 3), (13, 3), (14, 3), (15, 3), (16, 3), (17, 3), (18, 3)] }
 
 fn main() {
-    use sabrina::global::types::plan::{AStarPlan, DStarPlan};
-    let x = vec![(1, 1), (2, 2), (3, 3)];
-    let astar_plan = AStarPlan { plan: x.clone() };
-    let x = vec![(3, 3), (2, 2), (1, 1)];
-    let dstar_plan = DStarPlan { plan: x.clone() };
-    assert!(
-        astar_plan
-            .iter()
-            .zip(dstar_plan.iter())
-            .all(|(a, d)| a == d),
-    );
+    println!("------------------------------------");
+    println!("      Example navigation            ");
+    println!("------------------------------------");
+    let path = "./data/sample/test_nav0.map";
+    // NOTE: Checking items
+    let path = "./data/sample/test_nav1.map";
+    // let path = "./data/sample/test_imposs.map";
+    match read_grid(path) {
+        Ok(oracle) => {
+            let neighs = oracle.inspect_neighs((1, 1));
+            for n in neighs {
+                println!("n {n:?}");
+            }
+            let position = (1, 1);
+            let target = (2, 2);
+            // let target = (18, 3);
+            // let target = (3, 2);
+            let environment = Grid::new();
+            let lidar = Lidar::new(6, oracle.clone());
+            // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
+            // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
+            // let mut sabby = Sabrina::new(position, oracle.clone(), lidar, DStarPlanner::new());
+            let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+            println!("absolute_environment\n{oracle}");
+            // println!("-------------------------------");
+            // println!("    Starting Navigation        ");
+            // println!("-------------------------------");
+            println!("Final Status {:?}", sabby.navigate(target));
+            println!("Final map\n{}", sabby.environment);
+        }
+        Err(e) => {
+            println!("Err\n{e:?}");
+        }
+    }
 }

@@ -1,5 +1,5 @@
-use sabrina::algo::static_dstar::{Star, dstar_lite};
 use sabrina::algo::static_astar::astar;
+use sabrina::algo::static_dstar::{Star, dstar_lite};
 use sabrina::global::consts::LEVELS;
 use sabrina::global::types::LazyPQueue;
 use sabrina::global::types::PlanIter;
