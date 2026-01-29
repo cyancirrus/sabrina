@@ -67,5 +67,5 @@ impl<S: SpatialMap> Planner<S> for BestFirstPlanner {
             None => None,
         }
     }
-    fn update(&mut self, _: &S, _: Coord) {}
+    fn update(&mut self, _: &S, _:Coord, _: Coord) {}
 }

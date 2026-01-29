@@ -3,6 +3,7 @@ use crate::global::types::{Coord, Status};
 use crate::global::types::{Planner, SpatialMap};
 use crate::sensor::lidar::Lidar;
 use std::fmt::{Debug, Display};
+
 pub struct Sabrina<S, P>
 where
     S: SpatialMap,
@@ -38,7 +39,8 @@ where
                     ny.wrapping_add(self.position.1),
                 );
                 self.environment.insert_ray(self.position, obstacle);
-                self.planner.update(&self.environment, obstacle);
+                // should check and only replan if new info
+                self.planner.update(&self.environment, self.position, obstacle);
             }
         }
     }
@@ -54,7 +56,7 @@ where
         Status::Complete
     }
     pub fn navigate(&mut self, target: Coord) -> Status {
-        self.scan();
+        // self.scan();
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
             println!("Environment\n{}", self.environment);

@@ -14,20 +14,24 @@ fn main() {
     println!("      Example navigation            ");
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
-    // NOTE: Checking items
     // let path = "./data/sample/test_nav1.map";
     // let path = "./data/sample/test_imposs.map";
     match read_grid(path) {
         Ok(oracle) => {
             let neighs = oracle.inspect_neighs((1, 1));
+            
+
             let position = (1, 1);
             let target = (1, 5);
+            
+            // let position = (1, 1);
+            // let target = (9, 3);
             
             let position = (1, 1);
             let target = (18, 3);
             
-            let position = (1, 1);
-            let target = (9, 3);
+            // let position = (4, 1);
+            // let target = (4, 3);
             
             let environment = Grid::new();
             let lidar = Lidar::new(6, oracle.clone());

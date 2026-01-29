@@ -116,5 +116,5 @@ impl PlanIter for BestFirstPlan {
 pub trait Planner<S: SpatialMap> {
     type Plan: PlanIter;
     fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan>;
-    fn update(&mut self, env: &S, obstacle: Coord);
+    fn update(&mut self, env: &S, position:Coord, obstacle: Coord);
 }
