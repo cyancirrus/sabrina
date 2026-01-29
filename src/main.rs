@@ -23,8 +23,8 @@ fn main() {
             for n in neighs {
                 println!("n {n:?}");
             }
-            let position = (1, 1);
-            let target = (18, 3);
+            let position = (4, 3);
+            let target = (4, 5);
             // let target = (18, 3);
             // let target = (3, 2);
             let environment = Grid::new();

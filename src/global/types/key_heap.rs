@@ -20,7 +20,7 @@ impl StarKey {
     pub fn new(g: usize, rhs: usize, h: usize, k: usize) -> Self {
         let cost_dijkstra = g.min(rhs);
         Self {
-            cost_astar: cost_dijkstra.wrapping_add(h).wrapping_add(k),
+            cost_astar: cost_dijkstra.saturating_add(h).saturating_add(k),
             cost_dijkstra,
         }
     }

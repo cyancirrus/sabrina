@@ -130,12 +130,11 @@ where
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
-            println!("in here");
             if let Some(top_key_node) = self.pqueue.peek() {
                 let top_key= top_key_node.star_key;
                 let (g, rhs) = self.star[&source];
                 let start_key = StarKey::new(g, rhs, env.distance(source, target), self.k);
-                if g == rhs && top_key >= start_key {
+                if g == rhs && top_key > start_key {
                     break;
                 }
             } else {
@@ -229,14 +228,31 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
-        let o_encode = env.encode(obstacle);
-        self.k += 1;
-        self.star.insert(o_encode, (usize::MAX, usize::MAX));
-        self.update_vertex(env, o_encode);
+        self.star.clear();
+        self.pqueue.clear();
+        self.k = 0;
+        // let o_encode = env.encode(obstacle);
+        // self.k += 1;
+        // self.star.insert(o_encode, (usize::MAX, usize::MAX));
+        // self.update_vertex(env, o_encode);
 
-        for neighbor in env.neighbors(o_encode) {
-            self.update_vertex(env, neighbor);
-        }
-        self.compute_shortest_path(env);
+        // for neighbor in env.neighbors(o_encode) {
+        //     self.update_vertex(env, neighbor);
+        // }
+        // self.compute_shortest_path(env);
     }
+    // fn update(&mut self, env: &S, obstacle: Coord) {
+    //     if self.source.is_none() || self.target.is_none() {
+    //         return;
+    //     }
+    //     let o_encode = env.encode(obstacle);
+    //     self.k += 1;
+    //     self.star.insert(o_encode, (usize::MAX, usize::MAX));
+    //     self.update_vertex(env, o_encode);
+
+    //     for neighbor in env.neighbors(o_encode) {
+    //         self.update_vertex(env, neighbor);
+    //     }
+    //     self.compute_shortest_path(env);
+    // }
 }
