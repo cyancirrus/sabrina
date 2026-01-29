@@ -51,7 +51,8 @@ where
         self.target = Some(target);
         let h = env.distance(source, target);
         self.star.insert(target, (h, 0));
-        self.star.insert(source, (usize::MAX, h));
+        // self.star.insert(source, (usize::MAX, h));
+        self.star.insert(source, (h, usize::MAX));
         self.pqueue.push(KeyNode {
             star_key: StarKey {
                 cost_astar: h,
@@ -99,7 +100,7 @@ where
         let target = self.target.unwrap();
         let mut min_cost = usize::MAX;
         for n in env.neighbors(s) {
-            if n == target { continue; }
+            // if n == target { continue; }
             if let Some(&(g, _)) = self.star.get(&n) {
                 min_cost = min_cost.min(env.distance(s, n).saturating_add(g));
             }
@@ -119,7 +120,7 @@ where
                 }
                 g_s
             } else {
-                continue;
+                usize::MAX
             };
             let rhs_new = self.find_min_neighbor_g(env, n);
             self.star.insert(n, (g, rhs_new));
@@ -154,6 +155,7 @@ where
                 });
             } else if g_u > rhs_u {
                 self.star.insert(u.coord, (rhs_u, rhs_u));
+                self.pqueue.remove(u.coord);
                 self.propogate_cost_rhs(env, u.coord);
             } else {
                 let g_old = g_u;
@@ -178,7 +180,9 @@ where
         for (node, (g, rhs)) in self.star.iter().take(20) {
             println!("  {:?}: g={}, rhs={}", node, g, rhs);
         }
+        // (17, 17) -> (17, 18)
         while let Some(current) = node_curr {
+            // println!("Curr {current:?}");
             if current != source {
                 plan.push(env.decode(current));
             }
@@ -188,7 +192,7 @@ where
             node_next = None;
             best_cost = usize::MAX;
             for neigh in env.neighbors(current) {
-                if let Some(&(g_n, _rhs)) = self.star.get(&neigh) {
+                if let Some(&(g_n, rhs)) = self.star.get(&neigh) {
                     let cost = g_n;
                     if cost < best_cost {
                         best_cost = cost;
@@ -200,6 +204,44 @@ where
         }
         None
     }
+    // fn reconstruct_decode(
+    //     &mut self,
+    //     env: &S,
+    // ) -> Option<Vec<Coord>> {
+    //     let source = self.source.unwrap();
+    //     let target = self.target.unwrap();
+    //     println!("Star Appears as {:?}", self.star);
+    //     println!("Working Reconstruction");
+    //     let mut plan = Vec::new();
+    //     let mut node_curr = Some(source);
+    //     let mut node_next;
+    //     let mut best_cost;
+    //     println!("Star at reconstruction:");
+    //     for (node, (g, rhs)) in self.star.iter().take(20) {
+    //         println!("  {:?}: g={}, rhs={}", node, g, rhs);
+    //     }
+    //     while let Some(current) = node_curr {
+    //         if current != source {
+    //             plan.push(env.decode(current));
+    //         }
+    //         if target == current {
+    //             return Some(plan);
+    //         }
+    //         node_next = None;
+    //         best_cost = usize::MAX;
+    //         for neigh in env.neighbors(current) {
+    //             if let Some(&(g_n, _rhs)) = self.star.get(&neigh) {
+    //                 let cost = g_n;
+    //                 if cost < best_cost {
+    //                     best_cost = cost;
+    //                     node_next = Some(neigh);
+    //                 }
+    //             }
+    //         }
+    //         mem::swap(&mut node_curr, &mut node_next);
+    //     }
+    //     None
+    // }
 }
 
 impl<S: SpatialMap> Planner<S> for DStarPlanner<S>
