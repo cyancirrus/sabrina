@@ -31,8 +31,8 @@ fn main() {
             let lidar = Lidar::new(6, oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
             // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
-            // let mut sabby = Sabrina::new(position, oracle.clone(), lidar, DStarPlanner::new());
-            let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+            let mut sabby = Sabrina::new(position, oracle.clone(), lidar, DStarPlanner::new());
+            // let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
             println!("absolute_environment\n{oracle}");
             // println!("-------------------------------");
             // println!("    Starting Navigation        ");
