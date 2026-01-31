@@ -50,7 +50,8 @@ where
         self.source = Some(source);
         self.target = Some(target);
         let h = env.distance(source, target);
-        self.star.insert(target, (h, 0));
+        // self.star.insert(target, (h, 0));
+        self.star.insert(target, (usize::MAX, 0));
         self.star.insert(source, (usize::MAX, usize::MAX));
         self.pqueue.push(KeyNode {
             star_key: StarKey {
@@ -74,6 +75,8 @@ where
             } else {
                 self.pqueue.remove(u);
             }
+        } else {
+            assert!(false, "this shouldn't hit");
         }
     }
     fn propogate_cost_rhs(&mut self, env: &S, u: S::Encoded) {
@@ -84,12 +87,12 @@ where
                 continue;
             }
             let rhs_new = env.distance(s, u).saturating_add(g_u);
-            if let Some((g, rhs)) = self.star.get_mut(&s) {
-                *rhs = (*rhs).min(rhs_new);
-            } else {
-                self.star.insert(s, (usize::MAX, rhs_new));
+            let (g, rhs) =  self.star.entry(s).or_insert((usize::MAX, usize::MAX));
+            let rhs_updated = (*rhs).min(rhs_new);
+            if rhs_new < *rhs {
+                *rhs = rhs_new;
+                self.update_vertex(env, s);
             }
-            self.update_vertex(env, s);
         }
     }
     fn find_min_neighbor_g(&self, env: &S, s: S::Encoded) -> usize {
@@ -132,7 +135,7 @@ where
             if let Some(top_key_node) = self.pqueue.peek() {
                 let top_key= top_key_node.star_key;
                 let start_key = StarKey::new(g, rhs, env.distance(source, target), self.k);
-                if g == rhs && top_key < start_key {
+                if g == rhs && top_key <= start_key {
                     break;
                 }
             } else {
@@ -155,12 +158,14 @@ where
                 });
             } else if g_u > rhs_u {
                 self.star.insert(u.coord, (rhs_u, rhs_u));
-                self.pqueue.remove(u.coord);
                 self.propogate_cost_rhs(env, u.coord);
-            } else if g_u < rhs_u {
+                self.update_vertex(env, u.coord);
+                self.pqueue.remove(u.coord);
+            } else {
                 let g_old = g_u;
-                self.star.insert(u.coord, (usize::MAX, rhs_u));
                 self.propogate_cost_g(env, u.coord, g_old);
+                self.star.insert(u.coord, (usize::MAX, rhs_u));
+                self.update_vertex(env, u.coord);
             }
         }
     }
@@ -216,7 +221,6 @@ where
     }
     fn revise_plan(&mut self, env:&S) {
         let source =self.source.unwrap();
-        self.k += 1;
         self.star.insert(source, (usize::MAX, usize::MAX));
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
@@ -233,10 +237,11 @@ where
         if self.source.is_none() || self.target.is_none() {
             self.new_plan(env, source, target);
         } else {
-            // let s_encode = env.encode(source);
-            // self.source = Some(s_encode);
-            // self.revise_plan(env);
-            self.new_plan(env, source, target);
+            let s_encode = env.encode(source);
+            self.k += env.distance(self.source.unwrap(), s_encode);
+            self.source = Some(s_encode);
+            self.revise_plan(env);
+            // self.new_plan(env, source, target);
         }
         match self.reconstruct_decode(env) {
             Some(plan) => { Some(Self::Plan { plan }) },
@@ -251,11 +256,13 @@ where
         self.star.insert(o_encode, (usize::MAX, usize::MAX));
         let target = self.target.unwrap(); 
         for neighbor in env.neighbors(o_encode) {
-            if neighbor == target {
+            if neighbor == target || self.star.get(&neighbor).is_none(){
                 continue;
             }
-            if let Some((_, rhs)) = self.star.get(&neighbor) {
-                self.star.insert(neighbor, (usize::MAX, *rhs));
+            let (g, rhs) = self.star[&neighbor];
+            if rhs == env.distance(neighbor, o_encode).saturating_add(g) {
+                let rhs_new = self.find_min_neighbor_g(env, neighbor);
+                self.star.insert(neighbor, (g, rhs_new));
                 self.update_vertex(env, neighbor);
             }
         }

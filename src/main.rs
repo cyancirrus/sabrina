@@ -9,6 +9,10 @@ use sabrina::sensor::lidar::Lidar;
 
 // Target DStarPlan { plan: [(1, 2), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3), (6, 3), (7, 3), (8, 3), (9, 3), (10, 3), (11, 3), (12, 3), (13, 3), (14, 3), (15, 3), (16, 3), (17, 3), (18, 3)] }
 
+// TODO: I think perhaps, the lazypqueue needs to be indirect pqueue, where the queue priority is
+// based upon the current belief in priority, but the data is in reference to the propogated belief
+// or known new state, ie... minheap < cost, node_id> <=> hashmap<node_id, (g,rhs)>
+
 fn main() {
     println!("------------------------------------");
     println!("      Example navigation            ");
@@ -27,8 +31,8 @@ fn main() {
             // let position = (1, 1);
             // let target = (9, 3);
             
-            let position = (1, 1);
-            let target = (18, 3);
+            // let position = (1, 1);
+            // let target = (18, 3);
             
             // let position = (4, 1);
             // let target = (4, 3);
