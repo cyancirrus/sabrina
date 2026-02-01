@@ -62,9 +62,11 @@ where
         });
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
-        let source =self.source.unwrap();
-        let target =self.target.unwrap();
-        if u == target { return; }
+        let source = self.source.unwrap();
+        let target = self.target.unwrap();
+        if u == target {
+            return;
+        }
         if let Some((g, rhs)) = self.star.get(&u) {
             if g != rhs {
                 let key = StarKey::new(*g, *rhs, env.distance(u, source), self.k);
@@ -87,7 +89,7 @@ where
                 continue;
             }
             let rhs_new = env.distance(s, u).saturating_add(g_u);
-            let (g, rhs) =  self.star.entry(s).or_insert((usize::MAX, usize::MAX));
+            let (g, rhs) = self.star.entry(s).or_insert((usize::MAX, usize::MAX));
             let rhs_updated = (*rhs).min(rhs_new);
             if rhs_new < *rhs {
                 *rhs = rhs_new;
@@ -99,14 +101,16 @@ where
         let target = self.target.unwrap();
         let mut min_cost = usize::MAX;
         for n in env.neighbors(s) {
-            if n == target { continue; }
+            if n == target {
+                continue;
+            }
             if let Some(&(g, _)) = self.star.get(&n) {
                 min_cost = min_cost.min(env.distance(s, n).saturating_add(g));
             }
         }
         min_cost
     }
-    fn propogate_cost_g(&mut self, env: &S,  u:S::Encoded, g_old: usize) {
+    fn propogate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
         let target = self.target.unwrap();
         for n in env.neighbors(u) {
             if n == target {
@@ -133,7 +137,7 @@ where
         loop {
             let (g, rhs) = self.star[&source];
             if let Some(top_key_node) = self.pqueue.peek() {
-                let top_key= top_key_node.star_key;
+                let top_key = top_key_node.star_key;
                 let start_key = StarKey::new(g, rhs, env.distance(source, target), self.k);
                 if g == rhs && top_key <= start_key {
                     break;
@@ -145,13 +149,12 @@ where
             let u = self.pqueue.pop().unwrap();
             // println!("current compute {:?}", u);
             let &(g_u, rhs_u) = match self.star.get(&u.coord) {
-
                 Some(entry) => entry,
                 None => continue,
             };
             let k_new = StarKey::new(g_u, rhs_u, env.distance(source, u.coord), self.k);
             // rversed due to min heap
-            if u.star_key > k_new  {
+            if u.star_key > k_new {
                 self.pqueue.push(KeyNode {
                     star_key: k_new,
                     coord: u.coord,
@@ -169,10 +172,7 @@ where
             }
         }
     }
-    fn reconstruct_decode(
-        &mut self,
-        env: &S,
-    ) -> Option<Vec<Coord>> {
+    fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<Coord>> {
         println!("-------------------------------------------");
         println!("in decode");
         println!("star {:?}", self.star);
@@ -209,9 +209,9 @@ where
         None
     }
 
-    fn new_plan(&mut self, env: &S, source: Coord, target: Coord){
+    fn new_plan(&mut self, env: &S, source: Coord, target: Coord) {
         if env.obstructed(target) {
-            return
+            return;
         };
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
@@ -219,8 +219,8 @@ where
         self.initialize(env, s_encode, t_encode);
         self.compute_shortest_path(env);
     }
-    fn revise_plan(&mut self, env:&S) {
-        let source =self.source.unwrap();
+    fn revise_plan(&mut self, env: &S) {
+        let source = self.source.unwrap();
         self.star.insert(source, (usize::MAX, usize::MAX));
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
@@ -232,7 +232,7 @@ where
     S::Encoded: Eq + Hash + std::fmt::Debug + Eq,
 {
     type Plan = DStarPlan;
-    fn plan(&mut self, env: &S, source:Coord, target: Coord) -> Option<Self::Plan> {
+    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
         println!("STARTED:: {source:?} -> {target:?}");
         if self.source.is_none() || self.target.is_none() {
             self.new_plan(env, source, target);
@@ -244,8 +244,8 @@ where
             // self.new_plan(env, source, target);
         }
         match self.reconstruct_decode(env) {
-            Some(plan) => { Some(Self::Plan { plan }) },
-            None => None
+            Some(plan) => Some(Self::Plan { plan }),
+            None => None,
         }
     }
     fn update(&mut self, env: &S, position: Coord, obstacle: Coord) {
@@ -254,9 +254,9 @@ where
         }
         let o_encode = env.encode(obstacle);
         self.star.insert(o_encode, (usize::MAX, usize::MAX));
-        let target = self.target.unwrap(); 
+        let target = self.target.unwrap();
         for neighbor in env.neighbors(o_encode) {
-            if neighbor == target || self.star.get(&neighbor).is_none(){
+            if neighbor == target || self.star.get(&neighbor).is_none() {
                 continue;
             }
             let (g, rhs) = self.star[&neighbor];

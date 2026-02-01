@@ -7,6 +7,9 @@ pub struct LazyPQueue<T> {
     lazy: HashSet<T>,
 }
 
+/// Lazy Deletion Priority Queue
+///
+/// # Works if there are no updates #
 impl<T> LazyPQueue<T>
 where
     T: Hash + Eq,

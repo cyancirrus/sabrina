@@ -75,5 +75,5 @@ impl<S: SpatialMap> Planner<S> for AStarPlanner {
             None => None,
         }
     }
-    fn update(&mut self, _: &S, _:Coord, _: Coord) {}
+    fn update(&mut self, _: &S, _: Coord, _: Coord) {}
 }
