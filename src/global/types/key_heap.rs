@@ -28,6 +28,10 @@ impl StarKey {
 
 impl Ord for StarKey {
     fn cmp(&self, other: &Self) -> Ordering {
+        // other
+        //     .cost_dijkstra
+        //     .cmp(&self.cost_dijkstra)
+        //     .then_with(|| other.cost_astar.cmp(&self.cost_astar))
         other
             .cost_astar
             .cmp(&self.cost_astar)

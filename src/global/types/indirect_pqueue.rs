@@ -13,6 +13,7 @@ use std::hash::Hash;
 /// # Updates queue based on new information
 
 type IndirectHeap<M, S> = BinaryHeap<IndexNode<M, S>>;
+#[derive(Debug)]
 pub struct IPQueue<M, S> {
     // priority -> key
     pub index: IndirectHeap<M, S>,
@@ -20,7 +21,7 @@ pub struct IPQueue<M, S> {
     pub map: HashMap<S, M>,
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct IndexNode<M, S> {
     pub measure: M,
     // coord
@@ -87,7 +88,7 @@ where
             if !self.map.contains_key(&k.identity) {
                 continue;
             }
-            let v = self.map.remove(&k.identity)?;
+            let _v = self.map.remove(&k.identity)?;
             return Some((k.identity, k.measure));
         }
         None
