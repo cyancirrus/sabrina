@@ -40,6 +40,7 @@ where
                 );
                 self.environment.insert_ray(self.position, obstacle);
                 // should check and only replan if new info
+                
                 self.planner
                     .update(&self.environment, self.position, obstacle);
             }
@@ -65,6 +66,7 @@ where
             let plan = self.planner.plan(&self.environment, self.position, target);
             if plan.is_some() {
                 println!("some plan");
+                println!("plan {:?}", plan.iter());
             } else {
                 println!("no plan");
             }

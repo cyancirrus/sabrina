@@ -75,10 +75,8 @@ where
     pub fn peek(&mut self) -> Option<(S, M)> {
         loop {
             let k = self.index.peek()?;
-            if let Some(v) = self.map.get(&k.identity) {
-                if k.measure == *v {
-                    return Some((k.identity, *v));
-                }
+            if self.map.contains_key(&k.identity) {
+                return Some((k.identity, k.measure));
             }
             // heap has removed the element alligning index with map
             self.index.pop();
@@ -89,13 +87,35 @@ where
             if !self.map.contains_key(&k.identity) {
                 continue;
             }
-            if k.measure == self.map[&k.identity] {
-                let v = self.map.remove(&k.identity)?;
-                return Some((k.identity, v));
-            }
+            let v = self.map.remove(&k.identity)?;
+            return Some((k.identity, k.measure));
         }
         None
     }
+    // pub fn peek(&mut self) -> Option<(S, M)> {
+    //     loop {
+    //         let k = self.index.peek()?;
+    //         if let Some(v) = self.map.get(&k.identity) {
+    //             if k.measure == *v {
+    //                 return Some((k.identity, *v));
+    //             }
+    //         }
+    //         // heap has removed the element alligning index with map
+    //         self.index.pop();
+    //     }
+    // }
+    // pub fn pop(&mut self) -> Option<(S, M)> {
+    //     while let Some(k) = self.index.pop() {
+    //         if !self.map.contains_key(&k.identity) {
+    //             continue;
+    //         }
+    //         if k.measure == self.map[&k.identity] {
+    //             let v = self.map.remove(&k.identity)?;
+    //             return Some((k.identity, v));
+    //         }
+    //     }
+    //     None
+    // }
     pub fn push(&mut self, identity: S, measure: M) {
         self.index.push(IndexNode { identity, measure });
         self.map.insert(identity, measure);
