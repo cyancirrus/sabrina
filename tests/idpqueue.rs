@@ -1,4 +1,5 @@
 use sabrina::global::types::indirect_pqueue::IPQueue;
+use sabrina::global::types::StarKey;
 
 #[test]
 fn test_push_pop() {
@@ -39,3 +40,23 @@ fn test_peek() {
     assert_eq!(None, h.pop());
 }
 
+#[test]
+fn ordering() {
+    let mut pqueue:IPQueue<StarKey, usize> = IPQueue::new();
+    pqueue.push(
+        1,
+        StarKey {
+            cost_astar:0,
+            cost_dijkstra: 0,
+        },
+    );
+    pqueue.push(
+        0,
+        StarKey {
+            cost_astar:20,
+            cost_dijkstra: 20,
+        },
+    );
+    let (identity, _) = pqueue.pop().unwrap();
+    assert_eq!(1, identity)
+}

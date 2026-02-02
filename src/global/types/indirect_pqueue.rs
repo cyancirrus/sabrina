@@ -15,9 +15,9 @@ use std::hash::Hash;
 type IndirectHeap<M, S> = BinaryHeap<IndexNode<M, S>>;
 pub struct IPQueue<M, S> {
     // priority -> key
-    index: IndirectHeap<M, S>,
+    pub index: IndirectHeap<M, S>,
     // key -> measure
-    map: HashMap<S, M>,
+    pub map: HashMap<S, M>,
 }
 
 #[derive(Eq, PartialEq)]
@@ -42,7 +42,8 @@ where
     S: Eq + PartialEq,
 {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.measure.cmp(&self.measure)
+        self.measure.cmp(&other.measure)
+        // other.measure.cmp(&self.measure)
     }
 }
 
@@ -103,4 +104,3 @@ where
         self.map.remove(&identity);
     }
 }
-

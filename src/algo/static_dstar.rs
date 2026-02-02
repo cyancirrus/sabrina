@@ -43,7 +43,8 @@ fn update_vertex(
         Some((g, rhs)) => {
             *rhs = min_distance;
             if g != rhs {
-                let h = centroid_estimate(coord, target); update_queue.push(KeyNode::new(coord, *g, *rhs, h, 0));
+                let h = centroid_estimate(coord, target);
+                update_queue.push(KeyNode::new(coord, *g, *rhs, h, 0));
             } else {
                 update_queue.remove(coord);
             }

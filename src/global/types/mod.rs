@@ -1,17 +1,17 @@
 pub mod heur_heap;
+pub mod indirect_pqueue;
 pub mod key_heap;
 pub mod lazy_pqueue;
 pub mod min_heap;
 pub mod monolithic;
 pub mod plan;
 pub mod spatial_map;
-pub mod indirect_pqueue;
 
 pub use heur_heap::*;
+pub use indirect_pqueue::*;
 pub use key_heap::*;
 pub use lazy_pqueue::*;
 pub use min_heap::*;
 pub use monolithic::*;
 pub use plan::*;
 pub use spatial_map::*;
-pub use indirect_pqueue::*;
