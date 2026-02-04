@@ -1,5 +1,5 @@
 use crate::environment::grid::Grid;
-use crate::global::types::{ACoord, CARDINALS};
+use crate::global::types::{ACoord, CARDINALS, COMPASS_ROSE};
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
 //TODO: When finally make quadtree, create a hazard like cost a hazard will be used as a cost
@@ -9,7 +9,7 @@ use crate::global::types::{ACoord, CARDINALS};
 // can also add a smoothness constraint into a* to reflect d theta^2/dt to encourage robot
 // smoothness
 
-const GRAIN: usize = 4;
+const GRAIN: usize = 8;
 // Sees in 4 principle components
 pub struct Lidar {
     // Max range ould be noise informed
@@ -27,7 +27,7 @@ impl Lidar {
     pub fn measure(&self, position: ACoord) -> Measurement {
         let mut data = [None; GRAIN];
         // polar order of scan ie counter-clockwise
-        for (h, &d) in CARDINALS.iter().enumerate() {
+        for (h, &d) in COMPASS_ROSE.iter().enumerate() {
             data[h] = self.oracle.raycast(position, d, self.max_range);
         }
         Measurement { data }

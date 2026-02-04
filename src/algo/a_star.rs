@@ -26,7 +26,6 @@ impl AStarPlanner {
         });
         enqueue.insert(source);
         while let Some(node) = p_queue.pop() {
-            println!("node {node:?}");
             if node.coord == target {
                 return Some(precursor);
             }

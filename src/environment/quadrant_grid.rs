@@ -32,6 +32,9 @@ impl SpatialMap for QuadrantGrid {
     fn decode(&self, coord: Self::Encoded) -> ACoord {
         coord
     }
+    fn leaf(&self, coord: ACoord) -> Self::Encoded {
+        coord
+    }
     fn initialize(&mut self, _source: ACoord, _target: ACoord) {}
     fn belief(&self, node: Self::Encoded) -> Belief {
         let store = self.transform(node);

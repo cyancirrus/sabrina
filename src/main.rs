@@ -12,6 +12,8 @@ use sabrina::sensor::lidar::Lidar;
 use sabrina::global::types::{SpatialMap};
 use sabrina::global::types::Belief;
 
+// TODO: Add in raycasting in 8 directions
+
 fn main() {
     println!("------------------------------------");
     println!("      Example navigation            ");

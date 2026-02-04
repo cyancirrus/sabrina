@@ -74,7 +74,7 @@ where
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
         let source = self.source.unwrap();
-        let (g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, usize::MAX));
+        let (g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, 0));
         if g != rhs {
             let ckey = self.calculate_key(env, u);
             self.pqueue.push(u, ckey);
@@ -108,6 +108,21 @@ where
         }
         min_cost
     }
+    // fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
+    //     let target = self.target.unwrap();
+    //     if u == target {
+    //         return;
+    //     }
+    //     for s in env.neighbors(u) {
+    //         // only update if not equal
+            
+    //         let &(g_s, rhs) = self.star.get(&s).unwrap_or(&(usize::MAX, 0));
+    //         if rhs != g_s  { continue; } 
+    //         let rhs_new = self.find_min_neighbor_g(env, s);
+    //         self.star.insert(s, (g_s, rhs_new));
+    //         self.update_vertex(env, s);
+    //     }
+    // }
     fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
         let target = self.target.unwrap();
         if u == target {
@@ -129,6 +144,7 @@ where
         }
     }
     fn compute_shortest_path(&mut self, env: &S) {
+        println!("compute");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
@@ -136,6 +152,7 @@ where
             if let Some((top_coord, top_key)) = self.pqueue.peek() {
                 let start_key = self.calculate_key(env, source);
                 if g == rhs && top_key <= start_key {
+                    println!("START KEY WAS {start_key:?}");
                     break;
                 }
             }
@@ -161,6 +178,8 @@ where
         }
     }
     fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
+        println!("DECODING");
+        println!("{:?}", self.pqueue);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
@@ -207,7 +226,6 @@ where
         let source = self.source.unwrap();
         // let (g, rhs) = self.star[&source];
         let (g, rhs) = self.star[&source];
-        let (g, rhs) = self.star.entry(source).or_insert((self.k, self.k));
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
     }
@@ -219,11 +237,18 @@ where
 {
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
+        println!("ROUTING (source:{source:?}) -> (target: {target:?})");
+        println!("-----------------------");
+        println!("{:?}", self.star);
+        println!("-----------------------");
         if self.source.is_none() || self.target.is_none() || self.origin.is_none() {
             self.new_plan(env, source, target);
         } else {
             let s_encode = env.encode(source);
-            // self.k += env.distance(self.origin.unwrap(), s_encode);
+            let t_encode = env.encode(target);
+            println!("target {:?}", self.target.unwrap());
+
+            self.k += env.distance(self.origin.unwrap(), s_encode);
             self.source = Some(s_encode);
             self.revise_plan(env);
         }
@@ -237,18 +262,21 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
-        let o_encode = env.encode(obstacle);
-        println!("o_encode {o_encode:?}");
+        let node = env.encode(obstacle);
+        let leaf = env.leaf(obstacle);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         // if worse
         let &(g_obs, rhs_obs) = self
             .star
-            .get(&o_encode)
+            .get(&node)
             .unwrap_or(&(usize::MAX, usize::MAX));
-        self.star.insert(o_encode, (usize::MAX, usize::MAX));
-        self.propagate_cost_g(env, o_encode, g_obs);
-        self.update_vertex(env, o_encode);
+        self.star.insert(node, (usize::MAX, usize::MAX));
+        self.star.insert(leaf, (usize::MAX, usize::MAX));
+        // self.propagate_cost_g(env, node, g_obs);
+        // self.update_vertex(env, node);
+        self.propagate_cost_g(env, leaf, g_obs);
+        self.update_vertex(env, leaf);
         // // if better
         // self.star.insert(u_coord, (rhs_u, rhs_u));
         // self.pqueue.remove(&u_coord);

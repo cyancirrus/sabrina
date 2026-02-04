@@ -12,6 +12,7 @@ pub trait SpatialMap {
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize;
     // bridge
     fn encode(&self, coord: ACoord) -> Self::Encoded;
+    fn leaf(&self, coord: ACoord) -> Self::Encoded;
     fn decode(&self, node: Self::Encoded) -> ACoord;
     // plan-initialization
     fn initialize(&mut self, source: ACoord, target: ACoord);
