@@ -108,21 +108,6 @@ where
         }
         min_cost
     }
-    // fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
-    //     let target = self.target.unwrap();
-    //     if u == target {
-    //         return;
-    //     }
-    //     for s in env.neighbors(u) {
-    //         // only update if not equal
-            
-    //         let &(g_s, rhs) = self.star.get(&s).unwrap_or(&(usize::MAX, 0));
-    //         if rhs != g_s  { continue; } 
-    //         let rhs_new = self.find_min_neighbor_g(env, s);
-    //         self.star.insert(s, (g_s, rhs_new));
-    //         self.update_vertex(env, s);
-    //     }
-    // }
     fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
         let target = self.target.unwrap();
         if u == target {
@@ -130,19 +115,34 @@ where
         }
         for s in env.neighbors(u) {
             // only update if not equal
-            let g = if let Some(&(g_s, rhs)) = self.star.get(&s) {
-                if rhs != env.distance(u, s).saturating_add(g_old) {
-                    continue;
-                }
-                g_s
-            } else {
-                continue;
-            };
+            
+            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&(usize::MAX, usize::MAX));
+            if rhs != env.distance(u, s).saturating_add(g_old)  { continue; } 
             let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g, rhs_new));
+            self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
+    // fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
+    //     let target = self.target.unwrap();
+    //     if u == target {
+    //         return;
+    //     }
+    //     for s in env.neighbors(u) {
+    //         // only update if not equal
+    //         let g = if let Some(&(g_s, rhs)) = self.star.get(&s) {
+    //             if rhs != env.distance(u, s).saturating_add(g_old) {
+    //                 continue;
+    //             }
+    //             g_s
+    //         } else {
+    //             continue;
+    //         };
+    //         let rhs_new = self.find_min_neighbor_g(env, s);
+    //         self.star.insert(s, (g, rhs_new));
+    //         self.update_vertex(env, s);
+    //     }
+    // }
     fn compute_shortest_path(&mut self, env: &S) {
         println!("compute");
         let source = self.source.unwrap();
@@ -179,7 +179,7 @@ where
     }
     fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
         println!("DECODING");
-        println!("{:?}", self.pqueue);
+        // println!("{:?}", self.pqueue);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
@@ -237,23 +237,21 @@ where
 {
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
-        println!("ROUTING (source:{source:?}) -> (target: {target:?})");
-        println!("-----------------------");
-        println!("{:?}", self.star);
-        println!("-----------------------");
         if self.source.is_none() || self.target.is_none() || self.origin.is_none() {
             self.new_plan(env, source, target);
         } else {
             let s_encode = env.encode(source);
             let t_encode = env.encode(target);
-            println!("target {:?}", self.target.unwrap());
 
             self.k += env.distance(self.origin.unwrap(), s_encode);
             self.source = Some(s_encode);
             self.revise_plan(env);
         }
         match self.reconstruct_decode(env) {
-            Some(plan) => Some(Self::Plan { plan }),
+            Some(mut plan) => {
+                plan.push(target);
+                Some(Self::Plan { plan })
+            },
             None => None,
         }
     }
