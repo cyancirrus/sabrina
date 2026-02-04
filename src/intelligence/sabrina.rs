@@ -81,8 +81,8 @@ where
         while !self.environment.obstructed(pos) {
             self.position = pos;
             self.scan();
-            // if self.environment.encode(tgt) == self.environment.encode(self.position) {
-            if tgt == self.position {
+            if self.environment.encode(tgt) == self.environment.encode(self.position) {
+            // if tgt == self.position {
                 return Status::Enroute
             }
             pos.x += del_x;

@@ -30,7 +30,6 @@ impl AStarPlanner {
                 return Some(precursor);
             }
             for n_xy in env.neighbors(node.coord) {
-                println!("in neighbors");
                 if enqueue.insert(n_xy) && env.belief(n_xy) != Belief::Occupied {
                     precursor.insert(n_xy, node.coord);
                     let heuristic = env.distance(n_xy, target);

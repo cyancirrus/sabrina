@@ -26,7 +26,6 @@ type Rhs = usize;
 pub struct DStarPlanner<S: SpatialMap> {
     star: Star<S::Encoded>,
     pqueue: IPQueue<StarKey, S::Encoded>,
-    origin: Option<S::Encoded>,
     source: Option<S::Encoded>,
     target: Option<S::Encoded>,
     k: usize,
@@ -40,7 +39,6 @@ where
         Self {
             star: Star::new(),
             pqueue: IPQueue::new(),
-            origin: None,
             source: None,
             target: None,
             k: 0,
@@ -50,7 +48,6 @@ where
         self.star.clear();
         self.pqueue.clear();
         self.k = 0;
-        self.origin = Some(source);
         self.source = Some(source);
         self.target = Some(target);
         let h = env.distance(source, target);
@@ -65,7 +62,6 @@ where
         );
     }
     fn calculate_key(&self, env: &S, u: S::Encoded) -> StarKey {
-        let origin = self.origin.unwrap();
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let h = env.distance(u, source);
@@ -208,7 +204,6 @@ where
     fn new_plan(&mut self, env: &S, source: ACoord, target: ACoord) {
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
-        self.origin = Some(s_encode);
         self.source = Some(s_encode);
         self.target = Some(t_encode);
         if env.obstructed(target) {
@@ -233,13 +228,13 @@ where
 {
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
-        if self.source.is_none() || self.target.is_none() || self.origin.is_none() {
+        if self.source.is_none() || self.target.is_none() {
             self.new_plan(env, source, target);
         } else {
             let s_encode = env.encode(source);
             let t_encode = env.encode(target);
 
-            self.k += env.distance(self.origin.unwrap(), s_encode);
+            self.k += env.distance(self.source.unwrap(), s_encode);
             self.source = Some(s_encode);
             self.revise_plan(env);
         }
@@ -267,10 +262,10 @@ where
             .unwrap_or(&(usize::MAX, usize::MAX));
         self.star.insert(node, (usize::MAX, usize::MAX));
         self.star.insert(leaf, (usize::MAX, usize::MAX));
-        // self.propagate_cost_g(env, node, g_obs);
-        // self.update_vertex(env, node);
-        self.propagate_cost_g(env, leaf, g_obs);
-        self.update_vertex(env, leaf);
+        // self.propagate_cost_g(env, leaf, g_obs);
+        // self.update_vertex(env, leaf);
+        self.propagate_cost_g(env, node, g_obs);
+        self.update_vertex(env, node);
         // // if better
         // self.star.insert(u_coord, (rhs_u, rhs_u));
         // self.pqueue.remove(&u_coord);
