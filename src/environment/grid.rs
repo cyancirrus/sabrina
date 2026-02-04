@@ -1,6 +1,6 @@
-use crate::global::types::{CARDINALS, SpatialMap};
 use crate::global::types::{ACoord, Belief, Bounds};
-use std::collections::{HashMap};
+use crate::global::types::{CARDINALS, SpatialMap};
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct Grid {
@@ -13,7 +13,7 @@ impl SpatialMap for Grid {
         // beliefs not recorded are assumed free
         // handles simulation compass rose signals
         self.information.insert(hit, Belief::Occupied);
-        let (dy, dx) = (hit.y  - pos.y , hit.x  - pos.x);
+        let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
         while pos != hit {
             pos.x += del_x;
@@ -38,7 +38,10 @@ impl SpatialMap for Grid {
     fn neighbors(&self, node: ACoord) -> Vec<ACoord> {
         let mut valid = Vec::new();
         for d in CARDINALS {
-            let n_xy = ACoord { x: node.x + d.x, y: node.y + d.y };
+            let n_xy = ACoord {
+                x: node.x + d.x,
+                y: node.y + d.y,
+            };
             if self.belief(n_xy) != Belief::Occupied {
                 valid.push(n_xy);
             }
@@ -92,10 +95,10 @@ impl Grid {
             // needs to fit wrt the underlying grid
             if self.belief(n_xy) == Belief::Occupied {
                 // denormalize b/c is oracle and needs to be relative
-                return Some(ACoord { 
+                return Some(ACoord {
                     x: n_xy.x.wrapping_sub(position.x),
                     y: n_xy.y.wrapping_sub(position.y),
-                })
+                });
             }
         }
         None

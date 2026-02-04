@@ -10,8 +10,8 @@ where
     P: Planner<S>,
 {
     pub environment: S,
-    lidar: Lidar,
-    planner: P,
+    pub lidar: Lidar,
+    pub planner: P,
     pub position: ACoord,
 }
 
@@ -50,7 +50,6 @@ where
         for &pos in plan.iter() {
             self.scan();
             if !self.environment.obstructed(pos) {
-                println!("NEW POS {pos:?}");
                 self.position = pos;
             } else {
                 return Status::Blocked;

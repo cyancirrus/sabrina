@@ -1,6 +1,6 @@
 use crate::global::types::plan::BestFirstPlan;
 use crate::global::types::plan::Planner;
-use crate::global::types::{Belief, ACoord, MinHeap, MinNode, SpatialMap};
+use crate::global::types::{ACoord, Belief, MinHeap, MinNode, SpatialMap};
 use std::collections::{HashMap, HashSet};
 
 pub struct BestFirstPlanner;

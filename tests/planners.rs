@@ -1,35 +1,28 @@
 use sabrina::algo::a_star::AStarPlanner;
 use sabrina::algo::d_star::DStarPlanner;
-// use sabrina::algo::best_first::BestFirstPlanner;
-
-use sabrina::global::consts::LEVELS;
-use sabrina::global::types::LazyPQueue;
+use sabrina::global::types::ACoord;
 use sabrina::global::types::PlanIter;
-use sabrina::parser::quad::read_quad;
+use sabrina::global::types::plan::Planner;
+use sabrina::parser::grid::read_grid;
+// use sabrina::algo::best_first::BestFirstPlanner;
 
 #[test]
 fn test_star_planners() {
-    let source = (1, 1);
-    let target = (18, 3);
-    println!("Navigating from {source:?} -> {target:?}");
     let path = "./data/sample/test_nav0.map";
-    match read_quad(path, LEVELS) {
-        Ok(oracle_quad) => {
-            let mut star = Star::new();
-            let mut update = LazyPQueue::new();
-            let position = (1, 1);
-            let target = (18, 3);
-            let environment = Grid::new();
-            let lidar = Lidar::new(12, oracle.clone());
-            let mut sabby = Sabrina::new(position, environment.clone(), lidar.clone(), DStarPlanner::new());
-            let dstar_plan = sabby.planner.plan(&sabby.environment, sabby.position, target);
-            sabby.planner = AStarPlanner;
-            let astar_plan = sabby.planner.plan(&sabby.environment, sabby.position, target);
+    match read_grid(path) {
+        Ok(oracle) => {
+            let source = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 18, y: 3 };
+            println!("Navigating from {source:?} -> {target:?}");
+            let mut dstar_planner = DStarPlanner::new();
+            let mut astar_planner = AStarPlanner {};
 
+            let astar_plan = astar_planner.plan(&oracle, source, target).unwrap();
+            let dstar_plan = dstar_planner.plan(&oracle, source, target).unwrap();
             println!("astar {astar_plan:?}");
             println!("dstar {dstar_plan:?}");
-            assert!(astar_plan.plan.len() > 0);
-            assert!(dstar_plan.plan.len() > 0);
+            assert!(astar_plan.nodes().len() > 0);
+            assert!(dstar_plan.nodes().len() > 0);
             assert!(
                 astar_plan
                     .iter()

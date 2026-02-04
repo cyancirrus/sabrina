@@ -1,6 +1,6 @@
 use crate::global::types::plan::AStarPlan;
 use crate::global::types::plan::Planner;
-use crate::global::types::{Belief, ACoord, HeurHeap, HeurNode, SpatialMap};
+use crate::global::types::{ACoord, Belief, HeurHeap, HeurNode, SpatialMap};
 use std::collections::{HashMap, HashSet};
 
 pub struct AStarPlanner;

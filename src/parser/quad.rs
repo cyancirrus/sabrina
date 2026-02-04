@@ -1,5 +1,5 @@
-use crate::environment::quad::{UBounds, QuadTree};
-use crate::global::types::{Belief};
+use crate::environment::quad::{QuadTree, UBounds};
+use crate::global::types::Belief;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;

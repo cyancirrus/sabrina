@@ -34,7 +34,10 @@ pub fn read_grid(path: &str) -> Result<Grid, Box<dyn Error>> {
     let mut information = HashMap::new();
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
-        let coord = ACoord {x : idx_x as isize, y: (max_y - mir_idx_y) as isize };
+        let coord = ACoord {
+            x: idx_x as isize,
+            y: (max_y - mir_idx_y) as isize,
+        };
         information.insert(coord, obj);
     }
     let bounds = Bounds {
