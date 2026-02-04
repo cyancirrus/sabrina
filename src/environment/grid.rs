@@ -12,15 +12,17 @@ impl SpatialMap for Grid {
     fn insert_ray(&mut self, mut pos: ACoord, hit: ACoord) {
         // beliefs not recorded are assumed free
         // handles simulation compass rose signals
-        self.information.insert(hit, Belief::Occupied);
         let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
+        pos.x += del_x;
+        pos.y += del_y;
         while pos != hit {
+            self.information.insert(pos, Belief::Free);
             pos.x += del_x;
             pos.y += del_y;
-            // self.information.remove(&pos);
         }
         self.update_bounds(hit);
+        self.information.insert(hit, Belief::Occupied);
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         // false
