@@ -47,8 +47,13 @@ impl SpatialMap for QuadTree {
         let min_y = target.y.min(self.bounds.min_y);
         let max_x = target.x.max(self.bounds.max_x);
         let max_y = target.y.max(self.bounds.max_y);
-        for x in (min_x..=max_x).step_by(span) {
-            for y in (min_y..=max_y).step_by(span) {
+        // for x in (min_x..=max_x).step_by(span) {
+        //     for y in (min_y..=max_y).step_by(span) {
+        //         self.populate_edge(ACoord { x,y })
+        //     }
+        // }
+        for x in (min_x..=24).step_by(span) {
+            for y in (min_y..=12).step_by(span) {
                 self.populate_edge(ACoord { x,y })
             }
         }
