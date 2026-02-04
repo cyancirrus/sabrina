@@ -70,7 +70,7 @@ impl SpatialMap for QuadTree {
             Some((_, Belief::Free)) => false,
             Some((_, Belief::Unknown)) => false,
             Some((_, Belief::Occupied)) => true,
-            None => true,
+            None => false,
         }
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
