@@ -1,4 +1,5 @@
 use crate::global::types::plan::AStarPlan;
+use std::fmt::Debug;
 use crate::global::types::plan::Planner;
 use crate::global::types::{ACoord, Belief, HeurHeap, HeurNode, SpatialMap};
 use std::collections::{HashMap, HashSet};
@@ -11,7 +12,10 @@ impl AStarPlanner {
         env: &S,
         source: S::Encoded,
         target: S::Encoded,
-    ) -> Option<HashMap<S::Encoded, S::Encoded>> {
+    ) -> Option<HashMap<S::Encoded, S::Encoded>>
+        where S::Encoded: Debug
+    {
+        println!("planning");
         let mut p_queue: HeurHeap<S::Encoded> = HeurHeap::new();
         let mut enqueue: HashSet<S::Encoded> = HashSet::new();
         let mut precursor = HashMap::new();
@@ -22,10 +26,12 @@ impl AStarPlanner {
         });
         enqueue.insert(source);
         while let Some(node) = p_queue.pop() {
+            println!("node {node:?}");
             if node.coord == target {
                 return Some(precursor);
             }
             for n_xy in env.neighbors(node.coord) {
+                println!("in neighbors");
                 if enqueue.insert(n_xy) && env.belief(n_xy) != Belief::Occupied {
                     precursor.insert(n_xy, node.coord);
                     let heuristic = env.distance(n_xy, target);
@@ -47,6 +53,7 @@ impl AStarPlanner {
         source: S::Encoded,
         target: S::Encoded,
     ) -> Vec<ACoord> {
+        println!("decoding");
         // Ensure this is synchronized with action as this returns reversed plan
         let mut plan = vec![];
         let mut node = target;
@@ -58,7 +65,10 @@ impl AStarPlanner {
     }
 }
 
-impl<S: SpatialMap> Planner<S> for AStarPlanner {
+impl<S: SpatialMap> Planner<S> for AStarPlanner
+
+where S::Encoded: Debug
+{
     type Plan = AStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if env.obstructed(target) {

@@ -13,4 +13,6 @@ pub trait SpatialMap {
     // bridge
     fn encode(&self, coord: ACoord) -> Self::Encoded;
     fn decode(&self, node: Self::Encoded) -> ACoord;
+    // plan-initialization
+    fn initialize(&mut self, source: ACoord, target: ACoord);
 }

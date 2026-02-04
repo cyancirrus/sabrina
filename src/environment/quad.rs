@@ -12,17 +12,22 @@ pub struct QuadNode {
     pub homogenous: bool,
     pub belief: Belief,
 }
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct QuadTree {
     pub information: Information,
-    pub padding: Bounds,
-    pub seen: Bounds,
+    pub bounds: Bounds,
     pub levels: usize,
 }
 
 impl SpatialMap for QuadTree {
     type Encoded = HCoord;
     fn encode(&self, coord:ACoord) -> Self::Encoded {
+        for lvl in 0..self.levels {
+            let node = encode(coord, lvl);
+            if self.information.contains_key(&node) {
+                return node;
+            }
+        }
         HCoord {
             l: 0,
             x: coord.x,
@@ -33,6 +38,20 @@ impl SpatialMap for QuadTree {
         ACoord {
             x: node.x,
             y: node.x,
+        }
+    }
+    fn initialize(&mut self, _source: ACoord, target: ACoord) {
+        // ensure the the grid has been initialized
+        let span = 1 << (self.levels - 1);
+        let min_x = target.x.min(self.bounds.min_x);
+        let min_y = target.y.min(self.bounds.min_y);
+        let max_x = target.x.max(self.bounds.max_x);
+        let max_y = target.y.max(self.bounds.max_y);
+        for x in (min_x..=max_x).step_by(span) {
+            for y in (min_y..=max_y).step_by(span) {
+                println!("XY ({x:}, {y:})");
+                self.populate_edge(ACoord { x,y })
+            }
         }
     }
     fn obstructed(&self, coord: ACoord) -> bool {
@@ -78,9 +97,9 @@ impl SpatialMap for QuadTree {
 
 impl QuadTree {
     pub fn new() -> Self {
-        Self::initialize(LEVELS)
+        Self::init(LEVELS)
     }
-    pub fn initialize(levels: usize) -> Self {
+    pub fn init(levels: usize) -> Self {
         let mut information = HashMap::new();
         // level 0 contains no shift and level is inclusive
         let stride = 1 << (levels - 1);
@@ -91,42 +110,51 @@ impl QuadTree {
                 homogenous: true,
             },
         );
-        let padding = Bounds {
+        let bounds = Bounds {
             min_x: 0,
             min_y: 0,
             max_x: stride - 1,
             max_y: stride - 1,
         };
-        let seen = Bounds {
-            min_x: isize::MAX,
-            min_y: isize::MAX,
-            max_x: 0,
-            max_y: 0,
-        };
         Self {
             information,
-            padding,
-            seen,
+            bounds,
             levels: levels,
         }
     }
 }
 
 impl QuadTree {
-    fn update_seen(&mut self, coord: ACoord) {
+    pub fn populate_edge(&mut self, coord: ACoord) {
+        let node = encode(coord, 0);
+        if self.get_node(node).is_some() {
+            return;
+        }
+        let span = 1 << (self.levels - 1);
+        let node = transform(&node, self.levels - 1);
+        self.bounds.min_x = self.bounds.min_x.min(node.x);
+        self.bounds.min_y = self.bounds.min_y.min(node.y);
+        self.bounds.max_x = self.bounds.max_x.max(node.x + span);
+        self.bounds.max_y = self.bounds.max_y.max(node.y + span);
+        println!("max x {:?}", self.bounds.max_x);
+        self.information.insert(
+            node,
+            QuadNode {
+                homogenous: true,
+                belief: Belief::Unknown,
+            },
+        );
+    }
+    fn update_bounds(&mut self, coord: ACoord) {
         if self.get_coord(coord).is_some() {
             return;
         }
         let span = 1 << (self.levels - 1);
         let node = encode(coord, self.levels - 1);
-        self.padding.min_x = self.padding.min_x.min(node.x);
-        self.padding.min_y = self.padding.min_y.min(node.y);
-        self.padding.max_x = self.padding.max_x.max(node.x + span);
-        self.padding.max_y = self.padding.max_y.max(node.y + span);
-        self.seen.min_x = self.seen.min_x.min(node.x);
-        self.seen.min_y = self.seen.min_y.min(node.y);
-        self.seen.max_x = self.seen.max_x.max(node.x);
-        self.seen.max_y = self.seen.max_y.max(node.y);
+        self.bounds.min_x = self.bounds.min_x.min(node.x);
+        self.bounds.min_y = self.bounds.min_y.min(node.y);
+        self.bounds.max_x = self.bounds.max_x.max(node.x + span);
+        self.bounds.max_y = self.bounds.max_y.max(node.y + span);
         self.information.insert(
             node,
             QuadNode {
@@ -184,7 +212,7 @@ impl QuadTree {
         }
     }
     fn insert_unknown(&mut self, coord: ACoord, belief: Belief) {
-        self.update_seen(coord);
+        self.update_bounds(coord);
         self.set_cell(&coord, belief);
         self.bubble_belief(coord, belief);
         self.cleanse_repres(coord);
@@ -207,6 +235,7 @@ impl QuadTree {
         false
     }
     pub fn update_belief(&mut self, coord: &ACoord, belief: Belief) {
+        self.update_bounds(*coord);
         if self.insert_known(*coord, belief) {
             return;
         }
@@ -245,6 +274,17 @@ impl QuadTree {
                 homogenous: true,
             },
         );
+    }
+    pub fn retrieve_node(&self, mut node: HCoord) -> Option<(usize, Belief)> {
+        for lvl in 0..self.levels {
+            node = transform(&node, lvl);
+            if let Some(n) = self.information.get(&node) {
+                if n.homogenous {
+                    return Some((lvl, n.belief));
+                }
+            }
+        }
+        None
     }
     pub fn get_node(&self, mut node: HCoord) -> Option<(usize, Belief)> {
         for lvl in 0..self.levels {

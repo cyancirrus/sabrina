@@ -56,6 +56,7 @@ impl SpatialMap for Grid {
             None => Belief::Free,
         }
     }
+    fn initialize(&mut self, _source: ACoord, _target: ACoord) {}
 }
 
 impl Grid {

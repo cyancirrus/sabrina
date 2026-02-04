@@ -32,6 +32,7 @@ impl SpatialMap for QuadrantGrid {
     fn decode(&self, coord: Self::Encoded) -> ACoord {
         coord
     }
+    fn initialize(&mut self, _source: ACoord, _target: ACoord) {}
     fn belief(&self, node: Self::Encoded) -> Belief {
         let store = self.transform(node);
         if self.q[store.q].len() <= store.x || self.q[store.q][store.x].len() <= store.y {
