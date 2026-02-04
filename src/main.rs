@@ -37,7 +37,7 @@ fn main() {
             // println!("    Starting Navigation        ");
             // println!("-------------------------------");
             println!("Final Status {:?}", sabby.navigate(target));
-            // println!("Final map\n{}", sabby.environment);
+            println!("Final map\n{}", sabby.environment);
         }
         _ => {
             println!("Err");
