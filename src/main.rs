@@ -27,8 +27,8 @@ fn main() {
             let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 1, y: 5 };
 
-            // let position = ACoord { x: 1, y: 1 };
-            // let target = ACoord { x: 18, y: 3 };
+            let position = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             // let environment = Grid::new();
             let lidar = Lidar::new(12, g_oracle.clone());
