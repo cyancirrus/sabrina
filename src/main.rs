@@ -20,15 +20,18 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 2;
+    let levels = 1;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
             let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 1, y: 5 };
-            // works with levels = 2 for d*lite
+            
             let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 18, y: 3 };
+            let target = ACoord { x: 11, y: 3 };
+            // works with levels = 2 for d*lite
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             // let environment = Grid::new();
             let lidar = Lidar::new(12, g_oracle.clone());
