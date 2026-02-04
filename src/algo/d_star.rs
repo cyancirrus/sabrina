@@ -205,7 +205,9 @@ where
     }
     fn revise_plan(&mut self, env: &S) {
         let source = self.source.unwrap();
+        // let (g, rhs) = self.star[&source];
         let (g, rhs) = self.star[&source];
+        let (g, rhs) = self.star.entry(source).or_insert((self.k, self.k));
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
     }
@@ -236,6 +238,7 @@ where
             return;
         }
         let o_encode = env.encode(obstacle);
+        println!("o_encode {o_encode:?}");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         // if worse

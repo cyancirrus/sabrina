@@ -38,22 +38,21 @@ where
                     x: n.x + self.position.x,
                     y: n.y + self.position.y,
                 };
-                self.environment.insert_ray(self.position, obstacle);
-                // should check and only replan if new info
+                
 
                 self.planner
                     .update(&self.environment, self.position, obstacle);
+                
+                self.environment.insert_ray(self.position, obstacle);
+                // should check and only replan if new info
             }
         }
     }
     pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status {
-        for &pos in plan.iter() {
-            self.scan();
-            if !self.environment.obstructed(pos) {
-                println!("new pos {pos:?}");
-                self.position = pos;
-            } else {
-                return Status::Blocked;
+        for &tgt in plan.iter() {
+            let status = self.control(tgt);
+            if status == Status::Blocked {
+                return Status::Blocked 
             }
         }
         Status::Complete
@@ -73,4 +72,50 @@ where
         }
         status
     }
+    pub fn control(&mut self, tgt: ACoord) -> Status {
+        // beliefs not recorded are assumed unknown
+        // handles simulation compass rose signals
+        let mut pos = self.position;
+        let (dy, dx) = (tgt.y - pos.y, tgt.x - pos.x);
+        let (del_y, del_x) = (dy.signum(), dx.signum());
+        pos.x += del_x;
+        pos.y += del_y;
+        while !self.environment.obstructed(pos) {
+            self.position = pos;
+            self.scan();
+            if pos == tgt {
+                return Status::Enroute
+            }
+            pos.x += del_x;
+            pos.y += del_y;
+        }
+        Status::Blocked
+    }
+    // pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status {
+    //     for &pos in plan.iter() {
+    //         self.scan();
+    //         if !self.environment.obstructed(pos) {
+    //             println!("new pos {pos:?}");
+    //             self.position = pos;
+    //         } else {
+    //             return Status::Blocked;
+    //         }
+    //     }
+    //     Status::Complete
+    // }
+    // pub fn navigate(&mut self, target: ACoord) -> Status {
+    //     self.environment.initialize(self.position, target);
+    //     self.scan();
+    //     let mut status = Status::Enroute;
+    //     while status != Status::Complete && status != Status::Impossible {
+    //         println!("Environment\n{}", self.environment);
+    //         println!("-------------------------------");
+    //         let plan = self.planner.plan(&self.environment, self.position, target);
+    //         status = match plan {
+    //             Some(p) => self.action(p),
+    //             None => Status::Impossible,
+    //         }
+    //     }
+    //     status
+    // }
 }
