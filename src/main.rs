@@ -15,7 +15,7 @@ fn main() {
     println!("      Example navigation            ");
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
-    let levels = 1;
+    let levels = 2;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             let position = ACoord { x: 1, y: 1 };
