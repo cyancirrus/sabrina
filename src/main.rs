@@ -1,38 +1,35 @@
-use sabrina::algo::a_star::AStarPlanner;
-use sabrina::algo::d_star::DStarPlanner;
-use sabrina::global::types::ACoord;
-use sabrina::global::types::PlanIter;
-use sabrina::global::types::plan::Planner;
+use sabrina::environment::new_quad::QuadTree;
+use sabrina::global::consts;
+use sabrina::global::types::{ACoord, Belief};
 use sabrina::parser::grid::read_grid;
-// use sabrina::algo::best_first::BestFirstPlanner;
+use sabrina::parser::new_quad::read_quad;
 
 fn main() {
-    let source = (1, 1);
-    let target = (18, 3);
-    println!("Navigating from {source:?} -> {target:?}");
-    let path = "./data/sample/test_nav0.map";
-    match read_grid(path) {
-        Ok(oracle) => {
-            let source = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 18, y: 3 };
-            let mut dstar_planner = DStarPlanner::new();
-            let mut astar_planner = AStarPlanner {};
+    let mut quad = QuadTree::new();
+    // quad.display_with_levels();
+    println!("--------------------------------");
+    quad.update_belief(&ACoord { x: 1, y: 1 }, Belief::Occupied);
+    quad.display_with_levels();
+    println!("----------------------------------");
+    println!("{quad}");
+    println!("----------------------------------");
+    quad.update_belief(&ACoord { x: 0, y: 0 }, Belief::Occupied);
+    quad.update_belief(&ACoord { x: 0, y: 1 }, Belief::Occupied);
+    quad.update_belief(&ACoord { x: 1, y: 0 }, Belief::Occupied);
+    println!("----------------------------------");
+    quad.display_with_levels();
 
-            let astar_plan = astar_planner.plan(&oracle, source, target).unwrap();
-            let dstar_plan = dstar_planner.plan(&oracle, source, target).unwrap();
-            println!("astar {astar_plan:?}");
-            println!("dstar {dstar_plan:?}");
-            assert!(astar_plan.nodes().len() > 0);
-            assert!(dstar_plan.nodes().len() > 0);
-            assert!(
-                astar_plan
-                    .iter()
-                    .zip(dstar_plan.iter())
-                    .all(|(a, d)| a == d),
-            );
+    let path = "./data/sample/test_nav0.map";
+    match (read_grid(path), read_quad(path, consts::LEVELS)) {
+        (Ok(_oracle_grid), Ok(oracle_quad)) => {
+            println!("Oracle Quad\n{oracle_quad}");
+            println!("-------------------------------");
+            println!("Oracle Quad nodes\n{:?}", oracle_quad.information.len());
+            println!("-------------------------------");
+            oracle_quad.display_with_levels();
         }
-        Err(_) => {
-            assert!(false, "Unexpected error in star planners");
+        _ => {
+            println!("Unexpected Error");
         }
     }
 }

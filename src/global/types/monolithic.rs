@@ -1,3 +1,5 @@
+use std::hash::Hash;
+
 pub type Coord = (usize, usize);
 #[derive(Clone, Debug)]
 pub struct Bounds {
@@ -20,4 +22,11 @@ pub enum Status {
     Blocked,
     Impossible,
     Complete,
+}
+
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
+pub struct HCoord {
+    pub l: usize,
+    pub x: isize,
+    pub y: isize,
 }

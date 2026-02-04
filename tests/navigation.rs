@@ -1,6 +1,6 @@
 use sabrina::algo::best_first::BestFirstPlanner;
-use sabrina::global::types::ACoord;
 use sabrina::environment::grid::Grid;
+use sabrina::global::types::ACoord;
 use sabrina::global::types::Status;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;

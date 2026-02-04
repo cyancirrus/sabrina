@@ -1,4 +1,4 @@
-use crate::global::types::{Belief, ACoord, SpatialMap};
+use crate::global::types::{ACoord, Belief, SpatialMap};
 
 /// Ordering reflects quadrants in standard euclidean
 ///
@@ -24,7 +24,6 @@ pub struct QPoint {
 }
 type Storage = QPoint;
 
-
 impl SpatialMap for QuadrantGrid {
     type Encoded = ACoord;
     fn encode(&self, coord: ACoord) -> Self::Encoded {
@@ -41,41 +40,39 @@ impl SpatialMap for QuadrantGrid {
             self.q[store.q][store.x][store.y]
         }
     }
-    fn distance(&self, a:Self::Encoded, b:Self::Encoded) -> usize {
+    fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
         a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         match self.belief(coord) {
             Belief::Occupied => true,
-            _ => false
+            _ => false,
         }
     }
-    fn neighbors(&self, node:Self::Encoded) -> Vec<Self::Encoded> {
+    fn neighbors(&self, node: Self::Encoded) -> Vec<Self::Encoded> {
         vec![
             Self::Encoded {
                 x: node.x + 1,
-                y: node.y
+                y: node.y,
             },
             Self::Encoded {
                 x: node.x,
-                y: node.y + 1
+                y: node.y + 1,
             },
             Self::Encoded {
                 x: node.x - 1,
-                y: node.y
+                y: node.y,
             },
             Self::Encoded {
-                x: node.x ,
+                x: node.x,
                 y: node.y - 1,
             },
-
         ]
-
     }
-    fn insert_ray(&mut self, mut pos:ACoord, hit:ACoord) {
+    fn insert_ray(&mut self, mut pos: ACoord, hit: ACoord) {
         // beliefs not recorded are assumed unknown
         // handles simulation compass rose signals
-        let (dy, dx) = (hit.y  - pos.y , hit.x  - pos.x);
+        let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
         pos.x += del_x;
         pos.y += del_y;
@@ -99,8 +96,8 @@ impl QuadrantGrid {
             ],
         }
     }
-    fn update_belief(&mut self, coord:ACoord, belief:Belief) {
-        let s= self.transform(coord);
+    fn update_belief(&mut self, coord: ACoord, belief: Belief) {
+        let s = self.transform(coord);
         let m = self.q[s.q].len();
         for _ in s.x..=m {
             self.q[s.q].push(Vec::new());
