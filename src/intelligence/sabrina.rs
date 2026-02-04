@@ -38,11 +38,8 @@ where
                     x: n.x + self.position.x,
                     y: n.y + self.position.y,
                 };
-                
-
                 self.planner
                     .update(&self.environment, self.position, obstacle);
-                
                 self.environment.insert_ray(self.position, obstacle);
                 // should check and only replan if new info
             }
@@ -72,20 +69,21 @@ where
         }
         status
     }
-    pub fn control(&mut self, tgt: ACoord) -> Status {
+    pub fn control(&mut self, tgt: ACoord) -> Status
+    {
         // beliefs not recorded are assumed unknown
         // handles simulation compass rose signals
         let mut pos = self.position;
         let (dy, dx) = (tgt.y - pos.y, tgt.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
-        pos.x += del_x;
-        pos.y += del_y;
+        println!("env {:}", self.environment);
         while !self.environment.obstructed(pos) {
-            self.position = pos;
-            self.scan();
-            if pos == tgt {
+            if tgt == self.position {
                 return Status::Enroute
             }
+            self.position = pos;
+            self.scan();
+            println!("NEW POS {pos:?}");
             pos.x += del_x;
             pos.y += del_y;
         }

@@ -31,6 +31,9 @@ impl SpatialMap for Grid {
     fn encode(&self, coord: ACoord) -> ACoord {
         coord
     }
+    fn leaf(&self, coord: ACoord) -> Self::Encoded {
+        coord
+    }
     fn decode(&self, node: Self::Encoded) -> ACoord {
         node
     }
@@ -93,14 +96,14 @@ impl Grid {
         // RcRefcell or ArcMutex if doing pathing with multiple as extensions
         let mut n_xy = position;
         for _ in 0..max_range {
-            n_xy.x = n_xy.x.wrapping_add(delta.x);
-            n_xy.y = n_xy.y.wrapping_add(delta.y);
+            n_xy.x += delta.x;
+            n_xy.y += delta.y;
             // needs to fit wrt the underlying grid
             if self.belief(n_xy) == Belief::Occupied {
                 // denormalize b/c is oracle and needs to be relative
                 return Some(ACoord {
-                    x: n_xy.x.wrapping_sub(position.x),
-                    y: n_xy.y.wrapping_sub(position.y),
+                    x: n_xy.x - position.x,
+                    y: n_xy.y - position.y,
                 });
             }
         }

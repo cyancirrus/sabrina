@@ -12,13 +12,15 @@ use sabrina::sensor::lidar::Lidar;
 use sabrina::global::types::{SpatialMap};
 use sabrina::global::types::Belief;
 
+// TODO: Add in raycasting in 8 directions
+
 fn main() {
     println!("------------------------------------");
     println!("      Example navigation            ");
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 2;
+    let levels = 1;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
 

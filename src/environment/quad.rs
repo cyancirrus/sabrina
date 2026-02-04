@@ -40,6 +40,13 @@ impl SpatialMap for QuadTree {
             y: node.y,
         }
     }
+    fn leaf(&self, coord: ACoord) -> Self::Encoded {
+        HCoord {
+            l: 0,
+            x: coord.x,
+            y: coord.y,
+        }
+    }
     fn initialize(&mut self, _source: ACoord, target: ACoord) {
         // ensure the the grid has been initialized
         let span = 1 << (self.levels - 1);
@@ -84,12 +91,13 @@ impl SpatialMap for QuadTree {
     fn insert_ray(&mut self, mut pos: ACoord, hit: ACoord) {
         // beliefs not recorded are assumed unknown
         // handles simulation compass rose signals
+        println!("INSERTING OBSTACLE AT {hit:?}");
         let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
         pos.x += del_x;
         pos.y += del_y;
         while pos != hit {
-            self.update_belief(&hit, Belief::Free);
+            self.update_belief(&pos, Belief::Free);
             pos.x += del_x;
             pos.y += del_y;
         }
@@ -140,7 +148,6 @@ impl QuadTree {
         self.bounds.min_y = self.bounds.min_y.min(node.y);
         self.bounds.max_x = self.bounds.max_x.max(node.x + span);
         self.bounds.max_y = self.bounds.max_y.max(node.y + span);
-        println!("max x {:?}", self.bounds.max_x);
         self.information.insert(
             node,
             QuadNode {
