@@ -50,10 +50,9 @@ where
         for &pos in plan.iter() {
             self.scan();
             if !self.environment.obstructed(pos) {
-                println!("pos {pos:?}");
+                println!("new pos {pos:?}");
                 self.position = pos;
             } else {
-                assert!(false, "SHOULDNT BE HERE, failure POS == {pos:?}");
                 return Status::Blocked;
             }
         }
