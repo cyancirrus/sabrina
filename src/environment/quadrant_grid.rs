@@ -1,5 +1,4 @@
-use sabrina::global::types::Belief;
-use sabrina::global::types::SpatialMap;
+use crate::global::types::{Belief, ACoord, SpatialMap};
 
 /// Ordering reflects quadrants in standard euclidean
 ///
@@ -12,30 +11,85 @@ use sabrina::global::types::SpatialMap;
 pub struct QuadrantGrid {
     q: [Vec<Vec<Belief>>; 4],
 }
-#[derive(Eq, PartialEq, Copy, Clone)]
-struct ACoord {
-    x: isize,
-    y: isize,
-}
 /// Point for the quadrant
 ///
 /// # Attributes #
 /// * q: quadrant
 /// * x: offset index
 /// * y: offset index
-struct QPoint {
+pub struct QPoint {
     q: usize,
     x: usize,
     y: usize,
 }
 type Storage = QPoint;
-type Encoded = ACoord;
 
 
+impl SpatialMap for QuadrantGrid {
+    type Encoded = ACoord;
+    fn encode(&self, coord: ACoord) -> Self::Encoded {
+        coord
+    }
+    fn decode(&self, coord: Self::Encoded) -> ACoord {
+        coord
+    }
+    fn belief(&self, node: Self::Encoded) -> Belief {
+        let store = self.transform(node);
+        if self.q[store.q].len() <= store.x || self.q[store.q][store.x].len() <= store.y {
+            Belief::Unknown
+        } else {
+            self.q[store.q][store.x][store.y]
+        }
+    }
+    fn distance(&self, a:Self::Encoded, b:Self::Encoded) -> usize {
+        a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
+    }
+    fn obstructed(&self, coord: ACoord) -> bool {
+        match self.belief(coord) {
+            Belief::Occupied => true,
+            _ => false
+        }
+    }
+    fn neighbors(&self, node:Self::Encoded) -> Vec<Self::Encoded> {
+        vec![
+            Self::Encoded {
+                x: node.x + 1,
+                y: node.y
+            },
+            Self::Encoded {
+                x: node.x,
+                y: node.y + 1
+            },
+            Self::Encoded {
+                x: node.x - 1,
+                y: node.y
+            },
+            Self::Encoded {
+                x: node.x ,
+                y: node.y - 1,
+            },
 
+        ]
+
+    }
+    fn insert_ray(&mut self, mut pos:ACoord, hit:ACoord) {
+        // beliefs not recorded are assumed unknown
+        // handles simulation compass rose signals
+        let (dy, dx) = (hit.y  - pos.y , hit.x  - pos.x);
+        let (del_y, del_x) = (dy.signum(), dx.signum());
+        pos.x += del_x;
+        pos.y += del_y;
+        while pos != hit {
+            self.update_belief(hit, Belief::Occupied);
+            pos.x += del_x;
+            pos.y += del_y;
+        }
+        self.update_belief(hit, Belief::Occupied);
+    }
+}
 
 impl QuadrantGrid {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             q: [
                 Vec::with_capacity(8),
@@ -44,18 +98,6 @@ impl QuadrantGrid {
                 Vec::with_capacity(8),
             ],
         }
-    }
-    fn insert_ray(&mut self, mut pos:ACoord, hit:ACoord) {
-        // beliefs not recorded are assumed unknown
-        // handles simulation compass rose signals
-        let (dy, dx) = (hit.y  - pos.y , hit.x  - pos.x);
-        let (del_y, del_x) = (dy.signum(), dx.signum());
-        while pos != hit {
-            pos.x += del_x;
-            pos.y += del_y;
-            self.update_belief(hit, Belief::Occupied);
-        }
-        self.update_belief(hit, Belief::Occupied);
     }
     fn update_belief(&mut self, coord:ACoord, belief:Belief) {
         let s= self.transform(coord);
@@ -69,7 +111,7 @@ impl QuadrantGrid {
         }
         self.q[s.q][s.x][s.y] = belief;
     }
-    fn transform(&self, coord: ACoord) -> Storage {
+    pub fn transform(&self, coord: ACoord) -> Storage {
         let (mut x, mut y) = (coord.x.abs(), coord.y.abs());
         let q = match (coord.x >= 0, coord.y >= 0) {
             (true, true) => 0,
@@ -86,7 +128,7 @@ impl QuadrantGrid {
             y: y as usize,
         }
     }
-    fn untransform(&self, node: Storage) -> ACoord {
+    pub fn untransform(&self, node: Storage) -> ACoord {
         // Valid for quadrant 0;
         let mut acoord = ACoord {
             x: node.x as isize,
@@ -109,53 +151,4 @@ impl QuadrantGrid {
         };
         acoord
     }
-    fn encode(&self, coord: Encoded) -> ACoord {
-        coord
-    }
-    fn decode(&self, coord: Encoded) -> ACoord {
-        coord
-    }
-    fn belief(&self, node: Encoded) -> Belief {
-        let store = self.transform(node);
-        if self.q[store.q].len() <= store.x || self.q[store.q][store.x].len() <= store.y {
-            Belief::Unknown
-        } else {
-            self.q[store.q][store.x][store.y]
-        }
-    }
-    fn distance(&self, a:Encoded, b:Encoded) -> usize {
-        a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
-    }
-    fn obstructed(&self, node: Encoded) -> bool {
-        match self.belief(node) {
-            Belief::Occupied => true,
-            _ => false
-        }
-    }
-    fn neighbors(&self, node:Encoded) -> Vec<Encoded> {
-        vec![
-            Encoded {
-                x: node.x + 1,
-                y: node.y
-            },
-            Encoded {
-                x: node.x,
-                y: node.y + 1
-            },
-            Encoded {
-                x: node.x - 1,
-                y: node.y
-            },
-            Encoded {
-                x: node.x ,
-                y: node.y - 1,
-            },
-
-        ]
-
-    }
 }
-
-impl QuadrantGrid {}
-
-fn main() {}

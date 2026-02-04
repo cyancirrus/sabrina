@@ -31,13 +31,13 @@ impl SpatialMap for Grid {
     fn encode(&self, coord: ACoord) -> ACoord {
         coord
     }
-    fn decode(&self, node: ACoord) -> ACoord {
+    fn decode(&self, node: Self::Encoded) -> ACoord {
         node
     }
     fn distance(&self, a: ACoord, b: ACoord) -> usize {
         a.x.abs_diff(b.x).wrapping_add(a.y.abs_diff(b.y))
     }
-    fn neighbors(&self, node: ACoord) -> Vec<ACoord> {
+    fn neighbors(&self, node: Self::Encoded) -> Vec<ACoord> {
         let mut valid = Vec::new();
         for d in CARDINALS {
             let n_xy = ACoord {
