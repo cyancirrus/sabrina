@@ -135,7 +135,6 @@ impl QuadTree {
         self.bounds.min_y = self.bounds.min_y.min(node.y);
         self.bounds.max_x = self.bounds.max_x.max(node.x + span);
         self.bounds.max_y = self.bounds.max_y.max(node.y + span);
-        println!("max x {:?}", self.bounds.max_x);
         self.information.insert(
             node,
             QuadNode {
