@@ -3,7 +3,7 @@ use sabrina::algo::a_star::AStarPlanner;
 use sabrina::algo::best_first::BestFirstPlanner;
 use sabrina::algo::d_star::DStarPlanner;
 use sabrina::environment::grid::Grid;
-use sabrina::global::types::ACoord;
+use sabrina::global::types::{ACoord, HCoord};
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::environment::quad::QuadTree;
 use sabrina::parser::quad::read_quad;
@@ -17,10 +17,20 @@ fn main() {
     println!("      Example navigation            ");
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
-    let path = "./data/sample/test_nav1.map";
+    // let path = "./data/sample/test_nav1.map";
     let levels = 2;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
+            // println!("------------------------------------");
+            // println!("absolute_environment\n{q_oracle}");
+            // println!("------------------------------------");
+            // println!("absolute_environment\n{q_oracle:?}");
+            // println!("------------------------------------");
+            // let p = HCoord { l: 0, x: 1, y: 1 };
+            // for n in q_oracle.neighbors(p) {
+            //     println!("n {n:?}");
+            // }
+            // return;
             println!("000000000000000000000000000000000");
             let mut environment = QuadTree::init(levels);
             // environment.insert_ray(ACoord{x:0, y:0}, ACoord{x:0, y:1});
@@ -34,9 +44,12 @@ fn main() {
 
 
 
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 1, y: 3 };
+
             let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 1, y: 3 };
             // let target = ACoord { x: 18, y: 3 };
+            let target = ACoord { x: 1, y: 5 };
             let environment = QuadTree::new();
             let lidar = Lidar::new(12, g_oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);

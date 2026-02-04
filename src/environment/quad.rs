@@ -37,7 +37,7 @@ impl SpatialMap for QuadTree {
     fn decode(&self, node:Self::Encoded) -> ACoord {
         ACoord {
             x: node.x,
-            y: node.x,
+            y: node.y,
         }
     }
     fn initialize(&mut self, _source: ACoord, target: ACoord) {

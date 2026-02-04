@@ -126,11 +126,9 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             e_node = transform(&e_node, lvl);
             h_node = transform(&h_node, lvl);
             if e_node == h_node {
-                println!("AM I HERE");
                 // information is more granular
                 break;
             } else if let Some(n) = quad.information.get(&e_node) {
-                println!("Found a Node");
                 if n.belief != Belief::Occupied {
                     neighbors.push(e_node);
                 }
@@ -142,9 +140,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             continue;
         }
         stack.push(cardinal);
-        println!("stack {stack:?}");
         while let Some(p_coord) = stack.pop() {
-            println!("p_coord {p_coord:?}");
             if let Some(n) = quad.information.get(&p_coord) {
                 if n.belief == Belief::Occupied {
                     continue;
@@ -155,6 +151,5 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             }
         }
     }
-    println!("neighbors {neighbors:?}");
     neighbors
 }
