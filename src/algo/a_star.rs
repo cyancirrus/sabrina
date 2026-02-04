@@ -72,6 +72,7 @@ where S::Encoded: Debug
     type Plan = AStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if env.obstructed(target) {
+            println!("AM I HERE????????????????????");
             return None;
         };
         let (s_encode, t_encode) = (env.encode(source), env.encode(target));

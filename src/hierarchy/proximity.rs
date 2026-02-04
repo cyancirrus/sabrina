@@ -108,11 +108,6 @@ pub fn south_hier(node: HCoord) -> [HCoord; 2] {
     ]
 }
 pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
-    println!("-----------------------------------------");
-    println!("-----------------------------------------");
-    println!("NODE NODE {node:?}");
-    println!("-----------------------------------------");
-    println!("-----------------------------------------");
     // neighbor and filter need to be opposites ie (neigh east -> filter west);
     let cardinals = find_cardinals(node);
     // opposite of clockwise iteration

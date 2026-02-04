@@ -49,17 +49,16 @@ impl SpatialMap for QuadTree {
         let max_y = target.y.max(self.bounds.max_y);
         for x in (min_x..=max_x).step_by(span) {
             for y in (min_y..=max_y).step_by(span) {
-                println!("XY ({x:}, {y:})");
                 self.populate_edge(ACoord { x,y })
             }
         }
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         match self.get_coord(coord) {
-            Some((_, Belief::Free)) => true,
-            Some((_, Belief::Unknown)) => true,
-            Some((_, Belief::Occupied)) => false,
-            None => false,
+            Some((_, Belief::Free)) => false,
+            Some((_, Belief::Unknown)) => false,
+            Some((_, Belief::Occupied)) => true,
+            None => true,
         }
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
