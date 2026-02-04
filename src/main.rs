@@ -1,35 +1,39 @@
+#![allow(unused)]
+use sabrina::algo::a_star::AStarPlanner;
+use sabrina::algo::best_first::BestFirstPlanner;
+use sabrina::algo::d_star::DStarPlanner;
+use sabrina::environment::grid::Grid;
+use sabrina::global::types::ACoord;
+use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::environment::quad::QuadTree;
-use sabrina::global::consts;
-use sabrina::global::types::{ACoord, Belief};
-use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
+use sabrina::parser::grid::read_grid;
+use sabrina::sensor::lidar::Lidar;
 
 fn main() {
-    let mut quad = QuadTree::new();
-    // quad.display_with_levels();
-    println!("--------------------------------");
-    quad.update_belief(&ACoord { x: 1, y: 1 }, Belief::Occupied);
-    quad.display_with_levels();
-    println!("----------------------------------");
-    println!("{quad}");
-    println!("----------------------------------");
-    quad.update_belief(&ACoord { x: 0, y: 0 }, Belief::Occupied);
-    quad.update_belief(&ACoord { x: 0, y: 1 }, Belief::Occupied);
-    quad.update_belief(&ACoord { x: 1, y: 0 }, Belief::Occupied);
-    println!("----------------------------------");
-    quad.display_with_levels();
-
+    println!("------------------------------------");
+    println!("      Example navigation            ");
+    println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
-    match (read_grid(path), read_quad(path, consts::LEVELS)) {
-        (Ok(_oracle_grid), Ok(oracle_quad)) => {
-            println!("Oracle Quad\n{oracle_quad}");
+    let levels = 1;
+    match (read_quad(path, levels), read_grid(path)) {
+        (Ok(q_oracle), Ok(g_oracle)) => {
+            let position = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 18, y: 3 };
+            let environment = QuadTree::new();
+            let lidar = Lidar::new(12, g_oracle.clone());
+            // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
+            let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
+            // let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+            println!("absolute_environment\n{g_oracle}");
             println!("-------------------------------");
-            println!("Oracle Quad nodes\n{:?}", oracle_quad.information.len());
+            println!("    Starting Navigation        ");
             println!("-------------------------------");
-            oracle_quad.display_with_levels();
+            println!("Final Status {:?}", sabby.navigate(target));
+            println!("Final map\n{}", sabby.environment);
         }
         _ => {
-            println!("Unexpected Error");
+            println!("Err");
         }
     }
 }

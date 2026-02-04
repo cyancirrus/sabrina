@@ -12,7 +12,7 @@ pub struct QuadNode {
     pub homogenous: bool,
     pub belief: Belief,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct QuadTree {
     pub information: Information,
     pub padding: Bounds,
