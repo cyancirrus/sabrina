@@ -18,7 +18,7 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 3;
+    let levels = 2;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
 
@@ -30,8 +30,8 @@ fn main() {
             let environment = QuadTree::init(levels);
             let lidar = Lidar::new(12, g_oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
-            let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
-            // let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+            // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
+            let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
             println!("absolute_environment\n{q_oracle}");
             // println!("-------------------------------");
             // println!("    Starting Navigation        ");
