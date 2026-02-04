@@ -1,7 +1,6 @@
 use crate::environment::quad::QuadTree;
-use crate::global::consts::PARTITION;
-use crate::global::types::{Belief, Coord};
-use crate::hierarchy::encoding::encode_hier;
+use crate::global::types::{Belief, HCoord};
+use crate::hierarchy::encoding::{transform};
 
 // // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
 // // Multi-ray LiDAR & Planner Implementation.
@@ -10,95 +9,137 @@ use crate::hierarchy::encoding::encode_hier;
 
 // TODO: Think through whether the boundary case exists where we aren't surrounded by wall
 
-pub fn find_cardinals(m_coord: Coord) -> [Coord; 4] {
+/// Finds north south east west not the quadgrid
+const EDGE_FILTERS:[fn(HCoord) -> [HCoord;2]; 4] = [west_hier, south_hier, east_hier, north_hier];
+
+pub fn find_cardinals(node: HCoord) -> [HCoord; 4] {
     // space is double to avoid halfints on the quadtree for centroids
-    let dh = 1 << (m_coord.0 >> PARTITION);
+    let dh = 1 << node.l;
     // clockwise e,n,w,s
     [
-        (m_coord.0 + dh, m_coord.1),
-        (m_coord.0, m_coord.1 + dh),
-        (m_coord.0 - dh, m_coord.1),
-        (m_coord.0, m_coord.1 - dh),
+        HCoord {
+            l: node.l,
+            x: node.x + dh,
+            y: node.y,
+        },
+        HCoord {
+            l: node.l,
+            x: node.x,
+            y: node.y + dh,
+        },
+        HCoord {
+            l: node.l,
+            x: node.x - dh,
+            y: node.y,
+        },
+        HCoord {
+            l: node.l,
+            x: node.x - dh,
+            y: node.y,
+        },
     ]
 }
-pub fn east_hier(hier: Coord) -> [Coord; 2] {
-    // child filtered east neighbors; dx := 1
-    let level = (hier.0 >> PARTITION) - 1;
+/// child nodes filter east neighbors; dx := 1
+pub fn east_hier(node: HCoord) -> [HCoord; 2] {
+    let l = node.l;
+    let dh = 1 << l;
     [
-        (
-            (hier.0 - (1 << PARTITION)) | 1 << level,
-            (hier.1 - (1 << PARTITION)),
-        ),
-        (
-            (hier.0 - (1 << PARTITION)) | 1 << level,
-            (hier.1 - (1 << PARTITION)) | 1 << level,
-        ),
+        HCoord {
+            l: l,
+            x: node.x | dh,
+            y: node.y,
+        },
+        HCoord {
+            l: l,
+            x: node.x | dh,
+            y: node.y | dh,
+        },
     ]
 }
-pub fn north_hier(hier: Coord) -> [Coord; 2] {
-    // child filtered west neighbors; dy := 1
-    let level = (hier.0 >> PARTITION) - 1;
+/// child filtered west neighbors; dy := 1
+pub fn north_hier(node: HCoord) -> [HCoord; 2] {
+    let l = node.l;
+    let dh = 1 << l;
     [
-        (
-            (hier.0 - (1 << PARTITION)) | 1 << level,
-            (hier.1 - (1 << PARTITION)) | 1 << level,
-        ),
-        (
-            (hier.0 - (1 << PARTITION)),
-            (hier.1 - (1 << PARTITION)) | 1 << level,
-        ),
+        HCoord {
+            l: l,
+            x: node.x | dh,
+            y: node.y | dh,
+        },
+        HCoord {
+            l: l,
+            x: node.x,
+            y: node.y | dh,
+        },
     ]
 }
-pub fn west_hier(hier: Coord) -> [Coord; 2] {
-    // child filtered west neighbors; dx := 0
-    let level = (hier.0 >> PARTITION) - 1;
+/// child filtered west neighbors; dx := 0
+pub fn west_hier(node: HCoord) -> [HCoord; 2] {
+    let l = node.l;
+    let dh = 1 << l;
     [
-        (
-            (hier.0 - (1 << PARTITION)),
-            (hier.1 - (1 << PARTITION)) | 1 << level,
-        ),
-        ((hier.0 - (1 << PARTITION)), (hier.1 - (1 << PARTITION))),
+        HCoord {
+            l: l,
+            x: node.x,
+            y: node.y | dh,
+        },
+        HCoord {
+            l: l,
+            x: node.x,
+            y: node.y,
+        },
     ]
 }
-pub fn south_hier(hier: Coord) -> [Coord; 2] {
-    // child filtered south neighbors; dy := 0
-    let level = (hier.0 >> PARTITION) - 1;
+/// child filtered south neighbors; dy := 0
+pub fn south_hier(node: HCoord) -> [HCoord; 2] {
+    let l = node.l;
+    let dh = 1 << l;
     [
-        ((hier.0 - (1 << PARTITION)), (hier.1 - (1 << PARTITION))),
-        (
-            (hier.0 - (1 << PARTITION)) | 1 << level,
-            (hier.1 - (1 << PARTITION)),
-        ),
+        HCoord {
+            l: l,
+            x: node.x,
+            y: node.y,
+        },
+        HCoord {
+            l: l,
+            x: node.x | dh,
+            y: node.y,
+        },
     ]
 }
-
-pub fn edge_neighbors(quad: &QuadTree, m_coord: Coord) -> Vec<Coord> {
+pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     // neighbor and filter need to be opposites ie (neigh east -> filter west);
-    let cardinals = find_cardinals(m_coord);
+    let cardinals = find_cardinals(node);
     // opposite of clockwise iteration
-    let filters = [west_hier, south_hier, east_hier, north_hier];
-    let level = m_coord.0 >> PARTITION;
     let mut neighbors = Vec::new();
     let mut stack = Vec::new();
     let mut found;
-    for (cardinal, filter) in cardinals.iter().zip(filters.iter()) {
+    // hierarchical representation of node
+    let mut h_node;
+    // edge neighbor of the current node 
+    let mut e_node;
+    for (&cardinal, filter) in cardinals.iter().zip(EDGE_FILTERS.iter()) {
+        h_node = node;
+        e_node = cardinal;
         found = false;
-        for lvl in level..quad.levels {
-            let p_coord = encode_hier(&cardinal, lvl);
-            if let Some(n) = quad.information.get(&p_coord) {
+        for lvl in node.l..quad.levels {
+            e_node = transform(&e_node, lvl);
+            h_node = transform(&h_node, lvl);
+            if e_node == h_node {
+                // information is more granular
+                break;
+            } else if let Some(n) = quad.information.get(&e_node) {
                 if n.belief != Belief::Occupied {
-                    neighbors.push(p_coord);
+                    neighbors.push(e_node);
                 }
                 found = true;
-                break;
-            } else if encode_hier(&m_coord, lvl) == p_coord {
                 break;
             }
         }
         if found {
             continue;
         }
-        stack.push(*cardinal);
+        stack.push(cardinal);
         while let Some(p_coord) = stack.pop() {
             if let Some(n) = quad.information.get(&p_coord) {
                 if n.belief == Belief::Occupied {

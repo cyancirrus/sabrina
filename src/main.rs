@@ -1,8 +1,8 @@
-use sabrina::environment::new_quad::QuadTree;
+use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts;
 use sabrina::global::types::{ACoord, Belief};
 use sabrina::parser::grid::read_grid;
-use sabrina::parser::new_quad::read_quad;
+use sabrina::parser::quad::read_quad;
 
 fn main() {
     let mut quad = QuadTree::new();

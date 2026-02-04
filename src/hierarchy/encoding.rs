@@ -1,96 +1,113 @@
-use crate::global::consts::PARTITION;
-use crate::global::types::Coord;
+use crate::global::types::{ACoord, HCoord};
 
-// // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
-// // Multi-ray LiDAR & Planner Implementation.
 // // Hestereses or defered clean up
 // // Consdier implementing a jump iter
 
 // TODO: Think through whether the boundary case exists where we aren't surrounded by wall
 
-pub fn point(m_coord: Coord) -> Coord {
+// // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
+// // Multi-ray LiDAR & Planner Implementation.
+// // Hestereses or defered clean up
+// // Consdier implementing a jump iter
+pub fn point(h_coord: HCoord) -> ACoord {
     // An interface for retrieving purely for retrieving distance
     // retrieves the centroid scaled by two in order to prevent half-integers
-    let level = m_coord.0 >> PARTITION;
-    let mask = (1 << PARTITION) - 1;
-    (
-        ((m_coord.0 & mask) << 1) + (1 << level),
-        ((m_coord.1 & mask) << 1) + (1 << level),
-    )
+    let center = 1 << h_coord.l;
+    ACoord {
+        x: h_coord.x + center,
+        y: h_coord.y + center,
+    }
 }
-pub fn centroid_estimate(sm_coord: Coord, tm_coord: Coord) -> usize {
+
+pub fn distance(a: HCoord, b: HCoord) -> usize {
     // distance between source-centroid and target-centroid
-    let (s_centr, t_centr) = (point(sm_coord), point(tm_coord));
-    s_centr.0.abs_diff(t_centr.0) + s_centr.1.abs_diff(t_centr.1)
+    let (a, b) = (point(a), point(b));
+    a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
 }
 
-pub fn decode_hier(coord: Coord) -> (f32, f32) {
+/// floating point representation of centroid of hierarchy
+pub fn decode_hier(coord: HCoord) -> (f32, f32) {
     let dp = point(coord);
-    ((dp.0 - 1) as f32 / 2.0, (dp.0 - 1) as f32 / 2.0)
+    ((dp.x - 1) as f32 / 2.0, (dp.x - 1) as f32 / 2.0)
 }
 
-pub fn encode_hier(coord: &Coord, level: usize) -> Coord {
-    debug_assert!(level < (1 << usize::BITS as usize - PARTITION));
-    let mask = ((1 << PARTITION) - 1) & !((1 << level) - 1);
-    (
-        (coord.0 & mask) | (level << PARTITION),
-        (coord.1 & mask) | (level << PARTITION),
-    )
+pub fn encode(coord: ACoord, level: usize) -> HCoord {
+    let mask = !((1 << level) - 1);
+    HCoord {
+        l: level,
+        x: coord.x & mask,
+        y: coord.y & mask,
+    }
 }
 
-pub fn child_hier(hier: &Coord) -> [Coord; 4] {
+pub fn transform(coord: &HCoord, level: usize) -> HCoord {
+    if level < coord.l {
+        return *coord;
+    }
+    let mask = !((1 << level) - 1);
+    HCoord {
+        l: level,
+        x: coord.x & mask,
+        y: coord.y & mask,
+    }
+}
+
+pub fn child_hier(hier: &HCoord) -> [HCoord; 4] {
     // level of the child
-    let level = (hier.0 >> PARTITION) - 1;
+    let l = hier.l - 1;
+    // separation of the grid
+    let dh = 1 << l;
     [
-        ((hier.0 - (1 << PARTITION)), (hier.1 - (1 << PARTITION))),
-        (
-            (hier.0 - (1 << PARTITION)) | 1 << level,
-            (hier.1 - (1 << PARTITION)),
-        ),
-        (
-            (hier.0 - (1 << PARTITION)),
-            (hier.1 - (1 << PARTITION)) | 1 << level,
-        ),
-        (
-            (hier.0 - (1 << PARTITION)) | 1 << level,
-            (hier.1 - (1 << PARTITION)) | 1 << level,
-        ),
+        HCoord {
+            l: l,
+            x: hier.x,
+            y: hier.y,
+        },
+        HCoord {
+            l: l,
+            x: hier.x + dh,
+            y: hier.y,
+        },
+        HCoord {
+            l: l,
+            x: hier.x,
+            y: hier.y + dh,
+        },
+        HCoord {
+            l: l,
+            x: hier.x + dh,
+            y: hier.y + dh,
+        },
     ]
 }
 
-pub fn grid_hier(coord: &Coord, level: usize) -> [Coord; 4] {
+/// Encode a node with a new level of the hierarchy
+pub fn grid_hier(node: &ACoord, level: usize) -> [HCoord; 4] {
     // last bit of this level cleared as well, lvl + 1
+    let dh = 1 << level;
     let mask = !((1 << (level + 1)) - 1);
+    let (x, y) = (node.x & mask, node.y & mask);
     // clockwise navigation through grid
     [
-        (
-            (coord.0 & mask) | (level << PARTITION),
-            (coord.1 & mask) | (level << PARTITION),
-        ),
-        (
-            (coord.0 & mask) | (level << PARTITION) | 1 << level,
-            (coord.1 & mask) | (level << PARTITION),
-        ),
-        (
-            (coord.0 & mask) | (level << PARTITION),
-            (coord.1 & mask) | (level << PARTITION) | 1 << level,
-        ),
-        (
-            (coord.0 & mask) | (level << PARTITION) | 1 << level,
-            (coord.1 & mask) | (level << PARTITION) | 1 << level,
-        ),
+        HCoord {
+            l: level,
+            x: x,
+            y: y,
+        },
+        HCoord {
+            l: level,
+            x: x + dh,
+            y: y,
+        },
+        HCoord {
+            l: level,
+            x: x,
+            y: y + dh,
+        },
+        HCoord {
+            l: level,
+            x: x + dh,
+            y: y + dh,
+        },
     ]
-}
-
-pub fn print_hier(hier: &Coord) {
-    let level = hier.0 >> PARTITION;
-    println!("-------------");
-    println!("level: {level:?}");
-    println!("or: (x: {}, y: {})", hier.0, hier.1,);
-    println!(
-        "hr: (x: {}, y: {})",
-        hier.0 & ((1 << PARTITION) - 1),
-        hier.1 & ((1 << PARTITION) - 1),
-    );
-    println!("-------------");
 }

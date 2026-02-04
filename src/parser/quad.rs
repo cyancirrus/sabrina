@@ -1,5 +1,5 @@
-use crate::environment::quad::{QuadTree, UBounds};
-use crate::global::types::Belief;
+use crate::environment::quad::QuadTree;
+use crate::global::types::{ACoord, Belief, Bounds};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
@@ -32,18 +32,18 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
         max_y = max_y.max(idx_y);
     }
     let information = HashMap::new();
-    let seen = UBounds {
+    let seen = Bounds {
         min_x: 0,
         min_y: 0,
-        max_x: max_x,
-        max_y: max_y,
+        max_x: max_x as isize,
+        max_y: max_y as isize,
     };
 
-    let padding = UBounds {
+    let padding = Bounds {
         min_x: 0,
         min_y: 0,
-        max_x: max_x + (1 << (levels - 1)),
-        max_y: max_y + (1 << (levels - 1)),
+        max_x: (max_x + (1 << (levels - 1))) as isize,
+        max_y: (max_y + (1 << (levels - 1))) as isize,
     };
 
     // let mut quadtree = QuadTree::initialize(information, bounds, levels);
@@ -56,7 +56,13 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
 
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
-        quadtree.update_belief(&(idx_x, max_y - mir_idx_y), obj);
+        quadtree.update_belief(
+            &ACoord {
+                x: idx_x as isize,
+                y: (max_y - mir_idx_y) as isize,
+            },
+            obj,
+        );
     }
 
     Ok(quadtree)

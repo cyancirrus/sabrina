@@ -1,6 +1,6 @@
 use sabrina::environment::quad::QuadTree;
 use sabrina::global::consts;
-use sabrina::global::types::Belief;
+use sabrina::global::types::{ACoord, Belief};
 use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
 
@@ -8,14 +8,14 @@ fn main() {
     let mut quad = QuadTree::new();
     quad.display_with_levels();
     println!("--------------------------------");
-    quad.update_belief(&(1, 1), Belief::Occupied);
+    quad.update_belief(&ACoord{x: 1, y: 1}, Belief::Occupied);
     quad.display_with_levels();
     println!("----------------------------------");
     println!("{quad}");
     println!("----------------------------------");
-    quad.update_belief(&(0, 0), Belief::Occupied);
-    quad.update_belief(&(0, 1), Belief::Occupied);
-    quad.update_belief(&(1, 0), Belief::Occupied);
+    quad.update_belief(&ACoord{x: 0, y: 0}, Belief::Occupied);
+    quad.update_belief(&ACoord{x: 0, y: 1}, Belief::Occupied);
+    quad.update_belief(&ACoord{x: 1, y: 0}, Belief::Occupied);
     println!("----------------------------------");
     quad.display_with_levels();
 
