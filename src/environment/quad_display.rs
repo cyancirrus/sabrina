@@ -17,20 +17,6 @@ impl fmt::Debug for QuadTree {
         }
         Ok(())
     }
-    // pub fn display_with_levels(&self) {
-    //     for y in (self.bounds.min_y..=self.bounds.max_y).rev() {
-    //         let mut line = String::new();
-    //         for x in self.bounds.min_x..=self.bounds.max_x {
-    //             match self.get_coord(ACoord { x, y }) {
-    //                 None => line.push_str("[ ]"),
-    //                 Some((lvl, Belief::Occupied)) => line.push_str(&format!("[{lvl:}]")),
-    //                 Some((lvl, Belief::Unknown)) => line.push_str(&format!("[{lvl:}]")),
-    //                 Some((lvl, Belief::Free)) => line.push_str(&format!("[{lvl:}]")),
-    //             };
-    //         }
-    //         println!("{}", line);
-    //     }
-    // }
 }
 
 impl fmt::Display for QuadTree {

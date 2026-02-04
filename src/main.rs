@@ -42,11 +42,11 @@ fn main() {
     let target = ACoord {x:15, y:0};
     map.initialize(source, target);
 
-    // let test = map.neighbors(HCoord {l: 0, x: 2, y: 0 } );
-    // println!("----------------------");
-    // for t in test {
-    //     println!("t {t:?}");
-    // }
+    let test = map.neighbors(HCoord {l: 1, x: 2, y: 0 } );
+    println!("----------------------");
+    for t in test {
+        println!("t {t:?}");
+    }
     println!("----------------");
     println!("{map:?}");
     println!("{map:}");
