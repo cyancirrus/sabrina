@@ -262,8 +262,8 @@ where
             .unwrap_or(&(usize::MAX, usize::MAX));
         self.star.insert(node, (usize::MAX, usize::MAX));
         self.star.insert(leaf, (usize::MAX, usize::MAX));
-        // self.propagate_cost_g(env, leaf, g_obs);
-        // self.update_vertex(env, leaf);
+        self.propagate_cost_g(env, leaf, g_obs);
+        self.update_vertex(env, leaf);
         self.propagate_cost_g(env, node, g_obs);
         self.update_vertex(env, node);
         // // if better
@@ -272,50 +272,3 @@ where
         // self.propagate_cost_rhs(env, u_coord);
     }
 }
-
-// fn main() {
-//     use sabrina::environment::grid::Grid;
-//     // use sabrina::algo::a_star::AStarPlanner;
-//     // use sabrina::algo::best_first::BestFirstPlanner;
-//     use sabrina::algo::d_star::DStarPlanner;
-//     use sabrina::intelligence::sabrina::Sabrina;
-//     use sabrina::parser::grid::read_grid;
-//     use sabrina::sensor::lidar::Lidar;
-//     println!("------------------------------------");
-//     println!("      Example navigation            ");
-//     println!("------------------------------------");
-//     let path = "./data/sample/test_nav0.map";
-//     // let path = "./data/sample/test_nav1.map";
-//     // let path = "./data/sample/test_imposs.map";
-//     match read_grid(path) {
-//         Ok(oracle) => {
-//             // let position = (1, 1);
-//             // let target = (1, 3);
-
-//             // let position = (1, 1);
-//             // let target = (9, 3);
-
-//             // let position = (4, 1);
-//             // let target = (4, 3);
-
-//             let position = (1, 1);
-//             let target = (18, 3);
-
-//             let environment = Grid::new();
-//             let lidar = Lidar::new(6, oracle.clone());
-//             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
-//             // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
-//             // let mut sabby = Sabrina::new(position, oracle.clone(), lidar, DStarPlanner::new());
-//             let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
-//             println!("absolute_environment\n{oracle}");
-//             println!("-------------------------------");
-//             println!("    Starting Navigation        ");
-//             println!("-------------------------------");
-//             println!("Final Status {:?}", sabby.navigate(target));
-//             println!("Final map\n{}", sabby.environment);
-//         }
-//         Err(e) => {
-//             println!("Err\n{e:?}");
-//         }
-//     }
-// }
