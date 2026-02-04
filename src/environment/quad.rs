@@ -48,22 +48,23 @@ impl SpatialMap for QuadTree {
         }
     }
     fn initialize(&mut self, _source: ACoord, target: ACoord) {
+        // TODO: Needs some sort of intelligent resizing
         // ensure the the grid has been initialized
         let span = 1 << (self.levels - 1);
         let min_x = target.x.min(self.bounds.min_x);
         let min_y = target.y.min(self.bounds.min_y);
         let max_x = target.x.max(self.bounds.max_x);
         let max_y = target.y.max(self.bounds.max_y);
-        // for x in (min_x..=max_x).step_by(span) {
-        //     for y in (min_y..=max_y).step_by(span) {
-        //         self.populate_edge(ACoord { x,y })
-        //     }
-        // }
-        for x in (min_x..=24).step_by(span) {
-            for y in (min_y..=12).step_by(span) {
+        for x in (min_x..=max_x).step_by(span) {
+            for y in (min_y..=max_y).step_by(span) {
                 self.populate_edge(ACoord { x,y })
             }
         }
+        // for x in (min_x..=24).step_by(span) {
+        //     for y in (min_y..=12).step_by(span) {
+        //         self.populate_edge(ACoord { x,y })
+        //     }
+        // }
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         match self.get_coord(coord) {
@@ -91,7 +92,6 @@ impl SpatialMap for QuadTree {
     fn insert_ray(&mut self, mut pos: ACoord, hit: ACoord) {
         // beliefs not recorded are assumed unknown
         // handles simulation compass rose signals
-        println!("INSERTING OBSTACLE AT {hit:?}");
         let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
         pos.x += del_x;

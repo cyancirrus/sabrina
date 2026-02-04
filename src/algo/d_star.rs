@@ -144,7 +144,6 @@ where
     //     }
     // }
     fn compute_shortest_path(&mut self, env: &S) {
-        println!("compute");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
@@ -152,7 +151,6 @@ where
             if let Some((top_coord, top_key)) = self.pqueue.peek() {
                 let start_key = self.calculate_key(env, source);
                 if g == rhs && top_key <= start_key {
-                    println!("START KEY WAS {start_key:?}");
                     break;
                 }
             }
@@ -178,8 +176,6 @@ where
         }
     }
     fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
-        println!("DECODING");
-        // println!("{:?}", self.pqueue);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();

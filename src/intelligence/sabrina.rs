@@ -48,9 +48,7 @@ where
     pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status
         where Q: Debug
     {
-        println!("What is this {:?}", plan);
         for &tgt in plan.iter() {
-            println!("TGT {tgt:?}");
             let status = self.control(tgt);
             if status == Status::Blocked {
                 return Status::Blocked 
@@ -80,21 +78,16 @@ where
         let mut pos = self.position;
         let (dy, dx) = (tgt.y - pos.y, tgt.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
-        println!("env {:}", self.environment);
-        println!("Checking if obstructed");
-        println!("tgt {tgt:?}");
         while !self.environment.obstructed(pos) {
             self.position = pos;
             self.scan();
-            if self.environment.encode(tgt) == self.environment.encode(self.position) {
-            // if tgt == self.position {
+            // if self.environment.encode(tgt) == self.environment.encode(self.position) {
+            if tgt == self.position {
                 return Status::Enroute
             }
             pos.x += del_x;
             pos.y += del_y;
-            println!("NEW POS {pos:?}");
         }
-            println!("RESULT {:?} at Location {}", self.environment.obstructed(pos), pos);
         Status::Blocked
     }
     // pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status {
