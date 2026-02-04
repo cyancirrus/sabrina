@@ -1,5 +1,5 @@
 use crate::global::consts::{LEVELS, PARTITION};
-use crate::global::types::{Belief, Bounds, Coord};
+use crate::global::types::{Belief, Coord};
 use crate::hierarchy::encoding::{child_hier, encode_hier, grid_hier};
 use std::collections::HashMap;
 
@@ -12,11 +12,19 @@ pub struct QuadNode {
     pub belief: Belief,
 }
 
+#[derive(Clone, Debug)]
+pub struct UBounds {
+    pub min_x: usize,
+    pub min_y: usize,
+    pub max_x: usize,
+    pub max_y: usize,
+}
+
 #[derive(Debug)]
 pub struct QuadTree {
     pub information: Information,
-    pub padding: Bounds,
-    pub seen: Bounds,
+    pub padding: UBounds,
+    pub seen: UBounds,
     pub levels: usize,
 }
 impl QuadTree {
@@ -34,13 +42,13 @@ impl QuadTree {
                 homogenous: true,
             },
         );
-        let padding = Bounds {
+        let padding = UBounds {
             min_x: 0,
             min_y: 0,
             max_x: stride - 1,
             max_y: stride - 1,
         };
-        let seen = Bounds {
+        let seen = UBounds {
             min_x: usize::MAX,
             min_y: usize::MAX,
             max_x: 0,

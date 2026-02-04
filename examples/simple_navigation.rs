@@ -5,6 +5,7 @@ use sabrina::environment::grid::Grid;
 use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
 use sabrina::sensor::lidar::Lidar;
+use sabrina::global::types::ACoord;
 
 fn main() {
     println!("------------------------------------");
@@ -13,8 +14,8 @@ fn main() {
     let path = "./data/sample/test_nav0.map";
     match read_grid(path) {
         Ok(oracle) => {
-            let position = (1, 1);
-            let target = (18, 3);
+            let position = ACoord { x: 1, y: 1};
+            let target = ACoord { x: 18, y: 3 };
             let environment = Grid::new();
             let lidar = Lidar::new(12, oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);

@@ -1,5 +1,5 @@
 use crate::environment::grid::Grid;
-use crate::global::types::Coord;
+use crate::global::types::{ACoord, CARDINALS};
 
 //TODO: Next session: orientation + beam rotation OR frontier-based exploration
 //TODO: When finally make quadtree, create a hazard like cost a hazard will be used as a cost
@@ -18,16 +18,16 @@ pub struct Lidar {
 }
 pub struct Measurement {
     // closest objects eventually need to refactor with theta
-    pub data: [Option<Coord>; GRAIN],
+    pub data: [Option<ACoord>; GRAIN],
 }
 impl Lidar {
     pub fn new(max_range: usize, oracle: Grid) -> Self {
         Self { max_range, oracle }
     }
-    pub fn measure(&self, position: Coord) -> Measurement {
+    pub fn measure(&self, position: ACoord) -> Measurement {
         let mut data = [None; GRAIN];
         // polar order of scan ie counter-clockwise
-        for (h, &d) in [(1, 0), (0, 1), (!0, 0), (0, !0)].iter().enumerate() {
+        for (h, &d) in CARDINALS.iter().enumerate() {
             data[h] = self.oracle.raycast(position, d, self.max_range);
         }
         Measurement { data }

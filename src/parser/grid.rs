@@ -1,6 +1,5 @@
 use crate::environment::grid::Grid;
-use crate::global::consts::GRID_OFFSET;
-use crate::global::types::{Belief, Bounds};
+use crate::global::types::{ACoord, Belief, Bounds};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
@@ -35,25 +34,17 @@ pub fn read_grid(path: &str) -> Result<Grid, Box<dyn Error>> {
     let mut information = HashMap::new();
     // Mapping is easiest to think of as direct representation ie mirrored b/c of parsing
     for ((idx_x, mir_idx_y), obj) in mirrored_objects {
-        let coord = (idx_x + GRID_OFFSET, max_y - mir_idx_y + GRID_OFFSET);
+        let coord = ACoord {x : idx_x as isize, y: (max_y - mir_idx_y) as isize };
         information.insert(coord, obj);
     }
     let bounds = Bounds {
         min_x: 0,
         min_y: 0,
-        max_x: max_x,
-        max_y: max_y,
+        max_x: max_x as isize,
+        max_y: max_y as isize,
     };
-    let seen = Bounds {
-        min_x: GRID_OFFSET,
-        min_y: GRID_OFFSET,
-        max_x: max_x + GRID_OFFSET,
-        max_y: max_y + GRID_OFFSET,
-    };
-
     Ok(Grid {
         information,
-        seen,
         bounds,
     })
 }

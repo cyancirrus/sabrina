@@ -1,5 +1,5 @@
-use crate::environment::quad::QuadTree;
-use crate::global::types::{Belief, Bounds};
+use crate::environment::quad::{UBounds, QuadTree};
+use crate::global::types::{Belief};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
@@ -32,14 +32,14 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
         max_y = max_y.max(idx_y);
     }
     let information = HashMap::new();
-    let seen = Bounds {
+    let seen = UBounds {
         min_x: 0,
         min_y: 0,
         max_x: max_x,
         max_y: max_y,
     };
 
-    let padding = Bounds {
+    let padding = UBounds {
         min_x: 0,
         min_y: 0,
         max_x: max_x + (1 << (levels - 1)),

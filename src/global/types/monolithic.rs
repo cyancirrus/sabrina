@@ -1,11 +1,10 @@
 pub type Coord = (usize, usize);
-
 #[derive(Clone, Debug)]
 pub struct Bounds {
-    pub min_x: usize,
-    pub min_y: usize,
-    pub max_x: usize,
-    pub max_y: usize,
+    pub min_x: isize,
+    pub min_y: isize,
+    pub max_x: isize,
+    pub max_y: isize,
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]

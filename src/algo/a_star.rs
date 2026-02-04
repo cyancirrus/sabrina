@@ -1,6 +1,6 @@
 use crate::global::types::plan::AStarPlan;
 use crate::global::types::plan::Planner;
-use crate::global::types::{Belief, Coord, HeurHeap, HeurNode, SpatialMap};
+use crate::global::types::{Belief, ACoord, HeurHeap, HeurNode, SpatialMap};
 use std::collections::{HashMap, HashSet};
 
 pub struct AStarPlanner;
@@ -46,7 +46,7 @@ impl AStarPlanner {
         precursor: &HashMap<S::Encoded, S::Encoded>,
         source: S::Encoded,
         target: S::Encoded,
-    ) -> Vec<Coord> {
+    ) -> Vec<ACoord> {
         // Ensure this is synchronized with action as this returns reversed plan
         let mut plan = vec![];
         let mut node = target;
@@ -60,7 +60,7 @@ impl AStarPlanner {
 
 impl<S: SpatialMap> Planner<S> for AStarPlanner {
     type Plan = AStarPlan;
-    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
+    fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if env.obstructed(target) {
             return None;
         };
@@ -75,5 +75,5 @@ impl<S: SpatialMap> Planner<S> for AStarPlanner {
             None => None,
         }
     }
-    fn update(&mut self, _: &S, _: Coord, _: Coord) {}
+    fn update(&mut self, _: &S, _: ACoord, _: ACoord) {}
 }

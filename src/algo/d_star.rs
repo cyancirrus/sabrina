@@ -2,15 +2,15 @@
 // use crate::global::types::LazyPQueue;
 use crate::global::types::IPQueue;
 use crate::global::types::plan::Planner;
-use crate::global::types::{Coord, DStarPlan, SpatialMap, StarKey};
+use crate::global::types::{ACoord, DStarPlan, SpatialMap, StarKey};
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::mem;
 
-/// Distance Map for DStarLite : Coord -> (G, Rhs)
+/// Distance Map for DStarLite : ACoord -> (G, Rhs)
 ///
 /// # Data Types
-/// * Coord :: x, y coordinates
+/// * ACoord :: x, y coordinates
 /// * (G, Rhs) ~ (usize, usize)
 ///
 /// # Definitions
@@ -70,7 +70,7 @@ where
         let target = self.target.unwrap();
         let h = env.distance(u, source);
         let &(g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, usize::MAX));
-        StarKey::new(g, rhs, h, self.k) 
+        StarKey::new(g, rhs, h, self.k)
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
         let source = self.source.unwrap();
@@ -160,7 +160,7 @@ where
             }
         }
     }
-    fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<Coord>> {
+    fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
@@ -190,7 +190,7 @@ where
         None
     }
 
-    fn new_plan(&mut self, env: &S, source: Coord, target: Coord) {
+    fn new_plan(&mut self, env: &S, source: ACoord, target: ACoord) {
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
         self.origin = Some(s_encode);
@@ -216,15 +216,11 @@ where
     S::Encoded: Eq + Hash + std::fmt::Debug + Eq,
 {
     type Plan = DStarPlan;
-    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
+    fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if self.source.is_none() || self.target.is_none() || self.origin.is_none() {
             self.new_plan(env, source, target);
         } else {
             let s_encode = env.encode(source);
-            if s_encode == env.encode((5,3)) {
-                let (g, rhs) = self.star[&s_encode];
-
-            }
             // self.k += env.distance(self.origin.unwrap(), s_encode);
             self.source = Some(s_encode);
             self.revise_plan(env);
@@ -234,7 +230,7 @@ where
             None => None,
         }
     }
-    fn update(&mut self, env: &S, position: Coord, obstacle: Coord) {
+    fn update(&mut self, env: &S, position: ACoord, obstacle: ACoord) {
         // TODO: Need to integrate rhs for when we find better paths
         if self.source.is_none() || self.target.is_none() {
             return;
@@ -243,7 +239,10 @@ where
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         // if worse
-        let &(g_obs, rhs_obs) = self.star.get(&o_encode).unwrap_or(&(usize::MAX, usize::MAX));
+        let &(g_obs, rhs_obs) = self
+            .star
+            .get(&o_encode)
+            .unwrap_or(&(usize::MAX, usize::MAX));
         self.star.insert(o_encode, (usize::MAX, usize::MAX));
         self.propagate_cost_g(env, o_encode, g_obs);
         self.update_vertex(env, o_encode);
@@ -251,6 +250,52 @@ where
         // self.star.insert(u_coord, (rhs_u, rhs_u));
         // self.pqueue.remove(&u_coord);
         // self.propagate_cost_rhs(env, u_coord);
-
     }
 }
+
+// fn main() {
+//     use sabrina::environment::grid::Grid;
+//     // use sabrina::algo::a_star::AStarPlanner;
+//     // use sabrina::algo::best_first::BestFirstPlanner;
+//     use sabrina::algo::d_star::DStarPlanner;
+//     use sabrina::intelligence::sabrina::Sabrina;
+//     use sabrina::parser::grid::read_grid;
+//     use sabrina::sensor::lidar::Lidar;
+//     println!("------------------------------------");
+//     println!("      Example navigation            ");
+//     println!("------------------------------------");
+//     let path = "./data/sample/test_nav0.map";
+//     // let path = "./data/sample/test_nav1.map";
+//     // let path = "./data/sample/test_imposs.map";
+//     match read_grid(path) {
+//         Ok(oracle) => {
+//             // let position = (1, 1);
+//             // let target = (1, 3);
+
+//             // let position = (1, 1);
+//             // let target = (9, 3);
+
+//             // let position = (4, 1);
+//             // let target = (4, 3);
+
+//             let position = (1, 1);
+//             let target = (18, 3);
+
+//             let environment = Grid::new();
+//             let lidar = Lidar::new(6, oracle.clone());
+//             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
+//             // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
+//             // let mut sabby = Sabrina::new(position, oracle.clone(), lidar, DStarPlanner::new());
+//             let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+//             println!("absolute_environment\n{oracle}");
+//             println!("-------------------------------");
+//             println!("    Starting Navigation        ");
+//             println!("-------------------------------");
+//             println!("Final Status {:?}", sabby.navigate(target));
+//             println!("Final map\n{}", sabby.environment);
+//         }
+//         Err(e) => {
+//             println!("Err\n{e:?}");
+//         }
+//     }
+// }

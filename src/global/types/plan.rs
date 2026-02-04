@@ -1,19 +1,19 @@
-use crate::global::types::Coord;
+use crate::global::types::ACoord;
 use crate::global::types::SpatialMap;
 
 pub struct BackwardIter<'a> {
-    nodes: &'a [Coord],
+    nodes: &'a [ACoord],
     aug_index: usize,
 }
 
 pub struct ForwardIter<'a> {
-    nodes: &'a [Coord],
+    nodes: &'a [ACoord],
     length: usize,
     index: usize,
 }
 
 impl<'a> BackwardIter<'a> {
-    pub fn new(nodes: &'a [Coord]) -> Self {
+    pub fn new(nodes: &'a [ACoord]) -> Self {
         Self {
             nodes,
             aug_index: nodes.len(),
@@ -22,7 +22,7 @@ impl<'a> BackwardIter<'a> {
 }
 
 impl<'a> ForwardIter<'a> {
-    pub fn new(nodes: &'a [Coord]) -> Self {
+    pub fn new(nodes: &'a [ACoord]) -> Self {
         Self {
             nodes,
             length: nodes.len(),
@@ -32,7 +32,7 @@ impl<'a> ForwardIter<'a> {
 }
 
 impl<'a> Iterator for BackwardIter<'a> {
-    type Item = &'a Coord;
+    type Item = &'a ACoord;
     fn next(&mut self) -> Option<Self::Item> {
         if self.aug_index > 0 {
             self.aug_index -= 1;
@@ -43,7 +43,7 @@ impl<'a> Iterator for BackwardIter<'a> {
 }
 
 impl<'a> Iterator for ForwardIter<'a> {
-    type Item = &'a Coord;
+    type Item = &'a ACoord;
     fn next(&mut self) -> Option<Self::Item> {
         let index = self.index;
         if index < self.length {
@@ -67,54 +67,54 @@ impl<'a> Iterator for ForwardIter<'a> {
 /// ------------------------------------------
 #[allow(dead_code)]
 pub trait PlanIter {
-    fn iter(&self) -> impl Iterator<Item = &Coord>;
-    fn nodes(&self) -> &[Coord];
+    fn iter(&self) -> impl Iterator<Item = &ACoord>;
+    fn nodes(&self) -> &[ACoord];
 }
 
 #[derive(Debug)]
 pub struct AStarPlan {
-    pub plan: Vec<Coord>,
+    pub plan: Vec<ACoord>,
 }
 
 #[derive(Debug)]
 pub struct DStarPlan {
-    pub plan: Vec<Coord>,
+    pub plan: Vec<ACoord>,
 }
 
 #[derive(Debug)]
 pub struct BestFirstPlan {
-    pub plan: Vec<Coord>,
+    pub plan: Vec<ACoord>,
 }
 
 impl PlanIter for AStarPlan {
-    fn nodes(&self) -> &[Coord] {
+    fn nodes(&self) -> &[ACoord] {
         &self.plan
     }
-    fn iter(&self) -> impl Iterator<Item = &Coord> {
+    fn iter(&self) -> impl Iterator<Item = &ACoord> {
         BackwardIter::new(self.nodes())
     }
 }
 
 impl PlanIter for DStarPlan {
-    fn nodes(&self) -> &[Coord] {
+    fn nodes(&self) -> &[ACoord] {
         &self.plan
     }
-    fn iter(&self) -> impl Iterator<Item = &Coord> {
+    fn iter(&self) -> impl Iterator<Item = &ACoord> {
         ForwardIter::new(self.nodes())
     }
 }
 
 impl PlanIter for BestFirstPlan {
-    fn nodes(&self) -> &[Coord] {
+    fn nodes(&self) -> &[ACoord] {
         &self.plan
     }
-    fn iter(&self) -> impl Iterator<Item = &Coord> {
+    fn iter(&self) -> impl Iterator<Item = &ACoord> {
         BackwardIter::new(self.nodes())
     }
 }
 
 pub trait Planner<S: SpatialMap> {
     type Plan: PlanIter;
-    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan>;
-    fn update(&mut self, env: &S, position: Coord, obstacle: Coord);
+    fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan>;
+    fn update(&mut self, env: &S, position: ACoord, obstacle: ACoord);
 }

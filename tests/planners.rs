@@ -1,5 +1,7 @@
-use sabrina::algo::static_astar::astar;
-use sabrina::algo::static_dstar::{Star, dstar_lite};
+use sabrina::algo::a_star::AStarPlanner;
+use sabrina::algo::d_star::DStarPlanner;
+// use sabrina::algo::best_first::BestFirstPlanner;
+
 use sabrina::global::consts::LEVELS;
 use sabrina::global::types::LazyPQueue;
 use sabrina::global::types::PlanIter;
@@ -15,8 +17,15 @@ fn test_star_planners() {
         Ok(oracle_quad) => {
             let mut star = Star::new();
             let mut update = LazyPQueue::new();
-            let astar_plan = astar(&oracle_quad, source, target);
-            let dstar_plan = dstar_lite(&oracle_quad, &mut star, &mut update, source, target);
+            let position = (1, 1);
+            let target = (18, 3);
+            let environment = Grid::new();
+            let lidar = Lidar::new(12, oracle.clone());
+            let mut sabby = Sabrina::new(position, environment.clone(), lidar.clone(), DStarPlanner::new());
+            let dstar_plan = sabby.planner.plan(&sabby.environment, sabby.position, target);
+            sabby.planner = AStarPlanner;
+            let astar_plan = sabby.planner.plan(&sabby.environment, sabby.position, target);
+
             println!("astar {astar_plan:?}");
             println!("dstar {dstar_plan:?}");
             assert!(astar_plan.plan.len() > 0);

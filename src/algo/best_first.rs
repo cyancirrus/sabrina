@@ -1,6 +1,6 @@
 use crate::global::types::plan::BestFirstPlan;
 use crate::global::types::plan::Planner;
-use crate::global::types::{Belief, Coord, MinHeap, MinNode, SpatialMap};
+use crate::global::types::{Belief, ACoord, MinHeap, MinNode, SpatialMap};
 use std::collections::{HashMap, HashSet};
 
 pub struct BestFirstPlanner;
@@ -38,7 +38,7 @@ impl BestFirstPlanner {
         precursor: &HashMap<S::Encoded, S::Encoded>,
         source: S::Encoded,
         target: S::Encoded,
-    ) -> Vec<Coord> {
+    ) -> Vec<ACoord> {
         // Ensure this is synchronized with action as this returns reversed plan
         let mut plan = vec![];
         let mut node = target;
@@ -52,7 +52,7 @@ impl BestFirstPlanner {
 
 impl<S: SpatialMap> Planner<S> for BestFirstPlanner {
     type Plan = BestFirstPlan;
-    fn plan(&mut self, env: &S, source: Coord, target: Coord) -> Option<Self::Plan> {
+    fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if env.obstructed(target) {
             return None;
         };
@@ -67,5 +67,5 @@ impl<S: SpatialMap> Planner<S> for BestFirstPlanner {
             None => None,
         }
     }
-    fn update(&mut self, _: &S, _: Coord, _: Coord) {}
+    fn update(&mut self, _: &S, _: ACoord, _: ACoord) {}
 }
