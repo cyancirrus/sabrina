@@ -1,6 +1,6 @@
 use crate::environment::quad::QuadTree;
 use crate::global::types::{Belief, HCoord};
-use crate::hierarchy::encoding::{transform};
+use crate::hierarchy::encoding::transform;
 
 // // Observation Logic (Unknown \(\rightarrow \) Free/Occupied).LU Pivoting (Numerical insurance)
 // // Multi-ray LiDAR & Planner Implementation.
@@ -10,7 +10,7 @@ use crate::hierarchy::encoding::{transform};
 // TODO: Think through whether the boundary case exists where we aren't surrounded by wall
 
 /// Finds north south east west not the quadgrid
-const EDGE_FILTERS:[fn(HCoord) -> [HCoord;2]; 4] = [west_hier, south_hier, east_hier, north_hier];
+const EDGE_FILTERS: [fn(HCoord) -> [HCoord; 2]; 4] = [west_hier, south_hier, east_hier, north_hier];
 
 pub fn find_cardinals(node: HCoord) -> [HCoord; 4] {
     // space is double to avoid halfints on the quadtree for centroids
@@ -116,7 +116,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     let mut found;
     // hierarchical representation of node
     let mut h_node;
-    // edge neighbor of the current node 
+    // edge neighbor of the current node
     let mut e_node;
     for (&cardinal, filter) in cardinals.iter().zip(EDGE_FILTERS.iter()) {
         h_node = node;

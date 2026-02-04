@@ -6,7 +6,7 @@ impl QuadTree {
         for y in (self.seen.min_y..=self.seen.max_y).rev() {
             let mut line = String::new();
             for x in self.seen.min_x..=self.seen.max_x {
-                match self.get_cell(ACoord{ x, y }) {
+                match self.get_coord(ACoord { x, y }) {
                     None => line.push_str("[ ]"),
                     Some((lvl, Belief::Occupied)) => line.push_str(&format!("[{lvl:}]")),
                     Some((lvl, Belief::Unknown)) => line.push_str(&format!("[{lvl:}]")),
@@ -23,7 +23,7 @@ impl fmt::Display for QuadTree {
         for y in (self.seen.min_y..=self.seen.max_y).rev() {
             let mut line = String::new();
             for x in self.seen.min_x..=self.seen.max_x {
-                let symbol = match self.get_cell(ACoord{ x, y }) {
+                let symbol = match self.get_coord(ACoord { x, y }) {
                     None => 'x',
                     Some((_, Belief::Free)) => ' ',
                     Some((_, Belief::Occupied)) => '#',

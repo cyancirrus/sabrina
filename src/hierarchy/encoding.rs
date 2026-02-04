@@ -19,12 +19,6 @@ pub fn point(h_coord: HCoord) -> ACoord {
     }
 }
 
-pub fn distance(a: HCoord, b: HCoord) -> usize {
-    // distance between source-centroid and target-centroid
-    let (a, b) = (point(a), point(b));
-    a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
-}
-
 /// floating point representation of centroid of hierarchy
 pub fn decode_hier(coord: HCoord) -> (f32, f32) {
     let dp = point(coord);

@@ -8,14 +8,14 @@ fn main() {
     let mut quad = QuadTree::new();
     quad.display_with_levels();
     println!("--------------------------------");
-    quad.update_belief(&ACoord{x: 1, y: 1}, Belief::Occupied);
+    quad.update_belief(&ACoord { x: 1, y: 1 }, Belief::Occupied);
     quad.display_with_levels();
     println!("----------------------------------");
     println!("{quad}");
     println!("----------------------------------");
-    quad.update_belief(&ACoord{x: 0, y: 0}, Belief::Occupied);
-    quad.update_belief(&ACoord{x: 0, y: 1}, Belief::Occupied);
-    quad.update_belief(&ACoord{x: 1, y: 0}, Belief::Occupied);
+    quad.update_belief(&ACoord { x: 0, y: 0 }, Belief::Occupied);
+    quad.update_belief(&ACoord { x: 0, y: 1 }, Belief::Occupied);
+    quad.update_belief(&ACoord { x: 1, y: 0 }, Belief::Occupied);
     println!("----------------------------------");
     quad.display_with_levels();
 

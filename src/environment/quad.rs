@@ -1,6 +1,7 @@
 use crate::global::consts::LEVELS;
-use crate::global::types::{ACoord, Belief, Bounds, HCoord};
-use crate::hierarchy::encoding::{child_hier, encode, grid_hier};
+use crate::global::types::{SpatialMap, ACoord, Belief, Bounds, HCoord};
+use crate::hierarchy::encoding::{point, transform, child_hier, encode, grid_hier};
+use crate::hierarchy::proximity::{edge_neighbors};
 use std::collections::HashMap;
 
 type Information = HashMap<HCoord, QuadNode>;
@@ -18,6 +19,63 @@ pub struct QuadTree {
     pub seen: Bounds,
     pub levels: usize,
 }
+
+impl SpatialMap for QuadTree {
+    type Encoded = HCoord;
+    fn encode(&self, coord:ACoord) -> Self::Encoded {
+        HCoord {
+            l: 0,
+            x: coord.x,
+            y: coord.x,
+        }
+    }
+    fn decode(&self, node:Self::Encoded) -> ACoord {
+        ACoord {
+            x: node.x,
+            y: node.x,
+        }
+    }
+    fn obstructed(&self, coord: ACoord) -> bool {
+        match self.get_coord(coord) {
+            Some((_, Belief::Free)) => true,
+            Some((_, Belief::Unknown)) => true,
+            Some((_, Belief::Occupied)) => false,
+            None => false,
+        }
+    }
+    fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
+        // distance between source-centroid and target-centroid
+        let (a, b) = (point(a), point(b));
+        a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
+    }
+    fn neighbors(&self, a: Self::Encoded) -> Vec<Self::Encoded> {
+        edge_neighbors(self, a)
+    }
+    fn belief(&self, node: Self::Encoded) -> Belief {
+        match self.get_node(node) {
+            Some((_, belief)) => belief,
+            None => Belief::Unknown,
+        }
+
+    }
+    fn insert_ray(&mut self, mut pos: ACoord, hit: ACoord) {
+        // beliefs not recorded are assumed unknown
+        // handles simulation compass rose signals
+        let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
+        let (del_y, del_x) = (dy.signum(), dx.signum());
+        pos.x += del_x;
+        pos.y += del_y;
+        while pos != hit {
+            self.update_belief(&hit, Belief::Free);
+            pos.x += del_x;
+            pos.y += del_y;
+        }
+        self.update_belief(&hit, Belief::Occupied);
+    }
+
+}
+
+
 impl QuadTree {
     pub fn new() -> Self {
         Self::initialize(LEVELS)
@@ -52,18 +110,11 @@ impl QuadTree {
             levels: levels,
         }
     }
-    fn encode(&self, coord: ACoord) -> HCoord {
-        HCoord {
-            l: 0,
-            x: coord.x,
-            y: coord.y,
-        }
-    }
 }
 
 impl QuadTree {
     fn update_seen(&mut self, coord: ACoord) {
-        if self.get_cell(coord).is_some() {
+        if self.get_coord(coord).is_some() {
             return;
         }
         let span = 1 << (self.levels - 1);
@@ -139,7 +190,7 @@ impl QuadTree {
         self.cleanse_repres(coord);
     }
     fn insert_known(&mut self, coord: ACoord, belief: Belief) -> bool {
-        if let Some((_, current_belief)) = self.get_cell(coord) {
+        if let Some((_, current_belief)) = self.get_coord(coord) {
             // belief aligns
             return current_belief == belief;
         }
@@ -175,7 +226,7 @@ impl QuadTree {
         };
     }
     fn set_cell(&mut self, coord: &ACoord, belief: Belief) {
-        if let Some((found_level, h_belief)) = self.get_cell(*coord) {
+        if let Some((found_level, h_belief)) = self.get_coord(*coord) {
             if h_belief == belief {
                 return;
             }
@@ -195,7 +246,18 @@ impl QuadTree {
             },
         );
     }
-    pub fn get_cell(&self, coord: ACoord) -> Option<(usize, Belief)> {
+    pub fn get_node(&self, mut node: HCoord) -> Option<(usize, Belief)> {
+        for lvl in 0..self.levels {
+            node = transform(&node, lvl);
+            if let Some(n) = self.information.get(&node) {
+                if n.homogenous {
+                    return Some((lvl, n.belief));
+                }
+            }
+        }
+        None
+    }
+    pub fn get_coord(&self, coord: ACoord) -> Option<(usize, Belief)> {
         for lvl in 0..self.levels {
             let node = encode(coord, lvl);
             if let Some(n) = self.information.get(&node) {
@@ -205,13 +267,5 @@ impl QuadTree {
             }
         }
         None
-    }
-    pub fn obstructed(&self, coord: ACoord) -> bool {
-        match self.get_cell(coord) {
-            Some((_, Belief::Free)) => true,
-            Some((_, Belief::Unknown)) => true,
-            Some((_, Belief::Occupied)) => false,
-            None => false,
-        }
     }
 }

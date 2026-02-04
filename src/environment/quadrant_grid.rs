@@ -77,7 +77,7 @@ impl SpatialMap for QuadrantGrid {
         pos.x += del_x;
         pos.y += del_y;
         while pos != hit {
-            self.update_belief(hit, Belief::Occupied);
+            self.update_belief(hit, Belief::Free);
             pos.x += del_x;
             pos.y += del_y;
         }
