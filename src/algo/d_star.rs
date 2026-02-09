@@ -53,7 +53,6 @@ where
         let h = env.distance(source, target);
         self.star.insert(target, (usize::MAX, 0));
         self.star.insert(source, (usize::MAX, usize::MAX));
-        println!("default {:?}", self.star);
         self.pqueue.push(
             target,
             StarKey {
@@ -214,6 +213,15 @@ where
             self.propagate_cost_g(env, t_old, g_old);
             self.propagate_cost_g(env, t_new, g_old);
             self.star.insert(t_new, (g_old, rhs_old));
+            self.pqueue.remove(&t_old);
+            let h = env.distance(s_new, t_new);
+            self.pqueue.push(
+                t_new,
+                StarKey {
+                    cost_astar: h,
+                    cost_dijkstra: 0,
+                },
+            );
             self.target = Some(t_new);
         }
         if s_new != s_old {
