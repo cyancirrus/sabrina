@@ -47,23 +47,18 @@ impl SpatialMap for QuadTree {
             y: coord.y,
         }
     }
-    fn initialize(&mut self, _source: ACoord, target: ACoord) {
+    fn initialize(&mut self, source: ACoord, target: ACoord) {
         // TODO: Needs some sort of intelligent resizing
         // ensure the the grid has been initialized
-        println!("target {target:?}");
+        println!("calling initialize with source {source:?}, target {target:}");
         let span = 1 << (self.levels - 1);
-        let min_x = target.x.min(self.bounds.min_x);
-        let min_y = target.y.min(self.bounds.min_y);
-        let max_x = target.x.max(self.bounds.max_x);
-        let max_y = target.y.max(self.bounds.max_y);
-        for x in (min_x..=max_x).step_by(span as usize) {
-            for y in (min_y..=max_y).step_by(span as usize) {
-        // for x in (min_x..=7).step_by(span) {
-        //     for y in (min_y..=3).step_by(span) {
-                println!("(x, y) ( {x:}, {y:})");
+        self.bounds.min_x = target.x.min(source.x).min(self.bounds.min_x);
+        self.bounds.min_y = target.y.min(source.y).min(self.bounds.min_y);
+        self.bounds.max_x = target.x.max(source.x).max(self.bounds.max_x);
+        self.bounds.max_y = target.y.max(source.y).max(self.bounds.max_y);
+        for x in (self.bounds.min_x..=self.bounds.max_x).step_by(span as usize) {
+            for y in (self.bounds.min_y..=self.bounds.max_y).step_by(span as usize) {
                 let node = self.encode(ACoord { x,y });
-                println!("in initialize : node {node:?}");
-                // self.populate_edge(ACoord { x,y })
                 self.populate_edge(node)
             }
         }
@@ -127,8 +122,8 @@ impl QuadTree {
         let bounds = Bounds {
             min_x: 0,
             min_y: 0,
-            max_x: stride,
-            max_y: stride,
+            max_x: stride-1,
+            max_y: stride-1,
         };
         Self {
             information,
@@ -141,6 +136,7 @@ impl QuadTree {
 impl QuadTree {
     pub fn populate_edge(&mut self, node: HCoord) {
         println!("POPULATING EDGE node {node:?}");
+        println!("bounds {:?}", self.bounds);
         if self.get_node(node).is_some() {
             println!("exiting early");
             return;
@@ -149,8 +145,8 @@ impl QuadTree {
         let node = transform(&node, self.levels - 1);
         self.bounds.min_x = self.bounds.min_x.min(node.x);
         self.bounds.min_y = self.bounds.min_y.min(node.y);
-        self.bounds.max_x = self.bounds.max_x.max(node.x + span);
-        self.bounds.max_y = self.bounds.max_y.max(node.y + span);
+        self.bounds.max_x = self.bounds.max_x.max(node.x + span - 1);
+        self.bounds.max_y = self.bounds.max_y.max(node.y + span - 1);
         self.information.insert(
             node,
             QuadNode {
@@ -167,8 +163,8 @@ impl QuadTree {
         let node = encode(coord, self.levels - 1);
         self.bounds.min_x = self.bounds.min_x.min(node.x);
         self.bounds.min_y = self.bounds.min_y.min(node.y);
-        self.bounds.max_x = self.bounds.max_x.max(node.x + span);
-        self.bounds.max_y = self.bounds.max_y.max(node.y + span);
+        self.bounds.max_x = self.bounds.max_x.max(node.x + span - 1);
+        self.bounds.max_y = self.bounds.max_y.max(node.y + span - 1);
         self.information.insert(
             node,
             QuadNode {

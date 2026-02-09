@@ -57,8 +57,9 @@ where
         Status::Complete
     }
     pub fn navigate(&mut self, target: ACoord) -> Status {
-        self.scan();
         self.environment.initialize(self.position, target);
+        println!("Environment\n{}", self.environment);
+        self.scan();
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
             println!("Environment\n{}", self.environment);
