@@ -227,7 +227,7 @@ where
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
             self.k += env.distance(s_old, s_new);
-            self.star.remove(&s_old);
+            // self.star.remove(&s_old);
             self.update_vertex(env, s_new);
             self.propagate_cost_g(env, s_new, g_old);
             self.star.entry(s_new).or_insert((g_old, rhs_old));
