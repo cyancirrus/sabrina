@@ -57,8 +57,8 @@ where
         Status::Complete
     }
     pub fn navigate(&mut self, target: ACoord) -> Status {
-        self.environment.initialize(self.position, target);
         self.scan();
+        self.environment.initialize(self.position, target);
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
             println!("Environment\n{}", self.environment);
@@ -80,6 +80,7 @@ where
         let (del_y, del_x) = (dy.signum(), dx.signum());
         while !self.environment.obstructed(pos) {
             self.position = pos;
+            println!("NEW POSITION {pos:?}");
             self.scan();
             if self.environment.encode(tgt) == self.environment.encode(self.position) {
             // if tgt == self.position {

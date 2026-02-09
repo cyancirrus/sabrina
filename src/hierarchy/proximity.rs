@@ -126,6 +126,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             e_node = transform(&e_node, lvl);
             h_node = transform(&h_node, lvl);
             if e_node == h_node {
+                // NOTE: this is just an optimization
                 // information is more granular
                 break;
             } else if let Some(n) = quad.information.get(&e_node) {

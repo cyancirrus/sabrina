@@ -1,7 +1,7 @@
 use crate::global::consts::LEVELS;
 use crate::global::types::{SpatialMap, ACoord, Belief, Bounds, HCoord};
 use crate::hierarchy::encoding::{point, transform, child_hier, encode, grid_hier};
-use crate::hierarchy::proximity::{edge_neighbors};
+use crate::hierarchy::proximity::{edge_neighbors, find_cardinals};
 use std::collections::HashMap;
 
 type Information = HashMap<HCoord, QuadNode>;
@@ -31,7 +31,7 @@ impl SpatialMap for QuadTree {
         HCoord {
             l: 0,
             x: coord.x,
-            y: coord.x,
+            y: coord.y,
         }
     }
     fn decode(&self, node:Self::Encoded) -> ACoord {
@@ -50,21 +50,23 @@ impl SpatialMap for QuadTree {
     fn initialize(&mut self, _source: ACoord, target: ACoord) {
         // TODO: Needs some sort of intelligent resizing
         // ensure the the grid has been initialized
+        println!("target {target:?}");
         let span = 1 << (self.levels - 1);
         let min_x = target.x.min(self.bounds.min_x);
         let min_y = target.y.min(self.bounds.min_y);
         let max_x = target.x.max(self.bounds.max_x);
         let max_y = target.y.max(self.bounds.max_y);
-        for x in (min_x..=max_x).step_by(span) {
-            for y in (min_y..=max_y).step_by(span) {
-                self.populate_edge(ACoord { x,y })
+        for x in (min_x..=max_x).step_by(span as usize) {
+            for y in (min_y..=max_y).step_by(span as usize) {
+        // for x in (min_x..=7).step_by(span) {
+        //     for y in (min_y..=3).step_by(span) {
+                println!("(x, y) ( {x:}, {y:})");
+                let node = self.encode(ACoord { x,y });
+                println!("in initialize : node {node:?}");
+                // self.populate_edge(ACoord { x,y })
+                self.populate_edge(node)
             }
         }
-        // for x in (min_x..=24).step_by(span) {
-        //     for y in (min_y..=12).step_by(span) {
-        //         self.populate_edge(ACoord { x,y })
-        //     }
-        // }
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         match self.get_coord(coord) {
@@ -125,8 +127,8 @@ impl QuadTree {
         let bounds = Bounds {
             min_x: 0,
             min_y: 0,
-            max_x: stride - 1,
-            max_y: stride - 1,
+            max_x: stride,
+            max_y: stride,
         };
         Self {
             information,
@@ -137,9 +139,10 @@ impl QuadTree {
 }
 
 impl QuadTree {
-    pub fn populate_edge(&mut self, coord: ACoord) {
-        let node = encode(coord, 0);
+    pub fn populate_edge(&mut self, node: HCoord) {
+        println!("POPULATING EDGE node {node:?}");
         if self.get_node(node).is_some() {
+            println!("exiting early");
             return;
         }
         let span = 1 << (self.levels - 1);
