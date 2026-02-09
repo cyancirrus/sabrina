@@ -38,7 +38,7 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 1;
+    let levels = 4;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
@@ -48,8 +48,8 @@ fn main() {
             let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 4, y: 1 };
             // works with levels = 2 for d*lite
-            // let position = ACoord { x: 3, y: 2 };
-            let target = ACoord { x: 18, y: 3 };
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 18, y: 3 };
             // let position = ACoord { x: 3, y: 2 };
             // let target = ACoord { x: 7, y: 1 };
             let environment = QuadTree::init(levels);

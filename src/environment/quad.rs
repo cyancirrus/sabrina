@@ -72,8 +72,9 @@ impl SpatialMap for QuadTree {
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
         // distance between source-centroid and target-centroid
+        let p = a.l.max(b.l);
         let (a, b) = (point(a), point(b));
-        a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
+        a.x.abs_diff(b.x) + a.y.abs_diff(b.y) + (1 << p)
         // let (a, b) = (point(a), point(b));
         // ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) as usize
     }
