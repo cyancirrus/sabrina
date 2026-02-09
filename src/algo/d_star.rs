@@ -221,7 +221,7 @@ where
             self.star.remove(&s_old);
             self.update_vertex(env, s_new);
             self.propagate_cost_g(env, s_new, g_old);
-            // self.star.insert(s_new, (g_old, 0));
+            self.star.entry(s_new).or_insert((g_old, rhs_old));
             self.source = Some(s_new);
         }
     }
