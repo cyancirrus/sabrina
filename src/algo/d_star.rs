@@ -211,6 +211,7 @@ where
             let (g_old, rhs_old) = self.star[&t_old];
             self.star.remove(&t_old);
             self.update_vertex(env, t_new);
+            self.propagate_cost_g(env, t_old, g_old);
             self.propagate_cost_g(env, t_new, g_old);
             self.star.insert(t_new, (g_old, rhs_old));
             self.target = Some(t_new);
