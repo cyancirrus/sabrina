@@ -162,6 +162,7 @@ where
         let mut node_next;
         let mut best_cost;
         while let Some(current) = node_curr {
+            println!("current {current:?}");
             if current != source {
                 plan.push(env.decode(current));
             }
@@ -207,22 +208,34 @@ where
         let t_old = self.target.unwrap();
         let s_new = env.encode(source);
         let t_new = env.encode(target);
-        if t_new != t_old {
-            let (g_old, rhs_old) = self.star[&t_old];
-            self.star.remove(&t_old);
-            self.update_vertex(env, t_new);
-            self.propagate_cost_g(env, t_new, g_old);
-            self.star.insert(t_new, (g_old, rhs_old));
-            self.target = Some(t_new);
-        }
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
             self.k += env.distance(s_old, s_new);
             self.star.remove(&s_old);
-            self.update_vertex(env, s_new);
+            self.propagate_cost_g(env, s_old, g_old);
             self.propagate_cost_g(env, s_new, g_old);
-            self.star.entry(s_new).or_insert((g_old, rhs_old));
+            self.update_vertex(env, s_old);
+            self.update_vertex(env, s_new);
             self.source = Some(s_new);
+            self.star.insert(s_new, (g_old, rhs_old));
+        }
+        if t_new != t_old {
+            let (g_old, rhs_old) = self.star[&t_old];
+            self.star.remove(&t_old);
+            self.star.insert(t_new, (g_old, rhs_old));
+            // self.propagate_cost_g(env, t_old, g_old);
+            self.propagate_cost_g(env, t_new, g_old);
+            // self.update_vertex(env, t_old);
+            self.update_vertex(env, t_new);
+            self.target = Some(t_new);
+            let h = env.distance(s_old, t_new);
+            self.pqueue.push(
+                t_new,
+                StarKey {
+                    cost_astar: h,
+                    cost_dijkstra: 0,
+                },
+            );
         }
     }
 }
@@ -259,7 +272,7 @@ where
         // if worse
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&(usize::MAX, usize::MAX));
         self.star.remove(&node);
-        self.update_vertex(env, node);
         self.propagate_cost_g(env, node, g_obs);
+        self.update_vertex(env, node);
     }
 }
