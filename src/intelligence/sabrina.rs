@@ -38,9 +38,9 @@ where
                     x: n.x + self.position.x,
                     y: n.y + self.position.y,
                 };
-                self.environment.insert_ray(self.position, obstacle);
                 self.planner
                     .update(&self.environment, self.position, obstacle);
+                self.environment.insert_ray(self.position, obstacle);
                 // should check and only replan if new info
             }
         }
