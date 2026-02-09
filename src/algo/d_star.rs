@@ -215,8 +215,12 @@ where
     }
     fn revise_plan(&mut self, env: &S) {
         let source = self.source.unwrap();
+        if !self.star.contains_key(&source) {
+            self.star.insert(source, (usize::MAX, usize::MAX));
+            self.propagate_cost_g(env, source, 0);
+        }
         // let (g, rhs) = self.star[&source];
-        let (g, rhs) = self.star[&source];
+        let (g, rhs) = self.star.entry(source).or_insert((usize::MAX, usize::MAX));
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
     }

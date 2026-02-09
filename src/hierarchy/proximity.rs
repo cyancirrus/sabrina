@@ -122,8 +122,6 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
         h_node = node;
         e_node = cardinal;
         found = false;
-        // get cardinal or insert node
-        // if inserted push into neighbors maybe returns option<node>
         for lvl in node.l..quad.levels {
             e_node = transform(&e_node, lvl);
             h_node = transform(&h_node, lvl);

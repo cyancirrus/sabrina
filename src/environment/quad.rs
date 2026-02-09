@@ -50,7 +50,6 @@ impl SpatialMap for QuadTree {
     fn initialize(&mut self, source: ACoord, target: ACoord) {
         // TODO: Needs some sort of intelligent resizing
         // ensure the the grid has been initialized
-        println!("calling initialize with source {source:?}, target {target:}");
         let span = 1 << (self.levels - 1);
         self.bounds.min_x = target.x.min(source.x).min(self.bounds.min_x);
         self.bounds.min_y = target.y.min(source.y).min(self.bounds.min_y);
@@ -135,10 +134,7 @@ impl QuadTree {
 
 impl QuadTree {
     pub fn populate_edge(&mut self, node: HCoord) {
-        println!("POPULATING EDGE node {node:?}");
-        println!("bounds {:?}", self.bounds);
         if self.get_node(node).is_some() {
-            println!("exiting early");
             return;
         }
         let span = 1 << (self.levels - 1);
