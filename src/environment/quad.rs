@@ -72,6 +72,7 @@ impl SpatialMap for QuadTree {
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
         // distance between source-centroid and target-centroid
+        // let p = (1 << a.l) + (1<< b.l);
         let p = a.l.max(b.l);
         let (a, b) = (point(a), point(b));
         a.x.abs_diff(b.x) + a.y.abs_diff(b.y) + (1 << p)
@@ -92,8 +93,6 @@ impl SpatialMap for QuadTree {
         // handles simulation compass rose signals
         let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
-        pos.x += del_x;
-        pos.y += del_y;
         while pos != hit {
             self.update_belief(&pos, Belief::Free);
             pos.x += del_x;
