@@ -1,6 +1,6 @@
 use crate::global::consts::LEVELS;
-use crate::global::types::{SpatialMap, ACoord, Belief, Bounds, HCoord};
-use crate::hierarchy::encoding::{point, transform, child_hier, encode, grid_hier};
+use crate::global::types::{ACoord, Belief, Bounds, HCoord, SpatialMap};
+use crate::hierarchy::encoding::{child_hier, encode, grid_hier, point, transform};
 use crate::hierarchy::proximity::{edge_neighbors, find_cardinals};
 use std::collections::HashMap;
 
@@ -21,7 +21,7 @@ pub struct QuadTree {
 
 impl SpatialMap for QuadTree {
     type Encoded = HCoord;
-    fn encode(&self, coord:ACoord) -> Self::Encoded {
+    fn encode(&self, coord: ACoord) -> Self::Encoded {
         for lvl in 0..self.levels {
             let node = encode(coord, lvl);
             if self.information.contains_key(&node) {
@@ -34,7 +34,7 @@ impl SpatialMap for QuadTree {
             y: coord.y,
         }
     }
-    fn decode(&self, node:Self::Encoded) -> ACoord {
+    fn decode(&self, node: Self::Encoded) -> ACoord {
         ACoord {
             x: node.x,
             y: node.y,
@@ -57,7 +57,7 @@ impl SpatialMap for QuadTree {
         self.bounds.max_y = target.y.max(source.y).max(self.bounds.max_y);
         for x in (self.bounds.min_x..=self.bounds.max_x).step_by(span as usize) {
             for y in (self.bounds.min_y..=self.bounds.max_y).step_by(span as usize) {
-                let node = self.encode(ACoord { x,y });
+                let node = self.encode(ACoord { x, y });
                 self.populate_edge(node)
             }
         }
@@ -67,13 +67,15 @@ impl SpatialMap for QuadTree {
             Some((_, Belief::Free)) => false,
             Some((_, Belief::Unknown)) => false,
             Some((_, Belief::Occupied)) => true,
-            None => false,
+            None => true,
         }
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
         // distance between source-centroid and target-centroid
         let (a, b) = (point(a), point(b));
         a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
+        // let (a, b) = (point(a), point(b));
+        // ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) as usize
     }
     fn neighbors(&self, a: Self::Encoded) -> Vec<Self::Encoded> {
         edge_neighbors(self, a)
@@ -83,7 +85,6 @@ impl SpatialMap for QuadTree {
             Some((_, belief)) => belief,
             None => Belief::Unknown,
         }
-
     }
     fn insert_ray(&mut self, mut pos: ACoord, hit: ACoord) {
         // beliefs not recorded are assumed unknown
@@ -99,9 +100,7 @@ impl SpatialMap for QuadTree {
         }
         self.update_belief(&hit, Belief::Occupied);
     }
-
 }
-
 
 impl QuadTree {
     pub fn new() -> Self {
@@ -121,8 +120,8 @@ impl QuadTree {
         let bounds = Bounds {
             min_x: 0,
             min_y: 0,
-            max_x: stride-1,
-            max_y: stride-1,
+            max_x: stride - 1,
+            max_y: stride - 1,
         };
         Self {
             information,

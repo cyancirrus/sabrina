@@ -9,6 +9,7 @@ use crate::global::types::{ACoord, HCoord};
 // // Multi-ray LiDAR & Planner Implementation.
 // // Hestereses or defered clean up
 // // Consdier implementing a jump iter
+
 pub fn point(h_coord: HCoord) -> ACoord {
     // An interface for retrieving purely for retrieving distance
     // retrieves the centroid scaled by two in order to prevent half-integers

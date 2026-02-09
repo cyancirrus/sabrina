@@ -1,8 +1,8 @@
 use crate::global::types::plan::AStarPlan;
-use std::fmt::Debug;
 use crate::global::types::plan::Planner;
 use crate::global::types::{ACoord, Belief, HeurHeap, HeurNode, SpatialMap};
 use std::collections::{HashMap, HashSet};
+use std::fmt::Debug;
 
 pub struct AStarPlanner;
 
@@ -13,7 +13,8 @@ impl AStarPlanner {
         source: S::Encoded,
         target: S::Encoded,
     ) -> Option<HashMap<S::Encoded, S::Encoded>>
-        where S::Encoded: Debug
+    where
+        S::Encoded: Debug,
     {
         println!("planning");
         let mut p_queue: HeurHeap<S::Encoded> = HeurHeap::new();
@@ -52,7 +53,8 @@ impl AStarPlanner {
         source: S::Encoded,
         target: S::Encoded,
     ) -> Vec<ACoord>
-        where S::Encoded: Debug
+    where
+        S::Encoded: Debug,
     {
         // Ensure this is synchronized with action as this returns reversed plan
         let mut plan = vec![];
@@ -66,8 +68,8 @@ impl AStarPlanner {
 }
 
 impl<S: SpatialMap> Planner<S> for AStarPlanner
-
-where S::Encoded: Debug
+where
+    S::Encoded: Debug,
 {
     type Plan = AStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {

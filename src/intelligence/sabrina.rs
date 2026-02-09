@@ -38,20 +38,21 @@ where
                     x: n.x + self.position.x,
                     y: n.y + self.position.y,
                 };
+                self.environment.insert_ray(self.position, obstacle);
                 self.planner
                     .update(&self.environment, self.position, obstacle);
-                self.environment.insert_ray(self.position, obstacle);
                 // should check and only replan if new info
             }
         }
     }
     pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status
-        where Q: Debug
+    where
+        Q: Debug,
     {
         for &tgt in plan.iter() {
             let status = self.control(tgt);
             if status == Status::Blocked {
-                return Status::Blocked 
+                return Status::Blocked;
             }
         }
         Status::Complete
@@ -72,8 +73,7 @@ where
         }
         status
     }
-    pub fn control(&mut self, tgt: ACoord) -> Status
-    {
+    pub fn control(&mut self, tgt: ACoord) -> Status {
         // beliefs not recorded are assumed unknown
         // handles simulation compass rose signals
         let mut pos = self.position;
@@ -84,8 +84,8 @@ where
             println!("NEW POSITION {pos:?}");
             self.scan();
             if self.environment.encode(tgt) == self.environment.encode(self.position) {
-            // if tgt == self.position {
-                return Status::Enroute
+                // if tgt == self.position {
+                return Status::Enroute;
             }
             pos.x += del_x;
             pos.y += del_y;

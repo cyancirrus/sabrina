@@ -23,5 +23,8 @@ fn test_compression() {
     map.update_belief(&ACoord { x: 0, y: 0 }, Belief::Free);
     map.update_belief(&ACoord { x: 0, y: 1 }, Belief::Free);
     assert_eq!(map.information.len(), 1);
-    assert_eq!(map.get_coord(ACoord { x: 1, y: 1 }), Some((1, Belief::Free)));
+    assert_eq!(
+        map.get_coord(ACoord { x: 1, y: 1 }),
+        Some((1, Belief::Free))
+    );
 }

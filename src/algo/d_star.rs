@@ -53,6 +53,7 @@ where
         let h = env.distance(source, target);
         self.star.insert(target, (usize::MAX, 0));
         self.star.insert(source, (usize::MAX, usize::MAX));
+        println!("default {:?}", self.star);
         self.pqueue.push(
             target,
             StarKey {
@@ -69,8 +70,7 @@ where
         StarKey::new(g, rhs, h, self.k)
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
-        let source = self.source.unwrap();
-        let (g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, 0));
+        let (g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, usize::MAX));
         if g != rhs {
             let ckey = self.calculate_key(env, u);
             self.pqueue.push(u, ckey);
@@ -95,7 +95,6 @@ where
         }
     }
     fn find_min_neighbor_g(&self, env: &S, s: S::Encoded) -> usize {
-        let target = self.target.unwrap();
         let mut min_cost = usize::MAX;
         for s_p in env.neighbors(s) {
             if let Some(&(g_sp, _)) = self.star.get(&s_p) {
@@ -111,35 +110,18 @@ where
         }
         for s in env.neighbors(u) {
             // only update if not equal
-            
+
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&(usize::MAX, usize::MAX));
-            if rhs != env.distance(u, s).saturating_add(g_old)  { continue; } 
+            if rhs != env.distance(u, s).saturating_add(g_old) {
+                continue;
+            }
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
-    // fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
-    //     let target = self.target.unwrap();
-    //     if u == target {
-    //         return;
-    //     }
-    //     for s in env.neighbors(u) {
-    //         // only update if not equal
-    //         let g = if let Some(&(g_s, rhs)) = self.star.get(&s) {
-    //             if rhs != env.distance(u, s).saturating_add(g_old) {
-    //                 continue;
-    //             }
-    //             g_s
-    //         } else {
-    //             continue;
-    //         };
-    //         let rhs_new = self.find_min_neighbor_g(env, s);
-    //         self.star.insert(s, (g, rhs_new));
-    //         self.update_vertex(env, s);
-    //     }
-    // }
     fn compute_shortest_path(&mut self, env: &S) {
+        println!("compute");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
@@ -172,6 +154,7 @@ where
         }
     }
     fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
+        println!("reconstruct");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
@@ -215,14 +198,32 @@ where
     }
     fn revise_plan(&mut self, env: &S) {
         let source = self.source.unwrap();
-        if !self.star.contains_key(&source) {
-            self.star.insert(source, (usize::MAX, usize::MAX));
-            self.propagate_cost_g(env, source, 0);
-        }
-        // let (g, rhs) = self.star[&source];
-        let (g, rhs) = self.star.entry(source).or_insert((usize::MAX, usize::MAX));
+        let (g, rhs) = self.star[&source];
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
+    }
+    fn revise_bounds(&mut self, env: &S, source: ACoord, target: ACoord) {
+        let s_old = self.source.unwrap();
+        let t_old = self.target.unwrap();
+        let s_new = env.encode(source);
+        let t_new = env.encode(target);
+        if t_new != t_old {
+            let (g_old, rhs_old) = self.star[&t_old];
+            self.star.remove(&t_old);
+            self.update_vertex(env, t_new);
+            self.propagate_cost_g(env, t_new, g_old);
+            self.star.insert(t_new, (g_old, 0));
+            self.target = Some(t_new);
+        }
+        if s_new != s_old {
+            let (g_old, rhs_old) = self.star[&s_old];
+            self.k += env.distance(s_old, s_new);
+            self.star.remove(&s_old);
+            self.update_vertex(env, s_new);
+            self.propagate_cost_g(env, s_new, g_old);
+            // self.star.insert(s_new, (g_old, 0));
+            self.source = Some(s_new);
+        }
     }
 }
 
@@ -233,20 +234,19 @@ where
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if self.source.is_none() || self.target.is_none() {
+            println!("star appear as \n {:?}", self.star);
             self.new_plan(env, source, target);
         } else {
-            let s_encode = env.encode(source);
-            let t_encode = env.encode(target);
-
-            self.k += env.distance(self.source.unwrap(), s_encode);
-            self.source = Some(s_encode);
+            self.revise_bounds(env, source, target);
+            println!("star appear as \n {:?}", self.star);
             self.revise_plan(env);
         }
+        println!("end star appear as \n {:?}", self.star);
         match self.reconstruct_decode(env) {
             Some(mut plan) => {
                 plan.push(target);
                 Some(Self::Plan { plan })
-            },
+            }
             None => None,
         }
     }
@@ -256,23 +256,10 @@ where
             return;
         }
         let node = env.encode(obstacle);
-        let leaf = env.leaf(obstacle);
-        let source = self.source.unwrap();
-        let target = self.target.unwrap();
         // if worse
-        let &(g_obs, rhs_obs) = self
-            .star
-            .get(&node)
-            .unwrap_or(&(usize::MAX, usize::MAX));
-        self.star.insert(node, (usize::MAX, usize::MAX));
-        self.star.insert(leaf, (usize::MAX, usize::MAX));
-        self.propagate_cost_g(env, leaf, g_obs);
-        self.update_vertex(env, leaf);
-        self.propagate_cost_g(env, node, g_obs);
+        let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&(usize::MAX, usize::MAX));
+        self.star.remove(&node);
         self.update_vertex(env, node);
-        // // if better
-        // self.star.insert(u_coord, (rhs_u, rhs_u));
-        // self.pqueue.remove(&u_coord);
-        // self.propagate_cost_rhs(env, u_coord);
+        self.propagate_cost_g(env, node, g_obs);
     }
 }
