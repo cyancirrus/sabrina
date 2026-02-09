@@ -212,7 +212,7 @@ where
             self.star.remove(&t_old);
             self.update_vertex(env, t_new);
             self.propagate_cost_g(env, t_new, g_old);
-            self.star.insert(t_new, (g_old, 0));
+            self.star.insert(t_new, (g_old, rhs_old));
             self.target = Some(t_new);
         }
         if s_new != s_old {
