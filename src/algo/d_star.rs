@@ -120,7 +120,6 @@ where
         }
     }
     fn compute_shortest_path(&mut self, env: &S) {
-        println!("compute");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
@@ -153,7 +152,6 @@ where
         }
     }
     fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
-        println!("reconstruct");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
@@ -214,7 +212,6 @@ where
             self.source = Some(s_new);
         }
         if t_new != t_old {
-            println!("TNEW {t_new:?}, TOLD {t_old:?}");
             let &(g_old, rhs_old) = self.star.get(&t_old).unwrap_or(&(usize::MAX, 0));
             self.star.remove(&t_old);
             self.propagate_cost_g(env, t_old, g_old);
@@ -243,14 +240,11 @@ where
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if self.source.is_none() || self.target.is_none() {
-            println!("star appear as \n {:?}", self.star);
             self.new_plan(env, source, target);
         } else {
             self.revise_bounds(env, source, target);
-            println!("star appear as \n {:?}", self.star);
             self.revise_plan(env);
         }
-        println!("end star appear as \n {:?}", self.star);
         match self.reconstruct_decode(env) {
             Some(mut plan) => {
                 plan.push(target);

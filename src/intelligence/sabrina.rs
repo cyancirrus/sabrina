@@ -81,7 +81,6 @@ where
         let (del_y, del_x) = (dy.signum(), dx.signum());
         while !self.environment.obstructed(pos) {
             self.position = pos;
-            println!("NEW POSITION {pos:?}");
             self.scan();
             if self.environment.encode(tgt) == self.environment.encode(self.position) {
                 // if tgt == self.position {
