@@ -186,8 +186,6 @@ where
     fn new_plan(&mut self, env: &S, source: ACoord, target: ACoord) {
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
-        self.source = Some(s_encode);
-        self.target = Some(t_encode);
         if env.obstructed(target) {
             return;
         };
@@ -207,7 +205,8 @@ where
         let s_new = env.encode(source);
         let t_new = env.encode(target);
         if t_new != t_old {
-            let (g_old, rhs_old) = self.star[&t_old];
+            println!("TNEW {t_new:?}, TOLD {t_old:?}");
+            let &(g_old, rhs_old) = self.star.get(&t_old).unwrap_or(&(usize::MAX, 0));
             self.star.remove(&t_old);
             self.update_vertex(env, t_new);
             self.propagate_cost_g(env, t_old, g_old);
@@ -227,7 +226,7 @@ where
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
             self.k += env.distance(s_old, s_new);
-            self.star.remove(&s_old);
+            // self.star.remove(&s_old);
             self.update_vertex(env, s_new);
             self.propagate_cost_g(env, s_new, g_old);
             self.star.entry(s_new).or_insert((g_old, rhs_old));
