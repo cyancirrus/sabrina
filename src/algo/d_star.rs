@@ -263,6 +263,6 @@ where
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&(usize::MAX, usize::MAX));
         self.star.remove(&node);
         self.propagate_cost_g(env, node, g_obs);
-        self.update_vertex(env, node);
+        // self.update_vertex(env, node);
     }
 }

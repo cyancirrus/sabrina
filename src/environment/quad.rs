@@ -72,12 +72,16 @@ impl SpatialMap for QuadTree {
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
         // distance between source-centroid and target-centroid
+        // ----------------
         // let p = (1 << a.l) + (1<< b.l);
-        let p = a.l.max(b.l);
-        let (a, b) = (point(a), point(b));
-        a.x.abs_diff(b.x) + a.y.abs_diff(b.y) + (1 << p)
+        // let p = a.l.max(b.l);
+        // let (a, b) = (point(a), point(b));
+        // a.x.abs_diff(b.x) + a.y.abs_diff(b.y) + (1 << p)
+        // ----------------
         // let (a, b) = (point(a), point(b));
         // ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) as usize
+        let (a, b) = (point(a), point(b));
+        a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
     }
     fn neighbors(&self, a: Self::Encoded) -> Vec<Self::Encoded> {
         edge_neighbors(self, a)

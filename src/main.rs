@@ -12,7 +12,10 @@ use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
 use sabrina::sensor::lidar::Lidar;
 
+// TODO: Check the point math ensure the scaling by two is still in there
 // TODO: We need to update the vertex for all of the subgrids
+// TODO: think i need to call the update for the grid neighbors as well as edge neighbors
+
 
 // fn main() {
 //     println!("------------------------------------");
@@ -38,22 +41,22 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 3;
+    let levels = 2;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
             let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 1, y: 5 };
             
-            // TODO: make it work with levels = 3
-            // let position = ACoord { x: 1, y: 1 };
-            // let target = ACoord { x: 9, y: 3 };
+            // // TODO: make it work with levels = 3
+            let position = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 9, y: 3 };
 
-            // let position = ACoord { x: 1, y: 1 };
-            // let target = ACoord { x: 4, y: 1 };
+            let position = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 10, y: 4 };
             // works with levels = 2 for d*lite
             // let position = ACoord { x: 3, y: 2 };
-            // let target = ACoord { x: 7, y: 1 };
+            // let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             println!("environment\n{:?}", environment);
             // let environment = Grid::new();

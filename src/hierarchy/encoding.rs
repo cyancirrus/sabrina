@@ -15,8 +15,8 @@ pub fn point(h_coord: HCoord) -> ACoord {
     // retrieves the centroid scaled by two in order to prevent half-integers
     let center = 1 << h_coord.l;
     ACoord {
-        x: h_coord.x + center,
-        y: h_coord.y + center,
+        x: h_coord.x + h_coord.x + center,
+        y: h_coord.y + h_coord.y + center,
     }
 }
 
