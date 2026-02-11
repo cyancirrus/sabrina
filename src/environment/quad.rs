@@ -100,12 +100,18 @@ impl SpatialMap for QuadTree {
         node
     }
     fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded> {
+        // NOTE: Need to make this recursive like need to have like
+        // [removals], [keeps]
         // NOTE: THIS IS WHERE I CHANGED
-        // match node.l {
-        //     0 => vec![],
-        //     _ => grid_children(node).to_vec(),
-        // }
-        grid_components(node)
+        // // match node.l {
+        // //     0 => vec![],
+        // //     _ => grid_children(node).to_vec(),
+        // // }
+        // grid_components(node)
+        match node.l {
+            0 => vec![],
+            _ => grid_leaf(node).to_vec(),
+        }
     }
     fn belief(&self, node: Self::Encoded) -> Belief {
         match self.get_node(node) {

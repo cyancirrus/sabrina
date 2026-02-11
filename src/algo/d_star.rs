@@ -263,7 +263,7 @@ where
             self.propagate_neighbors(env, s_new);
             self.update_vertex(env, s_new);
         }
-        if t_new != t_old {
+        // if t_new != t_old {
             // if the new target is at a lower level of granularity
             println!("t_old {t_old:?}, t_new {t_new:?}");
             let (g_old, rhs_old) = self.star[&t_old];
@@ -280,7 +280,7 @@ where
                     cost_dijkstra: 0,
                 },
             );
-        }
+        // }
     }
 }
 
