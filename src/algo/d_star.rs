@@ -110,9 +110,8 @@ where
         }
         for s in env.neighbors(u) {
             // only update if not equal
-
-            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
-            if rhs != env.distance(u, s).saturating_add(g_old) {
+            let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
+            if rhs_s != env.distance(u, s).saturating_add(g_old) {
                 continue;
             }
             let rhs_new = self.find_min_neighbor_g(env, s);
@@ -123,19 +122,17 @@ where
     fn propagate_neighbors(&mut self, env: &S, u: S::Encoded) {
         // for all of the neighbors requeue as found obstacle
         let target = self.target.unwrap();
-        let (g_u, rhs) = match self.star.contains_key(&u) {
+        let (g_u, rhs_u) = match self.star.contains_key(&u) {
             true => self.star[&u],
             false => UNINIT,
         };
         // unknown if this will work
         for s in env.neighbors(u) {
-            if s == target || s == u {
+            let d = env.distance(u, s).saturating_add(g_u);
+            if s == target || s == u || rhs_u != d {
                 continue;
             }
-            if rhs != env.distance(u, s).saturating_add(g_u) {
-                continue;
-            }
-            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
+            let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
             // self.star.insert(s, (g_u, rhs_new));
             self.star.insert(s, (g_s, rhs_new));
@@ -150,15 +147,14 @@ where
             false => UNINIT,
         };
         for s in env.components(&u) {
-            if s == target || s == u {
+            let d = env.distance(u, s).saturating_add(g_u);
+            if s == target || s == u || rhs_u != d {
                 continue;
             }
-            if rhs_u != env.distance(u, s).saturating_add(g_u) {
-                continue;
-            }
+            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
             // self.star.insert(s, (g_u, rhs_new));
-            self.star.insert(s, (usize::MAX, rhs_new));
+            self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
