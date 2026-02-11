@@ -110,8 +110,6 @@ pub fn south_hier(node: HCoord) -> [HCoord; 2] {
 pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     // neighbor and filter need to be opposites ie (neigh east -> filter west);
     let cardinals = find_cardinals(node);
-    println!("cardinals {cardinals:?}");
-    println!("Quad\n{quad:?}");
     // opposite of clockwise iteration
     let mut neighbors = Vec::new();
     let mut stack = Vec::new();

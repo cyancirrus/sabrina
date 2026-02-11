@@ -82,14 +82,14 @@ where
         let target = self.target.unwrap();
         let (g_u, _) = self.star[&u];
         for s in env.neighbors(u) {
-            if s == env.leaf(ACoord{x: 4, y: 2 }) {
-                println!("WHO IS CALLING THIS?");
-                println!("WHO IS CALLING THIS?");
-                println!("{s:?}");
-                println!("{u:?}");
-                println!("WHO IS CALLING THIS?");
-                assert!(false, "this shouldn't be in here");
-            }
+            // if s == env.leaf(ACoord{x: 4, y: 3 }) {
+            //     println!("WHO IS CALLING THIS?");
+            //     println!("WHO IS CALLING THIS?");
+            //     println!("{s:?}");
+            //     println!("{u:?}");
+            //     println!("WHO IS CALLING THIS?");
+            //     assert!(false, "this shouldn't be in here");
+            // }
             if s == target {
                 continue;
             }
@@ -308,7 +308,7 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
-        let node = env.retrieve(obstacle);
+        let node = env.encode(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
         self.star.remove(&node);
         self.propogate_components(env, obstacle);

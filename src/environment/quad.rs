@@ -28,7 +28,6 @@ impl SpatialMap for QuadTree {
                 return node;
             }
         }
-        println!("here");
         let l = self.levels - 1;
         let m = !((1 << l) - 1);
         HCoord {
@@ -61,12 +60,10 @@ impl SpatialMap for QuadTree {
         self.bounds.max_y = target.y.max(source.y).max(self.bounds.max_y);
         for x in (self.bounds.min_x..=self.bounds.max_x).step_by(span as usize) {
             for y in (self.bounds.min_y..=self.bounds.max_y).step_by(span as usize) {
-                println!("(x: {x:}, y: {y:})");
                 let node = self.encode(ACoord { x, y });
                 self.populate_edge(node)
             }
         }
-        println!("Environment\n{:?}", self);
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         match self.get_coord(coord) {
@@ -123,6 +120,7 @@ impl SpatialMap for QuadTree {
         let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
         while pos != hit {
+            // TODO: Need to be able to dynamically recombine in dstar
             self.update_belief(&pos, Belief::Free);
             pos.x += del_x;
             pos.y += del_y;
@@ -162,11 +160,9 @@ impl QuadTree {
 
 impl QuadTree {
     pub fn populate_edge(&mut self, node: HCoord) {
-        if self.get_node(node).is_some() {
-            println!("POP EDGE {node:?}");
-            // assert!(false);
-            return;
-        }
+        // if self.get_node(node).is_some() {
+        //     return;
+        // }
         let span = 1 << (self.levels - 1);
         let node = transform(&node, self.levels - 1);
         self.bounds.min_x = self.bounds.min_x.min(node.x);
@@ -323,10 +319,8 @@ impl QuadTree {
         None
     }
     pub fn get_node(&self, mut node: HCoord) -> Option<(usize, Belief)> {
-        println!("Get Node {node:?}");
         for lvl in 0..self.levels {
             node = transform(&node, lvl);
-            println!("Get Node {node:?}");
             if let Some(n) = self.information.get(&node) {
                 if n.homogenous {
                     return Some((lvl, n.belief));

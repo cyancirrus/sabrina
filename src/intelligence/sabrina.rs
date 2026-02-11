@@ -63,7 +63,6 @@ where
         self.environment.initialize(self.position, target);
         self.scan();
         println!("Environment\n{}", self.environment);
-        assert!(false, "i think this is corrupted for init");
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
             println!("Environment\n{}", self.environment);

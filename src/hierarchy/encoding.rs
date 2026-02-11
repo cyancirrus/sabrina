@@ -106,3 +106,31 @@ pub fn grid_hier(node: &ACoord, level: usize) -> [HCoord; 4] {
         },
     ]
 }
+#[cfg(test)]
+pub mod test_base {
+    use hierarchy::encode::{encode, transform};
+    #[test]
+    fn test_encode() {
+        let x = ACoord {x:0, y: 2};
+        let eresult = HCoord {l: 1, x: 0, y: 2};
+        assert_eq!(eresult, encode(x, 1));
+        
+        let x = ACoord {x:0, y: 2};
+        let eresult = HCoord {l: 0, x: 0, y: 2};
+        assert_eq!(eresult, encode(x, 0));
+    }
+    #[test]
+    fn test_transform() {
+        let x = HCoord { l: 0, x: 2, y: 0 };
+        let eresult = HCoord{ l: 1, x: 2, y: 0 };
+        assert_eq!(eresult, transform(&x, 1));
+        
+        let x = HCoord { l: 0, x: 2, y: 0 };
+        let eresult = HCoord{ l: 0, x: 2, y: 0 };
+        assert_eq!(eresult, transform(&x, 0));
+        
+        let x = HCoord { l: 1, x: 4, y: 0 };
+        let eresult = HCoord{ l: 2, x: 4, y: 0 };
+        assert_eq!(eresult, transform(&x, 2));
+    }
+}
