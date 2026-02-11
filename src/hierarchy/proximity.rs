@@ -247,7 +247,7 @@ pub fn grid_leaf(node: &HCoord) -> [HCoord; 4] {
     ]
 }
 #[cfg(test)]
-mod test_grid_siblings {
+pub mod test_grid_siblings {
     use crate::global::types::HCoord;
     use crate::hierarchy::proximity::grid_siblings;
     #[test]

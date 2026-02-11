@@ -82,14 +82,6 @@ where
         let target = self.target.unwrap();
         let (g_u, _) = self.star[&u];
         for s in env.neighbors(u) {
-            // if s == env.leaf(ACoord{x: 4, y: 3 }) {
-            //     println!("WHO IS CALLING THIS?");
-            //     println!("WHO IS CALLING THIS?");
-            //     println!("{s:?}");
-            //     println!("{u:?}");
-            //     println!("WHO IS CALLING THIS?");
-            //     assert!(false, "this shouldn't be in here");
-            // }
             if s == target {
                 continue;
             }
@@ -128,34 +120,49 @@ where
             self.update_vertex(env, s);
         }
     }
+    fn propogate_neighbors(&mut self, env: &S, obs: ACoord) {
+        let target = self.target.unwrap();
+        let u = env.encode(obs);
+        if u == target {
+            return;
+        }
+        let (g_u, _) = match self.star.contains_key(&u) {
+            true => self.star[&u],
+            false => UNINIT,
+        };
+        // unknown if this will work
+        for s in env.neighbors(u) {
+            if s == u {
+                continue;
+            }
+            let rhs_new = self.find_min_neighbor_g(env, s);
+            self.star.insert(s, (g_u, rhs_new));
+            self.update_vertex(env, s);
+            // self.propagate_cost_g(env, s, g_u);
+        }
+        self.update_vertex(env, u);
+    }
     fn propogate_components(&mut self, env: &S, obs: ACoord) {
         let target = self.target.unwrap();
         let u = env.encode(obs);
         if u == target {
             return;
         }
-        let grid = match env.components(&u) {
-            Some(grid) => grid,
-            None => {
-                return;
-            }
-        };
         let (g_u, _) = match self.star.contains_key(&u) {
             true => self.star[&u],
             false => UNINIT,
         };
         // unknown if this will work
-        for s in grid {
+        for s in env.components(&u) {
             if s == u {
                 continue;
             }
             let rhs_new = self.find_min_neighbor_g(env, s);
-            // self.star.insert(s, (g_u, rhs_new));
-            self.star.insert(s, (usize::MAX, rhs_new));
-            println!("s {s:?}, rhs_new {rhs_new:?}");
-            // self.propagate_cost_g(env, s, g_u);
+            self.star.insert(s, (g_u, rhs_new));
             self.update_vertex(env, s);
+            // self.propagate_cost_g(env, s, g_u);
         }
+        self.update_vertex(env, u);
     }
     fn compute_shortest_path(&mut self, env: &S) {
         println!("compute");
@@ -169,7 +176,8 @@ where
                     break;
                 }
             }
-            let (u_coord, k_old) = self.pqueue.pop().unwrap();
+            let (mut u_coord, k_old) = self.pqueue.pop().unwrap();
+            u_coord = env.retrieve(u_coord);
             println!("u_coord {u_coord:?}");
             let &(g_u, rhs_u) = match self.star.get(&u_coord) {
                 Some(entry) => entry,
@@ -204,7 +212,7 @@ where
         let mut best_cost;
         let mut i = 0;
         while let Some(current) = node_curr {
-            i+=1;
+            i += 1;
             if i > 24 {
                 assert!(false, "deliberately_exiting");
             } else {
@@ -239,7 +247,6 @@ where
         };
         // encodes distance matrix
         self.initialize(env, s_encode, t_encode);
-        println!("s_encode {s_encode:?}");
         self.compute_shortest_path(env);
     }
     fn revise_plan(&mut self, env: &S) {
@@ -291,7 +298,6 @@ where
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if self.source.is_none() || self.target.is_none() {
-            println!("HERE?");
             self.new_plan(env, source, target);
         } else {
             self.revise_bounds(env, source, target);
@@ -314,7 +320,7 @@ where
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
         self.star.remove(&node);
         self.propogate_components(env, obstacle);
-        self.propagate_cost_g(env, node, g_obs);
+        self.propogate_neighbors(env, obstacle);
         self.update_vertex(env, node);
     }
 }

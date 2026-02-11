@@ -9,14 +9,14 @@ pub trait SpatialMap {
     // // planner-facing (encoded space)
     fn belief(&self, node: Self::Encoded) -> Belief;
     fn neighbors(&self, node: Self::Encoded) -> Vec<Self::Encoded>;
+    fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded>;
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize;
     // bridge
     fn encode(&self, coord: ACoord) -> Self::Encoded;
-    fn retrieve(&self, coord: ACoord) -> Self::Encoded;
+    fn retrieve(&self, node: Self::Encoded) -> Self::Encoded;
     fn leaf(&self, coord: ACoord) -> Self::Encoded;
     fn decode(&self, node: Self::Encoded) -> ACoord;
     // plan-initialization
     fn initialize(&mut self, source: ACoord, target: ACoord);
     // encoding maintainance
-    fn components(&self, node: &Self::Encoded) -> Option<Vec<Self::Encoded>>;
 }

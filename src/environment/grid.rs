@@ -28,7 +28,7 @@ impl SpatialMap for Grid {
         // false
         self.belief(self.encode(coord)) == Belief::Occupied
     }
-    fn encode(&self, coord: ACoord) -> ACoord {
+    fn encode(&self, coord: ACoord) -> Self::Encoded {
         coord
     }
     fn leaf(&self, coord: ACoord) -> Self::Encoded {
@@ -37,8 +37,8 @@ impl SpatialMap for Grid {
     fn retrieve(&self, coord: ACoord) -> Self::Encoded {
         coord
     }
-    fn components(&self, _: &Self::Encoded) -> Option<Vec<Self::Encoded>> {
-        None
+    fn components(&self, _: &Self::Encoded) -> Vec<Self::Encoded> {
+        vec![]
     }
     fn decode(&self, node: Self::Encoded) -> ACoord {
         node
