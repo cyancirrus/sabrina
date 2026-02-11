@@ -32,8 +32,14 @@ impl SpatialMap for QuadrantGrid {
     fn decode(&self, coord: Self::Encoded) -> ACoord {
         coord
     }
+    fn retrieve(&self, coord: ACoord) -> Self::Encoded {
+        coord
+    }
     fn leaf(&self, coord: ACoord) -> Self::Encoded {
         coord
+    }
+    fn components(&self, _: &Self::Encoded) -> Option<Vec<Self::Encoded>> {
+        None
     }
     fn initialize(&mut self, _source: ACoord, _target: ACoord) {}
     fn belief(&self, node: Self::Encoded) -> Belief {

@@ -41,6 +41,8 @@ where
                 self.planner
                     .update(&self.environment, self.position, obstacle);
                 self.environment.insert_ray(self.position, obstacle);
+                // self.planner
+                //     .update(&self.environment, self.position, obstacle);
                 // should check and only replan if new info
             }
         }
@@ -59,8 +61,9 @@ where
     }
     pub fn navigate(&mut self, target: ACoord) -> Status {
         self.environment.initialize(self.position, target);
-        println!("Environment\n{}", self.environment);
         self.scan();
+        println!("Environment\n{}", self.environment);
+        assert!(false, "i think this is corrupted for init");
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
             println!("Environment\n{}", self.environment);
@@ -81,6 +84,7 @@ where
         let (del_y, del_x) = (dy.signum(), dx.signum());
         while !self.environment.obstructed(pos) {
             self.position = pos;
+            println!("NEW POSITION: {pos:?}");
             self.scan();
             if self.environment.encode(tgt) == self.environment.encode(self.position) {
                 // if tgt == self.position {

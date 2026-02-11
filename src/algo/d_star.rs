@@ -22,6 +22,7 @@ pub type Star<T> = HashMap<T, (G, Rhs)>;
 type G = usize;
 // Estimate of cost given neighbors belief
 type Rhs = usize;
+const UNINIT: (usize, usize) = (usize::MAX, usize::MAX);
 
 pub struct DStarPlanner<S: SpatialMap> {
     star: Star<S::Encoded>,
@@ -52,7 +53,7 @@ where
         self.target = Some(target);
         let h = env.distance(source, target);
         self.star.insert(target, (usize::MAX, 0));
-        self.star.insert(source, (usize::MAX, usize::MAX));
+        self.star.insert(source, UNINIT);
         self.pqueue.push(
             target,
             StarKey {
@@ -65,11 +66,11 @@ where
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let h = env.distance(u, source);
-        let &(g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, usize::MAX));
+        let &(g, rhs) = self.star.get(&u).unwrap_or(&UNINIT);
         StarKey::new(g, rhs, h, self.k)
     }
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
-        let (g, rhs) = self.star.get(&u).unwrap_or(&(usize::MAX, usize::MAX));
+        let (g, rhs) = self.star.get(&u).unwrap_or(&UNINIT);
         if g != rhs {
             let ckey = self.calculate_key(env, u);
             self.pqueue.push(u, ckey);
@@ -81,11 +82,19 @@ where
         let target = self.target.unwrap();
         let (g_u, _) = self.star[&u];
         for s in env.neighbors(u) {
+            if s == env.leaf(ACoord{x: 4, y: 2 }) {
+                println!("WHO IS CALLING THIS?");
+                println!("WHO IS CALLING THIS?");
+                println!("{s:?}");
+                println!("{u:?}");
+                println!("WHO IS CALLING THIS?");
+                assert!(false, "this shouldn't be in here");
+            }
             if s == target {
                 continue;
             }
             let rhs_new = env.distance(s, u).saturating_add(g_u);
-            let (g, rhs) = self.star.entry(s).or_insert((usize::MAX, usize::MAX));
+            let (g, rhs) = self.star.entry(s).or_insert(UNINIT);
             let rhs_updated = (*rhs).min(rhs_new);
             if rhs_new < *rhs {
                 *rhs = rhs_new;
@@ -110,7 +119,7 @@ where
         for s in env.neighbors(u) {
             // only update if not equal
 
-            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&(usize::MAX, usize::MAX));
+            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             if rhs != env.distance(u, s).saturating_add(g_old) {
                 continue;
             }
@@ -119,7 +128,35 @@ where
             self.update_vertex(env, s);
         }
     }
+    fn propogate_components(&mut self, env: &S, obs: ACoord) {
+        let target = self.target.unwrap();
+        let u = env.encode(obs);
+        if u == target {
+            return;
+        }
+        let grid = match env.components(&u) {
+            Some(grid) => grid,
+            None => {
+                return;
+            }
+        };
+        let (g_u, _) = match self.star.contains_key(&u) {
+            true => self.star[&u],
+            false => UNINIT,
+        };
+        // unknown if this will work
+        for s in grid {
+            if s == u {
+                continue;
+            }
+            let rhs_new = self.find_min_neighbor_g(env, s);
+            self.star.insert(s, (g_u, rhs_new));
+            println!("s {s:?}, rhs_new {rhs_new:?}");
+            self.update_vertex(env, s);
+        }
+    }
     fn compute_shortest_path(&mut self, env: &S) {
+        println!("compute");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
@@ -131,6 +168,7 @@ where
                 }
             }
             let (u_coord, k_old) = self.pqueue.pop().unwrap();
+            println!("u_coord {u_coord:?}");
             let &(g_u, rhs_u) = match self.star.get(&u_coord) {
                 Some(entry) => entry,
                 None => continue,
@@ -152,13 +190,24 @@ where
         }
     }
     fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
+        println!("--------------------------------------");
+        println!("decode");
+        println!("--------------------------------------");
+        println!("distance map\n {:?}", self.star);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
         let mut node_curr = Some(source);
         let mut node_next;
         let mut best_cost;
+        let mut i = 0;
         while let Some(current) = node_curr {
+            i+=1;
+            if i > 24 {
+                assert!(false, "deliberately_exiting");
+            } else {
+                println!("current {current:?}");
+            }
             if current != source {
                 plan.push(env.decode(current));
             }
@@ -180,7 +229,6 @@ where
         }
         None
     }
-
     fn new_plan(&mut self, env: &S, source: ACoord, target: ACoord) {
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
@@ -189,6 +237,7 @@ where
         };
         // encodes distance matrix
         self.initialize(env, s_encode, t_encode);
+        println!("s_encode {s_encode:?}");
         self.compute_shortest_path(env);
     }
     fn revise_plan(&mut self, env: &S) {
@@ -240,6 +289,7 @@ where
     type Plan = DStarPlan;
     fn plan(&mut self, env: &S, source: ACoord, target: ACoord) -> Option<Self::Plan> {
         if self.source.is_none() || self.target.is_none() {
+            println!("HERE?");
             self.new_plan(env, source, target);
         } else {
             self.revise_bounds(env, source, target);
@@ -258,10 +308,10 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
-        let node = env.encode(obstacle);
-        // if worse
-        let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&(usize::MAX, usize::MAX));
+        let node = env.retrieve(obstacle);
+        let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
         self.star.remove(&node);
+        self.propogate_components(env, obstacle);
         self.propagate_cost_g(env, node, g_obs);
         self.update_vertex(env, node);
     }

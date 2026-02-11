@@ -34,6 +34,12 @@ impl SpatialMap for Grid {
     fn leaf(&self, coord: ACoord) -> Self::Encoded {
         coord
     }
+    fn retrieve(&self, coord: ACoord) -> Self::Encoded {
+        coord
+    }
+    fn components(&self, _: &Self::Encoded) -> Option<Vec<Self::Encoded>> {
+        None
+    }
     fn decode(&self, node: Self::Encoded) -> ACoord {
         node
     }

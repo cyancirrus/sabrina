@@ -110,6 +110,8 @@ pub fn south_hier(node: HCoord) -> [HCoord; 2] {
 pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     // neighbor and filter need to be opposites ie (neigh east -> filter west);
     let cardinals = find_cardinals(node);
+    println!("cardinals {cardinals:?}");
+    println!("Quad\n{quad:?}");
     // opposite of clockwise iteration
     let mut neighbors = Vec::new();
     let mut stack = Vec::new();
@@ -122,7 +124,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
         h_node = node;
         e_node = cardinal;
         found = false;
-        for lvl in node.l..quad.levels {
+        for lvl in (node.l..quad.levels).rev() {
             e_node = transform(&e_node, lvl);
             h_node = transform(&h_node, lvl);
             if e_node == h_node {
@@ -143,15 +145,17 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
         stack.push(cardinal);
         while let Some(p_coord) = stack.pop() {
             if let Some(n) = quad.information.get(&p_coord) {
+                found = true;
                 if n.belief == Belief::Occupied {
                     continue;
                 }
                 neighbors.push(p_coord);
             } else if p_coord.l > 0 {
                 stack.extend(filter(p_coord));
-            } else {
-                neighbors.push(p_coord);
             }
+        }
+        if !found {
+            neighbors.push(cardinal);
         }
     }
     neighbors
@@ -185,6 +189,10 @@ pub fn grid_siblings(node: &HCoord) -> [HCoord; 4] {
     ]
 }
 
+pub fn grid_components(node: &HCoord) -> Vec<HCoord> {
+    vec![]
+}
+
 pub fn grid_children(node: &HCoord) -> [HCoord; 4] {
     // goes in clockwise direction
     // [bl, br, tr, tl]
@@ -210,6 +218,33 @@ pub fn grid_children(node: &HCoord) -> [HCoord; 4] {
             l: l,
             x: node.x & !h,
             y: node.y | h,
+        },
+    ]
+}
+
+pub fn grid_leaf(node: &HCoord) -> [HCoord; 4] {
+    // goes in clockwise direction
+    // [bl, br, tr, tl]
+    [
+        HCoord {
+            l: 0,
+            x: node.x & !1,
+            y: node.y & !1,
+        },
+        HCoord {
+            l: 0,
+            x: node.x | 1,
+            y: node.y & !1,
+        },
+        HCoord {
+            l: 0,
+            x: node.x | 1,
+            y: node.y | 1,
+        },
+        HCoord {
+            l: 0,
+            x: node.x & !1,
+            y: node.y | 1,
         },
     ]
 }

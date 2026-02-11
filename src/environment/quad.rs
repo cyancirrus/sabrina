@@ -1,7 +1,7 @@
 use crate::global::consts::LEVELS;
 use crate::global::types::{ACoord, Belief, Bounds, HCoord, SpatialMap};
 use crate::hierarchy::encoding::{child_hier, encode, grid_hier, point, transform};
-use crate::hierarchy::proximity::{edge_neighbors, find_cardinals};
+use crate::hierarchy::proximity::{edge_neighbors, grid_children, grid_siblings, grid_leaf};
 use std::collections::HashMap;
 
 type Information = HashMap<HCoord, QuadNode>;
@@ -28,10 +28,13 @@ impl SpatialMap for QuadTree {
                 return node;
             }
         }
+        println!("here");
+        let l = self.levels - 1;
+        let m = !((1 << l) - 1);
         HCoord {
-            l: 0,
-            x: coord.x,
-            y: coord.y,
+            l: l,
+            x: coord.x & m,
+            y: coord.y & m,
         }
     }
     fn decode(&self, node: Self::Encoded) -> ACoord {
@@ -50,24 +53,27 @@ impl SpatialMap for QuadTree {
     fn initialize(&mut self, source: ACoord, target: ACoord) {
         // TODO: Needs some sort of intelligent resizing
         // ensure the the grid has been initialized
-        let span = 1 << (self.levels - 1);
+        // let span = 1 << (self.levels - 1);
+        let span = 2;
         self.bounds.min_x = target.x.min(source.x).min(self.bounds.min_x);
         self.bounds.min_y = target.y.min(source.y).min(self.bounds.min_y);
         self.bounds.max_x = target.x.max(source.x).max(self.bounds.max_x);
         self.bounds.max_y = target.y.max(source.y).max(self.bounds.max_y);
         for x in (self.bounds.min_x..=self.bounds.max_x).step_by(span as usize) {
             for y in (self.bounds.min_y..=self.bounds.max_y).step_by(span as usize) {
+                println!("(x: {x:}, y: {y:})");
                 let node = self.encode(ACoord { x, y });
                 self.populate_edge(node)
             }
         }
+        println!("Environment\n{:?}", self);
     }
     fn obstructed(&self, coord: ACoord) -> bool {
         match self.get_coord(coord) {
             Some((_, Belief::Free)) => false,
             Some((_, Belief::Unknown)) => false,
             Some((_, Belief::Occupied)) => true,
-            None => true,
+            None => false,
         }
     }
     fn distance(&self, a: Self::Encoded, b: Self::Encoded) -> usize {
@@ -85,6 +91,25 @@ impl SpatialMap for QuadTree {
     }
     fn neighbors(&self, a: Self::Encoded) -> Vec<Self::Encoded> {
         edge_neighbors(self, a)
+    }
+    fn retrieve(&self, coord: ACoord) -> Self::Encoded {
+        for lvl in 0..self.levels {
+            let node = encode(coord, lvl);
+            if self.information.contains_key(&node) {
+                return node;
+            }
+        }
+        HCoord {
+            l: 0,
+            x: coord.x,
+            y: coord.y,
+        }
+    }
+    fn components(&self, node: &Self::Encoded) -> Option<Vec<Self::Encoded>> {
+        match node.l {
+            0 => None,
+            _ => Some(grid_children(node).to_vec()),
+        }
     }
     fn belief(&self, node: Self::Encoded) -> Belief {
         match self.get_node(node) {
@@ -138,6 +163,8 @@ impl QuadTree {
 impl QuadTree {
     pub fn populate_edge(&mut self, node: HCoord) {
         if self.get_node(node).is_some() {
+            println!("POP EDGE {node:?}");
+            // assert!(false);
             return;
         }
         let span = 1 << (self.levels - 1);
@@ -296,8 +323,10 @@ impl QuadTree {
         None
     }
     pub fn get_node(&self, mut node: HCoord) -> Option<(usize, Belief)> {
+        println!("Get Node {node:?}");
         for lvl in 0..self.levels {
             node = transform(&node, lvl);
+            println!("Get Node {node:?}");
             if let Some(n) = self.information.get(&node) {
                 if n.homogenous {
                     return Some((lvl, n.belief));
