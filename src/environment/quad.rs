@@ -2,7 +2,7 @@
 use crate::global::consts::LEVELS;
 use crate::global::types::{ACoord, Belief, Bounds, HCoord, SpatialMap};
 use crate::hierarchy::encoding::{child_hier, encode, grid_hier, point, transform};
-use crate::hierarchy::proximity::{edge_neighbors, grid_children, grid_leaf, grid_siblings};
+use crate::hierarchy::proximity::{edge_neighbors, grid_children, grid_leaf, grid_siblings, grid_components};
 use std::collections::HashMap;
 
 type Information = HashMap<HCoord, QuadNode>;
@@ -100,10 +100,12 @@ impl SpatialMap for QuadTree {
         node
     }
     fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded> {
+        // NOTE: THIS IS WHERE I CHANGED
         match node.l {
             0 => vec![],
             _ => grid_children(node).to_vec(),
         }
+        // grid_components(node)
     }
     fn belief(&self, node: Self::Encoded) -> Belief {
         match self.get_node(node) {

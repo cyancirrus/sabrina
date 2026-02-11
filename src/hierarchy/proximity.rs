@@ -188,7 +188,18 @@ pub fn grid_siblings(node: &HCoord) -> [HCoord; 4] {
 }
 
 pub fn grid_components(node: &HCoord) -> Vec<HCoord> {
-    vec![]
+    let mut comps = Vec::new();
+    let mut node = *node;
+    for lvl in (0..node.l).rev() {
+        node = transform(&node, lvl);
+        for g in grid_siblings(&node) {
+            if g != node {
+                comps.push(g);
+            }
+
+        }
+    }
+    comps
 }
 
 pub fn grid_children(node: &HCoord) -> [HCoord; 4] {
