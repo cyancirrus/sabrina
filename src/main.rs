@@ -21,6 +21,8 @@ use sabrina::sensor::lidar::Lidar;
 // ERROR in the reverse of the transform b/c it will overwrite data, why reverse, edge numbers
 // check git diff
 // FATAL: fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded> {
+// TODO: Have like, create dirty reads and hesterisis or whatnot, like 
+// (new nodes, del nodes, merge nodes)
 
     
 
