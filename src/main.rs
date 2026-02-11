@@ -55,8 +55,8 @@ fn main() {
             let position = ACoord { x: 5, y: 2 };
             let target = ACoord { x: 9, y: 3 };
 
-            let position = ACoord { x: 5, y: 1 };
-            let target = ACoord { x: 10, y: 4 };
+            // let position = ACoord { x: 5, y: 1 };
+            // let target = ACoord { x: 10, y: 4 };
             // // // works with levels = 2 for d*lite
             // // // let position = ACoord { x: 1, y: 1 };
 

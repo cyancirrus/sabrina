@@ -268,6 +268,7 @@ where
         }
         if t_new != t_old {
             // if the new target is at a lower level of granularity
+            println!("t_old {t_old:?}, t_new {t_new:?}");
             let (g_old, rhs_old) = self.star[&t_old];
             self.star.insert(t_new, (g_old, rhs_old));
             // restitch if target granularity is lower
@@ -311,11 +312,13 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
+        let target = self.target.unwrap();
         let node = env.encode(obstacle);
         let leaf = env.leaf(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
-        self.star.remove(&node);
-        self.star.remove(&leaf);
+        if node != target {
+            self.star.remove(&node);
+        }
         // for each of the cardinal neighbors of the obstacle
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
