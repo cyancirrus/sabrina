@@ -126,7 +126,6 @@ where
             true => self.star[&u],
             false => UNINIT,
         };
-        // unknown if this will work
         for s in env.neighbors(u) {
             let d = env.distance(u, s).saturating_add(g_u);
             if s == target || s == u || rhs_u != d {
@@ -134,13 +133,12 @@ where
             }
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
-            // self.star.insert(s, (g_u, rhs_new));
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
     fn propagate_components(&mut self, env: &S, u: S::Encoded) {
-        // for all members of the obstacle grid at lowest level requeue should be able to restitch
+        // for all members of the obstacle grid requeue
         let target = self.target.unwrap();
         let (g_u, rhs_u) = match self.star.contains_key(&u) {
             true => self.star[&u],
@@ -315,10 +313,10 @@ where
         if node != target {
             self.star.remove(&node);
         }
+        self.update_vertex(env, node);
         // for each of the cardinal neighbors of the obstacle
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
         self.propagate_components(env, node);
-        self.update_vertex(env, node)
     }
 }
