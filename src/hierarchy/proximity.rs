@@ -126,10 +126,12 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
         // NOTE: This was (node.l..quad.levels).rev() it was using the break
         // However, going down in the level of precision should like truncate off precision which
         // is non-recoverable
-        for lvl in (node.l..quad.levels).rev() {
+        // for lvl in (node.l..quad.levels).rev() {
+        for lvl in node.l..quad.levels {
             c_node = transform(&e_node, lvl);
             h_node = transform(&node, lvl);
             if c_node == h_node {
+                // this doesnt hold a very large supraset can hold another supraset
                 e_node = transform(&e_node, lvl-1);
                 // NOTE: This is what u need to push in if u don't find anything in drill down
                 // Essentially change to a mem swap for e_node
