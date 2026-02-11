@@ -150,8 +150,10 @@ where
                 continue;
             }
             let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g_u, rhs_new));
+            // self.star.insert(s, (g_u, rhs_new));
+            self.star.insert(s, (usize::MAX, rhs_new));
             println!("s {s:?}, rhs_new {rhs_new:?}");
+            // self.propagate_cost_g(env, s, g_u);
             self.update_vertex(env, s);
         }
     }
@@ -253,7 +255,7 @@ where
         let t_new = env.encode(target);
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
-            self.k += env.distance(s_old, s_new);
+            // self.k += env.distance(s_old, s_new);
             // self.star.remove(&s_old);
             self.update_vertex(env, s_new);
             self.propagate_cost_g(env, s_new, g_old);
