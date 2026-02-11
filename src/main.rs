@@ -41,7 +41,7 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 2;
+    let levels = 3;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
