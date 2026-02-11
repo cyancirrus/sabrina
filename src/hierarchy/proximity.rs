@@ -119,19 +119,25 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     // edge neighbor of the current node
     let mut e_node;
     for (&cardinal, filter) in cardinals.iter().zip(EDGE_FILTERS.iter()) {
+        let mut c_node;
         h_node = node;
         e_node = cardinal;
         found = false;
+        // NOTE: This was (node.l..quad.levels).rev() it was using the break
+        // However, going down in the level of precision should like truncate off precision which
+        // is non-recoverable
         for lvl in (node.l..quad.levels).rev() {
-            e_node = transform(&e_node, lvl);
-            h_node = transform(&h_node, lvl);
-            if e_node == h_node {
-                // NOTE: this is just an optimization
-                // information is more granular
+            c_node = transform(&e_node, lvl);
+            h_node = transform(&node, lvl);
+            if c_node == h_node {
+                e_node = transform(&e_node, lvl-1);
+                // NOTE: This is what u need to push in if u don't find anything in drill down
+                // Essentially change to a mem swap for e_node
+                // NOTE: Leaving break allows shows the problem in the decode i think
                 break;
-            } else if let Some(n) = quad.information.get(&e_node) {
+            } else if let Some(n) = quad.information.get(&c_node) {
                 if n.belief != Belief::Occupied {
-                    neighbors.push(e_node);
+                    neighbors.push(c_node);
                 }
                 found = true;
                 break;
@@ -153,7 +159,8 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             }
         }
         if !found {
-            neighbors.push(cardinal);
+            // NOTE: PART II and then push the largest e_node found which wasn't mem-swapped
+            neighbors.push(e_node);
         }
     }
     neighbors

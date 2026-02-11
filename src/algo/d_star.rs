@@ -260,6 +260,7 @@ where
             // self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
             self.k += env.distance(s_old, s_new);
             self.star.entry(s_new).or_insert(UNINIT);
+            self.propagate_neighbors(env, s_new);
             self.update_vertex(env, s_new);
         }
         if t_new != t_old {

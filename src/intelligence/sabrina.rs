@@ -49,6 +49,7 @@ where
     where
         Q: Debug,
     {
+        println!("PLan {plan:?}");
         for &tgt in plan.iter() {
             let status = self.control(tgt);
             if status == Status::Blocked {

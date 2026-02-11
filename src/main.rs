@@ -18,6 +18,9 @@ use sabrina::sensor::lidar::Lidar;
 // TODO: This isn't working with env.neighbors HCoord { l: 2, x: 4, y: 0 }: (16, 16), HCoord { l: 0, x: 3, y: 2 }: (22, 22)
 // TODO: Consider for the cardinals to have it go to the largest non-containing node - likely can
 // overwrite in edge-neighbors loop
+// ERROR in the reverse of the transform b/c it will overwrite data, why reverse, edge numbers
+// check git diff
+// FATAL: fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded> {
 
     
 

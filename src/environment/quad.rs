@@ -101,11 +101,11 @@ impl SpatialMap for QuadTree {
     }
     fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded> {
         // NOTE: THIS IS WHERE I CHANGED
-        match node.l {
-            0 => vec![],
-            _ => grid_children(node).to_vec(),
-        }
-        // grid_components(node)
+        // match node.l {
+        //     0 => vec![],
+        //     _ => grid_children(node).to_vec(),
+        // }
+        grid_components(node)
     }
     fn belief(&self, node: Self::Encoded) -> Belief {
         match self.get_node(node) {
