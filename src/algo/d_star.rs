@@ -123,10 +123,7 @@ where
     fn propagate_neighbors(&mut self, env: &S, u: S::Encoded) {
         // for all of the neighbors requeue as found obstacle
         let target = self.target.unwrap();
-        if u == target {
-            return;
-        }
-        let (g_u, _) = match self.star.contains_key(&u) {
+        let (g_u, rhs) = match self.star.contains_key(&u) {
             true => self.star[&u],
             false => UNINIT,
         };
@@ -135,34 +132,35 @@ where
             if s == target || s == u {
                 continue;
             }
+            if rhs != env.distance(u, s).saturating_add(g_u) {
+                continue;
+            }
+            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g_u, rhs_new));
+            // self.star.insert(s, (g_u, rhs_new));
+            self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
-        self.propagate_cost_g(env, u, g_u);
-        self.update_vertex(env, u);
     }
     fn propagate_components(&mut self, env: &S, u: S::Encoded) {
         // for all members of the obstacle grid at lowest level requeue should be able to restitch
         let target = self.target.unwrap();
-        if u == target {
-            return;
-        }
-        let (g_u, _) = match self.star.contains_key(&u) {
+        let (g_u, rhs_u) = match self.star.contains_key(&u) {
             true => self.star[&u],
             false => UNINIT,
         };
-        // unknown if this will work
         for s in env.components(&u) {
             if s == target || s == u {
                 continue;
             }
+            if rhs_u != env.distance(u, s).saturating_add(g_u) {
+                continue;
+            }
             let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g_u, rhs_new));
+            // self.star.insert(s, (g_u, rhs_new));
+            self.star.insert(s, (usize::MAX, rhs_new));
             self.update_vertex(env, s);
         }
-        self.propagate_cost_g(env, u, g_u);
-        self.update_vertex(env, u);
     }
     fn compute_shortest_path(&mut self, env: &S) {
         println!("compute");
@@ -176,9 +174,8 @@ where
                     break;
                 }
             }
-            let (mut u_coord, k_old) = self.pqueue.pop().unwrap();
-            u_coord = env.retrieve(u_coord);
-            println!("u_coord {u_coord:?}");
+            let (u_coord, k_old) = self.pqueue.pop().unwrap();
+            println!("processing {u_coord:?}");
             let &(g_u, rhs_u) = match self.star.get(&u_coord) {
                 Some(entry) => entry,
                 None => continue,
@@ -251,7 +248,6 @@ where
     }
     fn revise_plan(&mut self, env: &S) {
         let source = self.source.unwrap();
-        let (g, rhs) = self.star[&source];
         self.update_vertex(env, source);
         self.compute_shortest_path(env);
     }
@@ -260,24 +256,24 @@ where
         let t_old = self.target.unwrap();
         let s_new = env.encode(source);
         let t_new = env.encode(target);
+        self.source = Some(s_new);
+        self.target = Some(t_new);
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
+            // let h = env.distance(s_old, s_new); 
+            // self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
             self.k += env.distance(s_old, s_new);
-            self.star.remove(&s_old);
+            self.star.entry(s_new).or_insert(UNINIT);
             self.update_vertex(env, s_new);
-            self.propagate_cost_g(env, s_new, g_old);
-            self.star.entry(s_new).or_insert((g_old, rhs_old));
-            self.source = Some(s_new);
         }
         if t_new != t_old {
-            let &(g_old, rhs_old) = self.star.get(&t_old).unwrap_or(&(usize::MAX, 0));
-            // let &(g_old, rhs_old) = &(0, 0);
-            self.star.remove(&t_old);
-            self.propagate_cost_g(env, t_old, g_old);
-            self.propagate_cost_g(env, t_new, g_old);
-            self.update_vertex(env, t_new);
-            self.update_vertex(env, t_old);
+            // if the new target is at a lower level of granularity
+            let (g_old, rhs_old) = self.star[&t_old];
             self.star.insert(t_new, (g_old, rhs_old));
+            // restitch if target granularity is lower
+            self.propagate_components(env, t_new);
+            self.propagate_neighbors(env, t_new);
+            self.update_vertex(env, t_new);
             let h = env.distance(s_new, t_new);
             self.pqueue.push(
                 t_new,
@@ -286,7 +282,6 @@ where
                     cost_dijkstra: 0,
                 },
             );
-            self.target = Some(t_new);
         }
     }
 }
@@ -317,10 +312,14 @@ where
             return;
         }
         let node = env.encode(obstacle);
+        let leaf = env.leaf(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
         self.star.remove(&node);
-        self.propagate_components(env, node);
+        self.star.remove(&leaf);
+        // for each of the cardinal neighbors of the obstacle
         self.propagate_neighbors(env, node);
-        self.update_vertex(env, node);
+        // for each of the grid components of the obstacle
+        self.propagate_components(env, node);
+        self.update_vertex(env, node)
     }
 }

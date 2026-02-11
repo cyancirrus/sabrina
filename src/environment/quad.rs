@@ -117,7 +117,6 @@ impl SpatialMap for QuadTree {
         let (dy, dx) = (hit.y - pos.y, hit.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
         while pos != hit {
-            // TODO: Need to be able to dynamically recombine in dstar
             self.update_belief(&pos, Belief::Free);
             pos.x += del_x;
             pos.y += del_y;
