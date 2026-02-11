@@ -151,7 +151,6 @@ where
             }
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
-            // self.star.insert(s, (g_u, rhs_new));
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
@@ -310,13 +309,13 @@ where
         let node = env.encode(obstacle);
         let leaf = env.leaf(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
-        if node != target {
-            self.star.remove(&node);
-        }
         self.update_vertex(env, node);
         // for each of the cardinal neighbors of the obstacle
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
         self.propagate_components(env, node);
+        if node != target {
+            self.star.remove(&node);
+        }
     }
 }
