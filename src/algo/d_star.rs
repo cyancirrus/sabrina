@@ -255,7 +255,7 @@ where
         let t_new = env.encode(target);
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
-            // self.k += env.distance(s_old, s_new);
+            self.k += env.distance(s_old, s_new);
             // self.star.remove(&s_old);
             self.update_vertex(env, s_new);
             self.propagate_cost_g(env, s_new, g_old);
