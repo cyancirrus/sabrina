@@ -14,8 +14,11 @@ use sabrina::parser::quad::read_quad;
 use sabrina::sensor::lidar::Lidar;
 // use sabrina::hierarchy::proximity:: grid_siblings;
 
-// TODO: We need to update the vertex for all of the subgrids
-// TODO: think i need to call the update for the grid neighbors as well as edge neighbors
+// TODO: Just need to check that the env.neighbors gets well with mixed hierarhchy
+// TODO: This isn't working with env.neighbors HCoord { l: 2, x: 4, y: 0 }: (16, 16), HCoord { l: 0, x: 3, y: 2 }: (22, 22)
+// TODO: Consider for the cardinals to have it go to the largest non-containing node - likely can
+// overwrite in edge-neighbors loop
+
     
 
 // fn main() {
@@ -41,7 +44,7 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 3;
+    let levels = 4;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
@@ -49,11 +52,11 @@ fn main() {
             let target = ACoord { x: 1, y: 5 };
 
             // // TODO: make it work with levels = 3
-            // let position = ACoord { x: 1, y: 1 };
-            // let target = ACoord { x: 9, y: 3 };
-
-            let position = ACoord { x: 5, y: 2 };
+            let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 9, y: 3 };
+
+            // let position = ACoord { x: 5, y: 2 };
+            // let target = ACoord { x: 9, y: 3 };
 
             // let position = ACoord { x: 5, y: 1 };
             // let target = ACoord { x: 10, y: 4 };

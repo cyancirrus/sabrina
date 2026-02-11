@@ -146,9 +146,12 @@ where
         };
         for s in env.components(&u) {
             let d = env.distance(u, s).saturating_add(g_u);
-            if s == target || s == u || rhs_u != d {
+            if s == target || s == u {
                 continue;
             }
+            // if s == target || s == u || rhs_u != d {
+            //     continue;
+            // }
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_s, rhs_new));
