@@ -157,7 +157,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     neighbors
 }
 
-pub fn grid_siblings(node:&HCoord) -> [HCoord;4] {
+pub fn grid_siblings(node: &HCoord) -> [HCoord; 4] {
     // goes in clockwise direction
     // [bl, br, tr, tl]
     let h = 1 << node.l;
@@ -185,7 +185,7 @@ pub fn grid_siblings(node:&HCoord) -> [HCoord;4] {
     ]
 }
 
-pub fn grid_children(node:&HCoord) -> [HCoord;4] {
+pub fn grid_children(node: &HCoord) -> [HCoord; 4] {
     // goes in clockwise direction
     // [bl, br, tr, tl]
     let l = node.l - 1;
@@ -215,48 +215,48 @@ pub fn grid_children(node:&HCoord) -> [HCoord;4] {
 }
 #[cfg(test)]
 mod test_grid_siblings {
-    use crate::hierarchy::proximity::grid_siblings;
     use crate::global::types::HCoord;
+    use crate::hierarchy::proximity::grid_siblings;
     #[test]
     fn test_positive_sibblings() {
         let x = HCoord { l: 0, x: 0, y: 0 };
         let eresult = [
-            HCoord { l:0, x: 0, y: 0 },
-            HCoord { l:0, x: 1, y: 0 },
-            HCoord { l:0, x: 1, y: 1 },
-            HCoord { l:0, x: 0, y: 1 },
+            HCoord { l: 0, x: 0, y: 0 },
+            HCoord { l: 0, x: 1, y: 0 },
+            HCoord { l: 0, x: 1, y: 1 },
+            HCoord { l: 0, x: 0, y: 1 },
         ];
-        assert_eq!(eresult, grid_siblings(x));
+        assert_eq!(eresult, grid_siblings(&x));
         let x = HCoord { l: 0, x: 1, y: 1 };
-        assert_eq!(eresult, grid_siblings(x));
-        let x = HCoord{l: 2, x: 0, y: 0 };
+        assert_eq!(eresult, grid_siblings(&x));
+        let x = HCoord { l: 2, x: 0, y: 0 };
         let eresult = [
-            HCoord { l:2, x: 0, y: 0 },
-            HCoord { l:2, x: 4, y: 0 },
-            HCoord { l:2, x: 4, y: 4 },
-            HCoord { l:2, x: 0, y: 4 },
+            HCoord { l: 2, x: 0, y: 0 },
+            HCoord { l: 2, x: 4, y: 0 },
+            HCoord { l: 2, x: 4, y: 4 },
+            HCoord { l: 2, x: 0, y: 4 },
         ];
-        assert_eq!(eresult, grid_siblings(x));
+        assert_eq!(eresult, grid_siblings(&x));
     }
     #[test]
     fn test_negative_sibblings() {
         let x = HCoord { l: 0, x: -1, y: -1 };
         let eresult = [
-            HCoord { l:0, x: -2, y: -2 },
-            HCoord { l:0, x: -1, y: -2 },
-            HCoord { l:0, x: -1, y: -1 },
-            HCoord { l:0, x: -2, y: -1 },
+            HCoord { l: 0, x: -2, y: -2 },
+            HCoord { l: 0, x: -1, y: -2 },
+            HCoord { l: 0, x: -1, y: -1 },
+            HCoord { l: 0, x: -2, y: -1 },
         ];
-        assert_eq!(eresult, grid_siblings(x));
+        assert_eq!(eresult, grid_siblings(&x));
         let x = HCoord { l: 0, x: -2, y: -1 };
-        assert_eq!(eresult, grid_siblings(x));
-        let x = HCoord{l: 2, x: -1, y: -1 };
+        assert_eq!(eresult, grid_siblings(&x));
+        let x = HCoord { l: 2, x: -1, y: -1 };
         let eresult = [
-            HCoord { l:2, x: -5, y: -5 },
-            HCoord { l:2, x: -1, y: -5 },
-            HCoord { l:2, x: -1, y: -1 },
-            HCoord { l:2, x: -5, y: -1 },
+            HCoord { l: 2, x: -5, y: -5 },
+            HCoord { l: 2, x: -1, y: -5 },
+            HCoord { l: 2, x: -1, y: -1 },
+            HCoord { l: 2, x: -5, y: -1 },
         ];
-        assert_eq!(eresult, grid_siblings(x));
+        assert_eq!(eresult, grid_siblings(&x));
     }
 }
