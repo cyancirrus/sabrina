@@ -11,61 +11,12 @@ use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
 use sabrina::sensor::lidar::Lidar;
+// use sabrina::hierarchy::proximity:: grid_siblings;
 
 // TODO: We need to update the vertex for all of the subgrids
 // TODO: think i need to call the update for the grid neighbors as well as edge neighbors
 
-
-fn grid_siblings(node:HCoord) -> [HCoord;4] {
-    // goes in clockwise direction
-    // [bl, br, tr, tl]
-    let h = 1 << node.l;
-    [
-        HCoord {
-            l: node.l,
-            x: node.x & !1,
-            y: node.y & !1,
-        },
-        HCoord {
-            l: node.l,
-            x: node.x | h,
-            y: node.y & !1,
-        },
-        HCoord {
-            l: node.l,
-            x: node.x | h,
-            y: node.y | h,
-        },
-        HCoord {
-            l: node.l,
-            x: node.x & !1,
-            y: node.y | h,
-        },
-    ]
-}
-
-fn test_sibblings() {
-    let x = HCoord { l: 0, x: 0, y: 0 };
-    let eresult = [
-        HCoord { l:0, x: 0, y: 0 },
-        HCoord { l:0, x: 1, y: 0 },
-        HCoord { l:0, x: 1, y: 1 },
-        HCoord { l:0, x: 0, y: 1 },
-    ];
-    assert_eq!(eresult, grid_siblings(x));
-    let x = HCoord { l: 0, x: 1, y: 1 };
-    assert_eq!(eresult, grid_siblings(x));
-    let x = HCoord{l: 2, x: 0, y: 0 };
-    let eresult = [
-        HCoord { l:1, x: 0, y: 0 },
-        HCoord { l:1, x: 4, y: 0 },
-        HCoord { l:1, x: 4, y: 4 },
-        HCoord { l:1, x: 0, y: 4 },
-    ];
-}
-
 fn main() {
-    test_sibblings();
     // println!("------------------------------------");
     // println!("      Example navigation            ");
     // println!("------------------------------------");
