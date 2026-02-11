@@ -120,9 +120,9 @@ where
             self.update_vertex(env, s);
         }
     }
-    fn propogate_neighbors(&mut self, env: &S, obs: ACoord) {
+    fn propagate_neighbors(&mut self, env: &S, u: S::Encoded) {
+        // for all of the neighbors requeue as found obstacle
         let target = self.target.unwrap();
-        let u = env.encode(obs);
         if u == target {
             return;
         }
@@ -132,19 +132,19 @@ where
         };
         // unknown if this will work
         for s in env.neighbors(u) {
-            if s == u {
+            if s == target || s == u {
                 continue;
             }
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_u, rhs_new));
             self.update_vertex(env, s);
-            // self.propagate_cost_g(env, s, g_u);
         }
+        self.propagate_cost_g(env, u, g_u);
         self.update_vertex(env, u);
     }
-    fn propogate_components(&mut self, env: &S, obs: ACoord) {
+    fn propagate_components(&mut self, env: &S, u: S::Encoded) {
+        // for all members of the obstacle grid at lowest level requeue should be able to restitch
         let target = self.target.unwrap();
-        let u = env.encode(obs);
         if u == target {
             return;
         }
@@ -154,14 +154,14 @@ where
         };
         // unknown if this will work
         for s in env.components(&u) {
-            if s == u {
+            if s == target || s == u {
                 continue;
             }
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_u, rhs_new));
             self.update_vertex(env, s);
-            // self.propagate_cost_g(env, s, g_u);
         }
+        self.propagate_cost_g(env, u, g_u);
         self.update_vertex(env, u);
     }
     fn compute_shortest_path(&mut self, env: &S) {
@@ -271,13 +271,13 @@ where
         }
         if t_new != t_old {
             let &(g_old, rhs_old) = self.star.get(&t_old).unwrap_or(&(usize::MAX, 0));
+            // let &(g_old, rhs_old) = &(0, 0);
             self.star.remove(&t_old);
             self.propagate_cost_g(env, t_old, g_old);
             self.propagate_cost_g(env, t_new, g_old);
             self.update_vertex(env, t_new);
             self.update_vertex(env, t_old);
             self.star.insert(t_new, (g_old, rhs_old));
-            self.pqueue.remove(&t_old);
             let h = env.distance(s_new, t_new);
             self.pqueue.push(
                 t_new,
@@ -319,8 +319,8 @@ where
         let node = env.encode(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
         self.star.remove(&node);
-        self.propogate_components(env, obstacle);
-        self.propogate_neighbors(env, obstacle);
+        self.propagate_components(env, node);
+        self.propagate_neighbors(env, node);
         self.update_vertex(env, node);
     }
 }
