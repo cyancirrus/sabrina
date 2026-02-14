@@ -134,10 +134,8 @@ where
                 continue;
             }
             let (g_s, rhs) = self.star[&s];
-            self.update_vertex(env, s);
             self.star.insert( s, (g_s, usize::MAX));
-            // self.star.insert( s, (usize::MAX, rhs));
-            // self.star.insert( s, (usize::MAX, usize::MAX));
+            self.update_vertex(env, s);
         }
     }
     fn propagate_components(&mut self, env: &S, n: S::Encoded, l: S::Encoded) {
@@ -151,10 +149,8 @@ where
                 continue;
             }
             let (g_s, rhs) = self.star[&s];
-            self.update_vertex(env, s);
             self.star.insert( s, (g_s, usize::MAX));
-            // self.star.insert( s, (usize::MAX, rhs));
-            // self.star.insert( s, (usize::MAX, usize::MAX));
+            self.update_vertex(env, s);
         }
     }
     fn compute_shortest_path(&mut self, env: &S) {
@@ -166,8 +162,6 @@ where
             if let Some((top_coord, top_key)) = self.pqueue.peek() {
                 let start_key = self.calculate_key(env, source);
                 if g == rhs && top_key <= start_key {
-                    println!("start_key {start_key:?}");
-                    println!("update queue {:?}", self.pqueue);
                     break;
                 }
             }
@@ -196,7 +190,7 @@ where
             }
         }
     }
-    fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
+    fn reconstruct_decode(&self, env: &S) -> Option<Vec<ACoord>> {
         println!("--------------------------------------");
         println!("decode");
         println!("--------------------------------------");
@@ -219,6 +213,7 @@ where
                 plan.push(env.decode(current));
             }
             if target == current {
+                // println!("FINAL STAR {:?}", self.star);
                 return Some(plan);
             }
             node_next = None;
@@ -239,6 +234,7 @@ where
     fn new_plan(&mut self, env: &S, source: ACoord, target: ACoord) {
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
+        println!("t_initial {t_encode:?}");
         if env.obstructed(target) {
             return;
         };
@@ -256,46 +252,32 @@ where
         let t_old = self.target.unwrap();
         let s_new = env.encode(source);
         let t_new = env.encode(target);
+        println!("t_old {t_old:?}, t_new {t_new:?}");
         self.source = Some(s_new);
         self.target = Some(t_new);
-        if s_new != s_old {
-            // let (g_old, rhs_old) = self.star[&s_old];
-            let (g_old, rhs_old) = match self.star.contains_key(&s_old) {
-                true => self.star[&s_old],
-                false => UNINIT,
-            };
-            let h = env.distance(s_old, s_new);
-            self.star
-                .entry(s_new)
-                .or_insert((rhs_old.saturating_add(h), usize::MAX));
-            // self.k += env.distance(s_old, s_new);
-            self.k += env.distance(s_old, s_new);
-            // self.star.entry(s_new).or_insert(UNINIT);
-            self.star.insert(s_new, UNINIT);
-            self.propagate_neighbors(env, s_new);
-            self.propagate_components(env, s_old, s_new);
-            self.update_vertex(env, s_new);
-        }
+        self.k += env.distance(s_old, s_new);
+        let (g_old, rhs_old) = self.star[&s_old];
+        let h = env.distance(s_old, s_new);
+        self.propagate_components(env, s_old, s_new);
+        self.propagate_neighbors(env, s_new);
+        self.update_vertex(env, s_new);
+        self.star.insert(s_new, UNINIT);
         if t_new != t_old {
             // if the new target is at a lower level of granularity
-            println!("t_old {t_old:?}, t_new {t_new:?}");
-            // let (g_old, rhs_old) = self.star[&t_old];
-            // self.star.insert(t_new, (g_old, rhs_old));
-            // let (g_old, rhs_old) = self.star[&t_old];
             self.star.insert(t_new, (0, 0));
             // restitch if target granularity is lower
             self.propagate_components(env, t_old, t_new);
             self.propagate_neighbors(env, t_new);
             self.update_vertex(env, t_new);
             let h = env.distance(s_new, t_new);
-            self.pqueue.push(
-                t_new,
-                StarKey {
-                    cost_astar: h,
-                    cost_dijkstra: 0,
-                },
-            );
         }
+        self.pqueue.push(
+            t_new,
+            StarKey {
+                cost_astar: h,
+                cost_dijkstra: 0,
+            },
+        );
     }
 }
 
@@ -329,34 +311,14 @@ where
         let node = env.encode(obstacle);
         let leaf = env.leaf(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
-        self.update_vertex(env, node);
         // for each of the cardinal neighbors of the obstacle
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
         self.propagate_components(env, node, leaf);
-        self.star.remove(&node);
-        self.star.remove(&leaf);
+        self.update_vertex(env, node);
+        // self.star.remove(&node);
+        // self.star.remove(&leaf);
         // self.pqueue.remove(&node);
         // self.pqueue.remove(&leaf);
     }
-    // fn update(&mut self, env: &S, position: ACoord, obstacle: ACoord) {
-    //     // TODO: Need to integrate rhs for when we find better paths
-    //     if self.source.is_none() || self.target.is_none() {
-    //         return;
-    //     }
-    //     println!("processing obstacle at {obstacle:?}");
-    //     let target = self.target.unwrap();
-    //     let node = env.encode(obstacle);
-    //     let leaf = env.leaf(obstacle);
-    //     let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
-    //     self.update_vertex(env, node);
-    //     // for each of the cardinal neighbors of the obstacle
-    //     self.propagate_neighbors(env, node);
-    //     // for each of the grid components of the obstacle
-    //     self.propagate_components(env, node, leaf);
-    //     self.star.remove(&node);
-    //     self.star.remove(&leaf);
-    //     self.pqueue.remove(&node);
-    //     self.pqueue.remove(&leaf);
-    // }
 }
