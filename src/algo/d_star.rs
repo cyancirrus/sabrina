@@ -279,6 +279,7 @@ where
         self.source = Some(s_new);
         self.target = Some(t_new);
         if s_new != s_old {
+            // let (g_old, rhs_old) = self.star[&s_old];
             let (g_old, rhs_old) = self.star[&s_old];
             let h = env.distance(s_old, s_new); 
             self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
@@ -347,7 +348,9 @@ where
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
         self.propagate_components(env, node, leaf);
+        if node != source {
         self.star.remove(&node);
+        }
         self.star.remove(&leaf);
         self.pqueue.remove(&node);
         self.pqueue.remove(&leaf);
