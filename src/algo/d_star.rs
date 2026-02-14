@@ -85,6 +85,10 @@ where
             if s == target {
                 continue;
             }
+            if s == env.leaf( ACoord {x: 4, y: 4}) {
+                println!("RHS WHO WAS PARENT?");
+                println!("{u:?}");
+            }
             let rhs_new = env.distance(s, u).saturating_add(g_u);
             let (g, rhs) = self.star.entry(s).or_insert(UNINIT);
             let rhs_updated = (*rhs).min(rhs_new);
@@ -97,6 +101,10 @@ where
     fn find_min_neighbor_g(&self, env: &S, s: S::Encoded) -> usize {
         let mut min_cost = usize::MAX;
         for s_p in env.neighbors(s) {
+            if s == env.leaf( ACoord {x: 4, y: 4}) {
+                println!("MIN NEIGHBOR WHO WAS PARENT?");
+                println!("{s:?}");
+            }
             if let Some(&(g_sp, _)) = self.star.get(&s_p) {
                 min_cost = min_cost.min(env.distance(s, s_p).saturating_add(g_sp));
             }
@@ -109,6 +117,10 @@ where
             return;
         }
         for s in env.neighbors(u) {
+            if s == env.leaf( ACoord {x: 4, y: 4}) {
+                println!("PCG WHO WAS PARENT?");
+                println!("{u:?}");
+            }
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             if rhs_s != env.distance(u, s).saturating_add(g_old) {
@@ -131,33 +143,60 @@ where
             if s == target || s == u || rhs_u != d {
                 continue;
             }
+            if s == env.leaf( ACoord {x: 4, y: 4}) {
+                println!("PN WHO WAS PARENT?");
+                println!("{u:?}");
+            }
+            println!("found neighbor for {s:?}");
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
-    fn propagate_components(&mut self, env: &S, u: S::Encoded) {
+    fn propagate_components(&mut self, env: &S, n: S::Encoded, l: S::Encoded) {
         // for all members of the obstacle grid requeue
         let target = self.target.unwrap();
-        let (g_u, rhs_u) = match self.star.contains_key(&u) {
-            true => self.star[&u],
+        let (g_n, rhs_n) = match self.star.contains_key(&n) {
+            true => self.star[&n],
             false => UNINIT,
         };
-        for s in env.components(&u) {
-            let d = env.distance(u, s).saturating_add(g_u);
-            if s == target || s == u {
+        for s in env.components(&n, &l) {
+            let d = env.distance(n, s).saturating_add(g_n);
+            if s == target || s == n {
                 continue;
             }
-            // if s == target || s == u || rhs_u != d {
-            //     continue;
-            // }
+            if s == env.leaf( ACoord {x: 4, y: 4}) {
+                println!("PC WHO WAS PARENT?");
+                println!("{n:?}");
+            }
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
+    // fn propagate_components(&mut self, env: &S, u: S::Encoded) {
+    //     // for all members of the obstacle grid requeue
+    //     let target = self.target.unwrap();
+    //     let (g_u, rhs_u) = match self.star.contains_key(&u) {
+    //         true => self.star[&u],
+    //         false => UNINIT,
+    //     };
+    //     for s in env.components(&u) {
+    //         let d = env.distance(u, s).saturating_add(g_u);
+    //         if s == target || s == u {
+    //             continue;
+    //         }
+    //         // if s == target || s == u || rhs_u != d {
+    //         //     continue;
+    //         // }
+    //         let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
+    //         let rhs_new = self.find_min_neighbor_g(env, s);
+    //         self.star.insert(s, (g_s, rhs_new));
+    //         self.update_vertex(env, s);
+    //     }
+    // }
     fn compute_shortest_path(&mut self, env: &S) {
         println!("compute");
         let source = self.source.unwrap();
@@ -204,6 +243,11 @@ where
         let mut node_next;
         let mut best_cost;
         let mut i = 0;
+        println!("WHAT IS THE NEIGHBOR FOR THIS?");
+        let problem = env.encode(ACoord {x: 4, y: 2});
+        for n in env.neighbors(problem) {
+            println!("n {n:?}");
+        }
         while let Some(current) = node_curr {
             i += 1;
             if i > 24 {
@@ -256,20 +300,22 @@ where
         self.target = Some(t_new);
         if s_new != s_old {
             let (g_old, rhs_old) = self.star[&s_old];
-            // let h = env.distance(s_old, s_new); 
-            // self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
+            let h = env.distance(s_old, s_new); 
+            self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
             self.k += env.distance(s_old, s_new);
-            self.star.entry(s_new).or_insert(UNINIT);
+            // self.star.entry(s_new).or_insert(UNINIT);
+            // self.star.insert(s_new, UNINIT);
             self.propagate_neighbors(env, s_new);
+            self.propagate_components(env, s_old, s_new);
             self.update_vertex(env, s_new);
         }
-        // if t_new != t_old {
+        if t_new != t_old {
             // if the new target is at a lower level of granularity
             println!("t_old {t_old:?}, t_new {t_new:?}");
             let (g_old, rhs_old) = self.star[&t_old];
             self.star.insert(t_new, (g_old, rhs_old));
             // restitch if target granularity is lower
-            self.propagate_components(env, t_new);
+            self.propagate_components(env, t_old, t_new);
             self.propagate_neighbors(env, t_new);
             self.update_vertex(env, t_new);
             let h = env.distance(s_new, t_new);
@@ -280,7 +326,7 @@ where
                     cost_dijkstra: 0,
                 },
             );
-        // }
+        }
     }
 }
 
@@ -309,6 +355,7 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
+        println!("processing obstacle at {obstacle:?}");
         let target = self.target.unwrap();
         let node = env.encode(obstacle);
         let leaf = env.leaf(obstacle);
@@ -317,9 +364,10 @@ where
         // for each of the cardinal neighbors of the obstacle
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
-        self.propagate_components(env, node);
-        if node != target {
-            self.star.remove(&node);
-        }
+        self.propagate_components(env, node, leaf);
+        self.star.remove(&node);
+        self.star.remove(&leaf);
+        self.pqueue.remove(&node);
+        self.pqueue.remove(&leaf);
     }
 }

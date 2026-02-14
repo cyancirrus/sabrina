@@ -37,7 +37,7 @@ impl SpatialMap for Grid {
     fn retrieve(&self, coord: ACoord) -> Self::Encoded {
         coord
     }
-    fn components(&self, _: &Self::Encoded) -> Vec<Self::Encoded> {
+    fn components(&self, _: &Self::Encoded, _:&Self::Encoded) -> Vec<Self::Encoded> {
         vec![]
     }
     fn decode(&self, node: Self::Encoded) -> ACoord {

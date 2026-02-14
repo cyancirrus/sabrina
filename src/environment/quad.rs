@@ -99,20 +99,33 @@ impl SpatialMap for QuadTree {
         }
         node
     }
-    fn components(&self, node: &Self::Encoded) -> Vec<Self::Encoded> {
-        // NOTE: Need to make this recursive like need to have like
-        // [removals], [keeps]
-        // NOTE: THIS IS WHERE I CHANGED
-        // // match node.l {
-        // //     0 => vec![],
-        // //     _ => grid_children(node).to_vec(),
-        // // }
-        // grid_components(node)
-        match node.l {
-            0 => vec![],
-            _ => grid_leaf(node).to_vec(),
+    fn components(&self, node: &Self::Encoded, leaf:&Self::Encoded) -> Vec<Self::Encoded> {
+        let mut comps = Vec::new();
+        let mut curr;
+        for lvl in 0..node.l {
+            curr = transform(&leaf, lvl);
+            for g in grid_siblings(&curr) {
+                if g != curr && self.belief(g) != Belief::Occupied {
+                    comps.push(g);
+                }
+            }
         }
+        comps
     }
+    // fn components(&self, node: &Self::Encoded, leaf:&Self::Encoded) -> Vec<Self::Encoded> {
+    //     // NOTE: Need to make this recursive like need to have like
+    //     // [removals], [keeps]
+    //     // NOTE: THIS IS WHERE I CHANGED
+    //     // // match node.l {
+    //     // //     0 => vec![],
+    //     // //     _ => grid_children(node).to_vec(),
+    //     // // }
+    //     grid_components(leaf, node.l)
+    //     // match node.l {
+    //     //     0 => vec![],
+    //     //     _ => grid_leaf(node).to_vec(),
+    //     // }
+    // }
     fn belief(&self, node: Self::Encoded) -> Belief {
         match self.get_node(node) {
             Some((_, belief)) => belief,

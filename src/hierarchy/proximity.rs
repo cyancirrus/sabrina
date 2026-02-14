@@ -117,27 +117,26 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
     // hierarchical representation of node
     let mut h_node;
     // edge neighbor of the current node
-    let mut e_node;
     for (&cardinal, filter) in cardinals.iter().zip(EDGE_FILTERS.iter()) {
-        let mut c_node;
-        h_node = node;
-        e_node = cardinal;
+        let mut c_node = node;
         found = false;
         // NOTE: This was (node.l..quad.levels).rev() it was using the break
         // However, going down in the level of precision should like truncate off precision which
         // is non-recoverable
         // for lvl in (node.l..quad.levels).rev() {
         for lvl in node.l..quad.levels {
-            c_node = transform(&e_node, lvl);
+            c_node = transform(&cardinal, lvl);
             h_node = transform(&node, lvl);
             if c_node == h_node {
+                println!("this has happened");
                 // this doesnt hold a very large supraset can hold another supraset
-                e_node = transform(&e_node, lvl-1);
+                c_node = transform(&cardinal, lvl-1);
                 // NOTE: This is what u need to push in if u don't find anything in drill down
                 // Essentially change to a mem swap for e_node
                 // NOTE: Leaving break allows shows the problem in the decode i think
                 break;
             } else if let Some(n) = quad.information.get(&c_node) {
+                println!("in here {c_node:?}");
                 if n.belief != Belief::Occupied {
                     neighbors.push(c_node);
                 }
@@ -162,7 +161,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
         }
         if !found {
             // NOTE: PART II and then push the largest e_node found which wasn't mem-swapped
-            neighbors.push(e_node);
+            neighbors.push(c_node);
         }
     }
     neighbors
@@ -196,16 +195,15 @@ pub fn grid_siblings(node: &HCoord) -> [HCoord; 4] {
     ]
 }
 
-pub fn grid_components(node: &HCoord) -> Vec<HCoord> {
+pub fn grid_components(leaf: &HCoord, levels:usize) -> Vec<HCoord> {
     let mut comps = Vec::new();
-    let mut node = *node;
-    for lvl in (0..node.l).rev() {
-        node = transform(&node, lvl);
-        for g in grid_siblings(&node) {
-            if g != node {
+    let mut leaf = *leaf;
+    for lvl in 0..=levels {
+        leaf = transform(&leaf, lvl);
+        for g in grid_siblings(&leaf) {
+            if g != leaf {
                 comps.push(g);
             }
-
         }
     }
     comps
@@ -313,3 +311,22 @@ pub mod test_grid_siblings {
         assert_eq!(eresult, grid_siblings(&x));
     }
 }
+
+
+#[cfg(test)]
+mod test_neighbor_edge {
+    use sabrina::parser::quad::read_quad;
+    use sabrina::environment::quad::QuadTree;
+    
+    #[test]
+    fn test_neighbor_unfilled() {
+        let levels = 3;
+        let path = "./data/sample/debug_neighs.map";
+        let mut env = read_quad(path, levels).unwrap();
+        let node = HCoord { l: 0, x: 3, y: 4 };
+        let ns = env.neighbors(node); 
+        let e_ns = vec![HCoord { l: 2, x: 4, y: 4}, HCoord {l: 0, x: 3, y: 5 }];
+        assert_eq!(ns, e_ns);
+    }
+}
+

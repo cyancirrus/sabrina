@@ -15,6 +15,7 @@ pub fn read_quad(path: &str, levels: usize) -> Result<QuadTree, Box<dyn Error>> 
     for (idx_y, line) in content.lines().enumerate() {
         for (idx_x, cell) in line.as_bytes().chunks_exact(3).enumerate() {
             let obj = match cell[1] {
+                b'0' => continue,
                 b' ' => Belief::Free,
                 b'+' => Belief::Occupied,
                 b'*' => Belief::Occupied,

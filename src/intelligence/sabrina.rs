@@ -80,12 +80,13 @@ where
         let mut pos = self.position;
         let (dy, dx) = (tgt.y - pos.y, tgt.x - pos.x);
         let (del_y, del_x) = (dy.signum(), dx.signum());
+        pos.x += del_x;
+        pos.y += del_y;
         while !self.environment.obstructed(pos) {
             self.position = pos;
             println!("NEW POSITION: {pos:?}");
             self.scan();
             if self.environment.encode(tgt) == self.environment.encode(self.position) {
-                // if tgt == self.position {
                 return Status::Enroute;
             }
             pos.x += del_x;
@@ -93,6 +94,25 @@ where
         }
         Status::Blocked
     }
+    // pub fn control(&mut self, tgt: ACoord) -> Status {
+    //     // beliefs not recorded are assumed unknown
+    //     // handles simulation compass rose signals
+    //     let mut pos = self.position;
+    //     let (dy, dx) = (tgt.y - pos.y, tgt.x - pos.x);
+    //     let (del_y, del_x) = (dy.signum(), dx.signum());
+    //     while !self.environment.obstructed(pos) {
+    //         self.position = pos;
+    //         println!("NEW POSITION: {pos:?}");
+    //         self.scan();
+    //         if self.environment.encode(tgt) == self.environment.encode(self.position) {
+    //             // if tgt == self.position {
+    //             return Status::Enroute;
+    //         }
+    //         pos.x += del_x;
+    //         pos.y += del_y;
+    //     }
+    //     Status::Blocked
+    // }
     // pub fn action<Q: PlanIter>(&mut self, plan: Q) -> Status {
     //     for &pos in plan.iter() {
     //         self.scan();

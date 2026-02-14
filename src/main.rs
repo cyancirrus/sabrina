@@ -12,7 +12,7 @@ use sabrina::intelligence::sabrina::Sabrina;
 use sabrina::parser::grid::read_grid;
 use sabrina::parser::quad::read_quad;
 use sabrina::sensor::lidar::Lidar;
-// use sabrina::hierarchy::proximity:: grid_siblings;
+use sabrina::hierarchy::proximity::grid_components;
 
 // TODO: Just need to check that the env.neighbors gets well with mixed hierarhchy
 // TODO: This isn't working with env.neighbors HCoord { l: 2, x: 4, y: 0 }: (16, 16), HCoord { l: 0, x: 3, y: 2 }: (22, 22)
@@ -24,24 +24,28 @@ use sabrina::sensor::lidar::Lidar;
 // TODO: Have like, create dirty reads and hesterisis or whatnot, like 
 // (new nodes, del nodes, merge nodes)
 
-    
-
 // fn main() {
-//     use sabrina::hierarchy::proximity::edge_neighbors;
-//     println!("------------------------------------");
-//     println!("      Example navigation            ");
-//     println!("------------------------------------");
-//     let path = "./data/sample/test_nav0.map";
-//     // let path = "./data/sample/test_nav1.map";
 //     let levels = 2;
-//     let oracle = read_quad(path, levels).unwrap();
-//     // let x = HCoord{ l:0, x: 3, y: 2 };
-//     let x = HCoord{ l:0, x: 6, y: 3 };
-//     for n in edge_neighbors(&oracle, x) {
-//         println!("n {n:?}");
+//     let env = QuadTree::init(levels);
+//     println!("env {env:?}");
+//     let node = HCoord { l: 0, x: 1, y: 0 };
+
+//     for s in grid_components(&node, 0) {
+//         println!("{s:?}");
 //     }
-//     println!("{oracle:}");
+//     println!("hello world");
+    
+//     // let levels = 2;
+//     // let env = QuadTree::init(levels);
+//     // println!("env {env:?}");
+//     // let node = HCoord { l: 0, x: 1, y: 0 };
+
+//     // for s in grid_components(&node, 0) {
+//     //     println!("{s:?}");
+//     // }
+//     // println!("hello world");
 // }
+
 
 fn main() {
     println!("------------------------------------");
@@ -49,7 +53,7 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 5;
+    let levels = 3;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
@@ -60,16 +64,14 @@ fn main() {
             // let position = ACoord { x: 1, y: 1 };
             // let target = ACoord { x: 9, y: 3 };
 
-            let position = ACoord { x: 5, y: 2 };
-            let target = ACoord { x: 9, y: 3 };
+            // let position = ACoord { x: 5, y: 2 };
+            // let target = ACoord { x: 9, y: 3 };
 
-            // let position = ACoord { x: 5, y: 1 };
+            // let position = ACoord { x: 3, y: 1 };
             // let target = ACoord { x: 10, y: 4 };
-            // // // works with levels = 2 for d*lite
-            // // // let position = ACoord { x: 1, y: 1 };
 
-            let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 18, y: 3 };
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             println!("environment\n{:?}", environment);
             // let environment = Grid::new();
