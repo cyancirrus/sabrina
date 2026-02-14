@@ -128,7 +128,6 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             c_node = transform(&cardinal, lvl);
             h_node = transform(&node, lvl);
             if c_node == h_node {
-                println!("this has happened");
                 // this doesnt hold a very large supraset can hold another supraset
                 c_node = transform(&cardinal, lvl-1);
                 // NOTE: This is what u need to push in if u don't find anything in drill down
@@ -136,7 +135,6 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
                 // NOTE: Leaving break allows shows the problem in the decode i think
                 break;
             } else if let Some(n) = quad.information.get(&c_node) {
-                println!("in here {c_node:?}");
                 if n.belief != Belief::Occupied {
                     neighbors.push(c_node);
                 }
