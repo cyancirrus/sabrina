@@ -252,7 +252,7 @@ where
         let t_new = env.encode(target);
         self.source = Some(s_new);
         self.target = Some(t_new);
-        self.k += env.distance(s_old, s_new);
+        // self.k += env.distance(s_old, s_new);
         let (g_old, rhs_old) = self.star[&s_old];
         let h = env.distance(s_old, s_new);
         self.propagate_components(env, s_old, s_new);
