@@ -58,36 +58,36 @@ fn main() {
     println!("------------------------------------");
     let path = "./data/sample/test_nav0.map";
     // let path = "./data/sample/test_nav1.map";
-    let levels = 2;
+    let levels = 4;
     match (read_quad(path, levels), read_grid(path)) {
         (Ok(q_oracle), Ok(g_oracle)) => {
             // works with levels = 5 for d*lite
-            // let position = ACoord { x: 1, y: 1 };
-            // let target = ACoord { x: 1, y: 5 };
+            let position = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 1, y: 5 };
 
             // // TODO: make it work with levels = 3
-            let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 9, y: 3 };
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 9, y: 3 };
 
             // let position = ACoord { x: 5, y: 2 };
             // let target = ACoord { x: 9, y: 3 };
 
-            let position = ACoord { x: 3, y: 1 };
-            let target = ACoord { x: 10, y: 4 };
+            // let position = ACoord { x: 3, y: 1 };
+            // let target = ACoord { x: 10, y: 4 };
 
             // let position = ACoord { x: 1, y: 1 };
             // let target = ACoord { x: 15, y: 7 };
 
-            let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 18, y: 3 };
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             println!("environment\n{:?}", environment);
             // let environment = Grid::new();
             let lidar = Lidar::new(12, g_oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
             // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
-            let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
-            // let mut sabby = Sabrina::new(position, q_oracle.clone(), lidar, DStarPlanner::new());
+            // let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+            let mut sabby = Sabrina::new(position, q_oracle.clone(), lidar, DStarPlanner::new());
             println!("absolute_environment\n{q_oracle}");
             // println!("-------------------------------");
             // println!("    Starting Navigation        ");

@@ -103,9 +103,7 @@ where
                 continue;
             }
             let (g_sp, _) = self.star[&s_p];
-            if g_sp < g_s {
-                min_cost = min_cost.min(env.distance(s, s_p).saturating_add(g_sp));
-            }
+            min_cost = min_cost.min(env.distance(s, s_p).saturating_add(g_sp));
         }
         min_cost
     }
@@ -117,7 +115,7 @@ where
         for s in env.neighbors(u) {
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
-            // if rhs_s < env.distance(u, s).saturating_add(g_old) {
+            // if rhs_s != env.distance(u, s).saturating_add(g_old) {
             //     continue;
             // }
             let rhs_new = self.find_min_neighbor_g(env, s);
@@ -127,39 +125,36 @@ where
     }
     fn propagate_neighbors(&mut self, env: &S, u: S::Encoded) {
         // for all of the neighbors requeue as found obstacle
+        if !self.star.contains_key(&u) {
+            return;
+        }
         let target = self.target.unwrap();
-        let (g_u, rhs_u) = match self.star.contains_key(&u) {
-            true => self.star[&u],
-            false => UNINIT,
-        };
         for s in env.neighbors(u) {
-            // if s == target || s == u || rhs_u > env.distance(u, s).saturating_add(g_u) {
-            if s == target  {
+            if s == target || !self.star.contains_key(&s) { 
                 continue;
             }
-            println!("found neighbor for {s:?}");
-            let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
-            let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g_s, rhs_new));
+            let (g_s, rhs) = self.star[&s];
             self.update_vertex(env, s);
+            self.star.insert( s, (g_s, usize::MAX));
+            // self.star.insert( s, (usize::MAX, rhs));
+            // self.star.insert( s, (usize::MAX, usize::MAX));
         }
     }
     fn propagate_components(&mut self, env: &S, n: S::Encoded, l: S::Encoded) {
         // for all members of the obstacle grid requeue
+        if !self.star.contains_key(&n) {
+            return;
+        }
         let target = self.target.unwrap();
-        let (g_n, rhs_n) = match self.star.contains_key(&n) {
-            true => self.star[&n],
-            false => UNINIT,
-        };
         for s in env.components(&n, &l) {
-            let d = env.distance(n, s).saturating_add(g_n);
-            if s == target {
+            if s == target || !self.star.contains_key(&s) { 
                 continue;
             }
-            let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
-            // let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g_s, usize::MAX));
+            let (g_s, rhs) = self.star[&s];
             self.update_vertex(env, s);
+            self.star.insert( s, (g_s, usize::MAX));
+            // self.star.insert( s, (usize::MAX, rhs));
+            // self.star.insert( s, (usize::MAX, usize::MAX));
         }
     }
     fn compute_shortest_path(&mut self, env: &S) {
