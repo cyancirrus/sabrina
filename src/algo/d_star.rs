@@ -348,9 +348,7 @@ where
         self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
         self.propagate_components(env, node, leaf);
-        if node != source {
         self.star.remove(&node);
-        }
         self.star.remove(&leaf);
         self.pqueue.remove(&node);
         self.pqueue.remove(&leaf);
