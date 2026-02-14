@@ -81,8 +81,8 @@ fn main() {
             let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 18, y: 3 };
             
-            // let position = ACoord { x: 5, y: 2 };
-            // let target = ACoord { x: 18, y: 3 };
+            let position = ACoord { x: 5, y: 2 };
+            let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             println!("environment\n{:?}", environment);
             // let environment = Grid::new();
