@@ -109,10 +109,13 @@ where
     }
     fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
         let target = self.target.unwrap();
-        if u == target {
-            return;
-        }
+        // if u == target {
+        //     return;
+        // }
         for s in env.neighbors(u) {
+            if s == target {
+                return;
+            }
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
@@ -199,7 +202,6 @@ where
         let mut node_next;
         let mut best_cost;
         let mut i = 0;
-        self.star.insert(target, (0, 0));
         while let Some(current) = node_curr {
             i += 1;
             if i > 24 {
@@ -252,7 +254,7 @@ where
         let t_new = env.encode(target);
         self.source = Some(s_new);
         self.target = Some(t_new);
-        // self.k += env.distance(s_old, s_new);
+        self.k += env.distance(s_old, s_new);
         let (g_old, rhs_old) = self.star[&s_old];
         let h = env.distance(s_old, s_new);
         self.propagate_components(env, s_old, s_new);
@@ -260,21 +262,23 @@ where
         self.update_vertex(env, s_new);
         self.star.insert(s_new, UNINIT);
         if t_new != t_old {
+            println!("TARGET UPDATED:: {t_old:?} -> {t_new:?}");
             // if the new target is at a lower level of granularity
-            self.star.insert(t_new, (0, 0));
+            self.star.insert(t_new, (usize::MAX, 0));
             // restitch if target granularity is lower
             self.propagate_components(env, t_old, t_new);
             self.propagate_neighbors(env, t_new);
             self.update_vertex(env, t_new);
-            let h = env.distance(s_new, t_new);
+            // let h = env.distance(s_new, t_new);
+            // self.pqueue.push(
+            //     t_new,
+            //     StarKey {
+            //         cost_astar: h,
+            //         cost_dijkstra: 0,
+            //     },
+            // );
         }
-        self.pqueue.push(
-            t_new,
-            StarKey {
-                cost_astar: h,
-                cost_dijkstra: 0,
-            },
-        );
+        // // some times i need this sometimes this breaks this
     }
 }
 

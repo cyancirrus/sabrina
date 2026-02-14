@@ -66,17 +66,17 @@ fn main() {
             let target = ACoord { x: 1, y: 5 };
 
             // // // TODO: make it work with levels = 3
-            let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 9, y: 3 };
-
-            let position = ACoord { x: 5, y: 2 };
-            let target = ACoord { x: 9, y: 3 };
-
-            let position = ACoord { x: 3, y: 1 };
-            let target = ACoord { x: 10, y: 4 };
-
             // let position = ACoord { x: 1, y: 1 };
-            // let target = ACoord { x: 15, y: 7 };
+            // let target = ACoord { x: 9, y: 3 };
+
+            // let position = ACoord { x: 5, y: 2 };
+            // let target = ACoord { x: 9, y: 3 };
+
+            // let position = ACoord { x: 3, y: 1 };
+            // let target = ACoord { x: 10, y: 4 };
+
+            let position = ACoord { x: 1, y: 1 };
+            let target = ACoord { x: 15, y: 7 };
 
             // let position = ACoord { x: 1, y: 1 };
             // let target = ACoord { x: 18, y: 3 };
