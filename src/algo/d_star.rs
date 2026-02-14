@@ -107,7 +107,7 @@ where
         }
         min_cost
     }
-    fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
+    fn propagate_cost_g(&mut self, env: &S, u: S::Encoded) {
         let target = self.target.unwrap();
         for s in env.neighbors(u) {
             if s == target {
@@ -116,12 +116,17 @@ where
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
+            if s == env.encode(ACoord {x: 18, y: 4 } ) {
+                println!("new min neighbor {rhs_new:?}");
+            }
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
     }
     fn propagate_neighbors(&mut self, env: &S, u: S::Encoded) {
         // for all of the neighbors requeue as found obstacle
+        // NOTE: something weird in the order whether 
+        // it should be insert or update or update then insert
         if !self.star.contains_key(&u) {
             return;
         }
@@ -137,6 +142,8 @@ where
     }
     fn propagate_components(&mut self, env: &S, n: S::Encoded, l: S::Encoded) {
         // for all members of the obstacle grid requeue
+        // NOTE: something weird in the order whether 
+        // it should be insert or update or update then insert
         if !self.star.contains_key(&n) {
             return;
         }
@@ -171,18 +178,18 @@ where
             let k_new = self.calculate_key(env, u_coord);
             // reversed due to starkey reversed compare for order for minheap
             if k_old > k_new {
-                // println!("A");
+                println!("A");
                 self.pqueue.push(u_coord, k_new);
             } else if g_u > rhs_u {
-                // println!("B");
+                println!("B");
                 self.star.insert(u_coord, (rhs_u, rhs_u));
                 self.pqueue.remove(&u_coord);
                 self.propagate_cost_rhs(env, u_coord);
             } else {
-                // println!("C");
+                println!("C");
                 let g_old = g_u;
                 self.star.insert(u_coord, (usize::MAX, rhs_u));
-                self.propagate_cost_g(env, u_coord, g_old);
+                self.propagate_cost_g(env, u_coord);
                 self.update_vertex(env, u_coord);
             }
         }
@@ -251,13 +258,16 @@ where
         let t_new = env.encode(target);
         self.source = Some(s_new);
         self.target = Some(t_new);
-        // self.k += env.distance(s_old, s_new);
-        let (g_old, rhs_old) = self.star[&s_old];
-        let h = env.distance(s_old, s_new);
-        self.propagate_components(env, s_old, s_new);
+        self.k += env.distance(s_old, s_new);
+        // let (g_old, rhs_old) = self.star[&s_old];
+        // let h = env.distance(s_old, s_new);
+        // self.propagate_components(env, s_old, s_new);
         self.propagate_neighbors(env, s_new);
         self.update_vertex(env, s_new);
         self.star.insert(s_new, UNINIT);
+        for n in env.neighbors(env.encode(ACoord { x: 18, y: 4 })) {
+            println!("NEIGHBORS ARE {n:?}");
+        }
         if t_new != t_old {
             println!("TARGET UPDATED:: {t_old:?} -> {t_new:?}");
             // if the new target is at a lower level of granularity
@@ -275,7 +285,7 @@ where
             //     },
             // );
         }
-        // // some times i need this sometimes this breaks this
+        self.propagate_cost_g(env, t_new);
     }
 }
 
@@ -309,14 +319,14 @@ where
         let node = env.encode(obstacle);
         let leaf = env.leaf(obstacle);
         let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
-        // for each of the cardinal neighbors of the obstacle
-        self.propagate_neighbors(env, node);
         // for each of the grid components of the obstacle
         self.propagate_components(env, node, leaf);
+        // for each of the cardinal neighbors of the obstacle
+        self.propagate_neighbors(env, node);
         self.update_vertex(env, node);
-        // self.star.remove(&node);
+        self.star.remove(&node);
+        // self.pqueue.remove(&node);
         // self.star.remove(&leaf);
-        self.pqueue.remove(&node);
         // self.pqueue.remove(&leaf);
     }
 }
