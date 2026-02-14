@@ -133,7 +133,8 @@ where
             false => UNINIT,
         };
         for s in env.neighbors(u) {
-            if s == target || s == u || rhs_u > env.distance(u, s).saturating_add(g_u) {
+            // if s == target || s == u || rhs_u > env.distance(u, s).saturating_add(g_u) {
+            if s == target  {
                 continue;
             }
             println!("found neighbor for {s:?}");
@@ -156,8 +157,8 @@ where
                 continue;
             }
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
-            let rhs_new = self.find_min_neighbor_g(env, s);
-            self.star.insert(s, (g_s, rhs_new));
+            // let rhs_new = self.find_min_neighbor_g(env, s);
+            self.star.insert(s, (g_s, usize::MAX));
             self.update_vertex(env, s);
         }
     }
@@ -171,6 +172,7 @@ where
                 let start_key = self.calculate_key(env, source);
                 if g == rhs && top_key <= start_key {
                     println!("start_key {start_key:?}");
+                    println!("update queue {:?}", self.pqueue);
                     break;
                 }
             }
@@ -183,12 +185,15 @@ where
             let k_new = self.calculate_key(env, u_coord);
             // reversed due to starkey reversed compare for order for minheap
             if k_old > k_new {
+                // println!("A");
                 self.pqueue.push(u_coord, k_new);
             } else if g_u > rhs_u {
+                // println!("B");
                 self.star.insert(u_coord, (rhs_u, rhs_u));
                 self.pqueue.remove(&u_coord);
                 self.propagate_cost_rhs(env, u_coord);
             } else {
+                // println!("C");
                 let g_old = g_u;
                 self.star.insert(u_coord, (usize::MAX, rhs_u));
                 self.propagate_cost_g(env, u_coord, g_old);
@@ -337,7 +342,7 @@ where
         self.star.remove(&node);
         self.star.remove(&leaf);
         // self.pqueue.remove(&node);
-        self.pqueue.remove(&leaf);
+        // self.pqueue.remove(&leaf);
     }
     // fn update(&mut self, env: &S, position: ACoord, obstacle: ACoord) {
     //     // TODO: Need to integrate rhs for when we find better paths
