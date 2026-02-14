@@ -280,7 +280,10 @@ where
         self.target = Some(t_new);
         if s_new != s_old {
             // let (g_old, rhs_old) = self.star[&s_old];
-            let (g_old, rhs_old) = self.star[&s_old];
+            let (g_old, rhs_old) = match self.star.contains_key(&s_old) {
+                true => self.star[&s_old],
+                false => UNINIT
+            };
             let h = env.distance(s_old, s_new); 
             self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
             self.k += env.distance(s_old, s_new);
