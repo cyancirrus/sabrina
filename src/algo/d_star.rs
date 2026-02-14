@@ -115,9 +115,6 @@ where
         for s in env.neighbors(u) {
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
-            // if rhs_s != env.distance(u, s).saturating_add(g_old) {
-            //     continue;
-            // }
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
@@ -190,7 +187,7 @@ where
             }
         }
     }
-    fn reconstruct_decode(&self, env: &S) -> Option<Vec<ACoord>> {
+    fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
         println!("--------------------------------------");
         println!("decode");
         println!("--------------------------------------");
@@ -202,6 +199,7 @@ where
         let mut node_next;
         let mut best_cost;
         let mut i = 0;
+        self.star.insert(target, (0, 0));
         while let Some(current) = node_curr {
             i += 1;
             if i > 24 {
@@ -252,7 +250,6 @@ where
         let t_old = self.target.unwrap();
         let s_new = env.encode(source);
         let t_new = env.encode(target);
-        println!("t_old {t_old:?}, t_new {t_new:?}");
         self.source = Some(s_new);
         self.target = Some(t_new);
         self.k += env.distance(s_old, s_new);
@@ -318,7 +315,7 @@ where
         self.update_vertex(env, node);
         // self.star.remove(&node);
         // self.star.remove(&leaf);
-        // self.pqueue.remove(&node);
+        self.pqueue.remove(&node);
         // self.pqueue.remove(&leaf);
     }
 }
