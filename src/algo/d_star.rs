@@ -109,9 +109,6 @@ where
     }
     fn propagate_cost_g(&mut self, env: &S, u: S::Encoded, g_old: usize) {
         let target = self.target.unwrap();
-        // if u == target {
-        //     return;
-        // }
         for s in env.neighbors(u) {
             if s == target {
                 return;
@@ -190,7 +187,7 @@ where
             }
         }
     }
-    fn reconstruct_decode(&mut self, env: &S) -> Option<Vec<ACoord>> {
+    fn reconstruct_decode(&self, env: &S) -> Option<Vec<ACoord>> {
         println!("--------------------------------------");
         println!("decode");
         println!("--------------------------------------");
@@ -254,7 +251,7 @@ where
         let t_new = env.encode(target);
         self.source = Some(s_new);
         self.target = Some(t_new);
-        self.k += env.distance(s_old, s_new);
+        // self.k += env.distance(s_old, s_new);
         let (g_old, rhs_old) = self.star[&s_old];
         let h = env.distance(s_old, s_new);
         self.propagate_components(env, s_old, s_new);

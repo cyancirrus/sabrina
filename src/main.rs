@@ -75,8 +75,8 @@ fn main() {
             // let position = ACoord { x: 3, y: 1 };
             // let target = ACoord { x: 10, y: 4 };
 
-            let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 15, y: 7 };
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 15, y: 7 };
 
             // let position = ACoord { x: 1, y: 1 };
             // let target = ACoord { x: 18, y: 3 };
