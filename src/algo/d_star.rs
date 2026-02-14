@@ -85,10 +85,6 @@ where
             if s == target {
                 continue;
             }
-            if s == env.leaf( ACoord {x: 4, y: 4}) {
-                println!("RHS WHO WAS PARENT?");
-                println!("{u:?}");
-            }
             let rhs_new = env.distance(s, u).saturating_add(g_u);
             let (g, rhs) = self.star.entry(s).or_insert(UNINIT);
             let rhs_updated = (*rhs).min(rhs_new);
@@ -101,10 +97,6 @@ where
     fn find_min_neighbor_g(&self, env: &S, s: S::Encoded) -> usize {
         let mut min_cost = usize::MAX;
         for s_p in env.neighbors(s) {
-            if s == env.leaf( ACoord {x: 4, y: 4}) {
-                println!("MIN NEIGHBOR WHO WAS PARENT?");
-                println!("{s:?}");
-            }
             if let Some(&(g_sp, _)) = self.star.get(&s_p) {
                 min_cost = min_cost.min(env.distance(s, s_p).saturating_add(g_sp));
             }
@@ -117,10 +109,6 @@ where
             return;
         }
         for s in env.neighbors(u) {
-            if s == env.leaf( ACoord {x: 4, y: 4}) {
-                println!("PCG WHO WAS PARENT?");
-                println!("{u:?}");
-            }
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             if rhs_s != env.distance(u, s).saturating_add(g_old) {
@@ -143,10 +131,6 @@ where
             if s == target || s == u || rhs_u != d {
                 continue;
             }
-            if s == env.leaf( ACoord {x: 4, y: 4}) {
-                println!("PN WHO WAS PARENT?");
-                println!("{u:?}");
-            }
             println!("found neighbor for {s:?}");
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
@@ -165,10 +149,6 @@ where
             let d = env.distance(n, s).saturating_add(g_n);
             if s == target || s == n {
                 continue;
-            }
-            if s == env.leaf( ACoord {x: 4, y: 4}) {
-                println!("PC WHO WAS PARENT?");
-                println!("{n:?}");
             }
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
@@ -312,8 +292,10 @@ where
         if t_new != t_old {
             // if the new target is at a lower level of granularity
             println!("t_old {t_old:?}, t_new {t_new:?}");
-            let (g_old, rhs_old) = self.star[&t_old];
-            self.star.insert(t_new, (g_old, rhs_old));
+            // let (g_old, rhs_old) = self.star[&t_old];
+            // self.star.insert(t_new, (g_old, rhs_old));
+            // let (g_old, rhs_old) = self.star[&t_old];
+            self.star.insert(t_new, (0, 0));
             // restitch if target granularity is lower
             self.propagate_components(env, t_old, t_new);
             self.propagate_neighbors(env, t_new);

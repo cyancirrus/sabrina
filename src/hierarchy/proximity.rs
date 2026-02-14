@@ -315,6 +315,7 @@ pub mod test_grid_siblings {
 
 #[cfg(test)]
 mod test_neighbor_edge {
+    use sabrina::global::types::HCoord;
     use sabrina::parser::quad::read_quad;
     use sabrina::environment::quad::QuadTree;
     

@@ -25,7 +25,7 @@ impl fmt::Display for QuadTree {
             let mut line = String::new();
             for x in self.bounds.min_x..=self.bounds.max_x {
                 let symbol = match self.get_coord(ACoord { x, y }) {
-                    None => '0',
+                    None => '_',
                     Some((_, Belief::Free)) => ' ',
                     Some((_, Belief::Occupied)) => '#',
                     Some((_, Belief::Unknown)) => '?',
