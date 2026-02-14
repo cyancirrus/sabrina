@@ -113,8 +113,8 @@ pub fn grid_hier(node: &ACoord, level: usize) -> [HCoord; 4] {
 }
 #[cfg(test)]
 pub mod test_base {
-    use crate::hierarchy::encoding::{encode, transform};
     use crate::global::types::{ACoord, HCoord};
+    use crate::hierarchy::encoding::{encode, transform};
     #[test]
     fn test_encode() {
         let x = ACoord { x: 0, y: 2 };

@@ -72,6 +72,7 @@ where
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
         let (g, rhs) = self.star.get(&u).unwrap_or(&UNINIT);
         if g != rhs {
+            println!("pushing update for {u:?}");
             let ckey = self.calculate_key(env, u);
             self.pqueue.push(u, ckey);
         } else {
@@ -96,8 +97,13 @@ where
     }
     fn find_min_neighbor_g(&self, env: &S, s: S::Encoded) -> usize {
         let mut min_cost = usize::MAX;
+        let &(g_s, rhs_u) = self.star.get(&s).unwrap_or(&UNINIT);
         for s_p in env.neighbors(s) {
-            if let Some(&(g_sp, _)) = self.star.get(&s_p) {
+            if !self.star.contains_key(&s_p) {
+                continue;
+            }
+            let (g_sp, _) = self.star[&s_p];
+            if g_sp < g_s {
                 min_cost = min_cost.min(env.distance(s, s_p).saturating_add(g_sp));
             }
         }
@@ -111,9 +117,9 @@ where
         for s in env.neighbors(u) {
             // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
-            if rhs_s != env.distance(u, s).saturating_add(g_old) {
-                continue;
-            }
+            // if rhs_s < env.distance(u, s).saturating_add(g_old) {
+            //     continue;
+            // }
             let rhs_new = self.find_min_neighbor_g(env, s);
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
@@ -127,8 +133,7 @@ where
             false => UNINIT,
         };
         for s in env.neighbors(u) {
-            let d = env.distance(u, s).saturating_add(g_u);
-            if s == target || s == u || rhs_u != d {
+            if s == target || s == u || rhs_u > env.distance(u, s).saturating_add(g_u) {
                 continue;
             }
             println!("found neighbor for {s:?}");
@@ -147,7 +152,7 @@ where
         };
         for s in env.components(&n, &l) {
             let d = env.distance(n, s).saturating_add(g_n);
-            if s == target || s == n {
+            if s == target {
                 continue;
             }
             let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
@@ -156,27 +161,6 @@ where
             self.update_vertex(env, s);
         }
     }
-    // fn propagate_components(&mut self, env: &S, u: S::Encoded) {
-    //     // for all members of the obstacle grid requeue
-    //     let target = self.target.unwrap();
-    //     let (g_u, rhs_u) = match self.star.contains_key(&u) {
-    //         true => self.star[&u],
-    //         false => UNINIT,
-    //     };
-    //     for s in env.components(&u) {
-    //         let d = env.distance(u, s).saturating_add(g_u);
-    //         if s == target || s == u {
-    //             continue;
-    //         }
-    //         // if s == target || s == u || rhs_u != d {
-    //         //     continue;
-    //         // }
-    //         let &(g_s, rhs) = self.star.get(&s).unwrap_or(&UNINIT);
-    //         let rhs_new = self.find_min_neighbor_g(env, s);
-    //         self.star.insert(s, (g_s, rhs_new));
-    //         self.update_vertex(env, s);
-    //     }
-    // }
     fn compute_shortest_path(&mut self, env: &S) {
         println!("compute");
         let source = self.source.unwrap();
@@ -186,6 +170,7 @@ where
             if let Some((top_coord, top_key)) = self.pqueue.peek() {
                 let start_key = self.calculate_key(env, source);
                 if g == rhs && top_key <= start_key {
+                    println!("start_key {start_key:?}");
                     break;
                 }
             }
@@ -223,11 +208,6 @@ where
         let mut node_next;
         let mut best_cost;
         let mut i = 0;
-        println!("WHAT IS THE NEIGHBOR FOR THIS?");
-        let problem = env.encode(ACoord {x: 4, y: 2});
-        for n in env.neighbors(problem) {
-            println!("n {n:?}");
-        }
         while let Some(current) = node_curr {
             i += 1;
             if i > 24 {
@@ -282,13 +262,16 @@ where
             // let (g_old, rhs_old) = self.star[&s_old];
             let (g_old, rhs_old) = match self.star.contains_key(&s_old) {
                 true => self.star[&s_old],
-                false => UNINIT
+                false => UNINIT,
             };
-            let h = env.distance(s_old, s_new); 
-            self.star.entry(s_new).or_insert((rhs_old.saturating_add(h),usize::MAX));
+            let h = env.distance(s_old, s_new);
+            self.star
+                .entry(s_new)
+                .or_insert((rhs_old.saturating_add(h), usize::MAX));
+            // self.k += env.distance(s_old, s_new);
             self.k += env.distance(s_old, s_new);
             // self.star.entry(s_new).or_insert(UNINIT);
-            // self.star.insert(s_new, UNINIT);
+            self.star.insert(s_new, UNINIT);
             self.propagate_neighbors(env, s_new);
             self.propagate_components(env, s_old, s_new);
             self.update_vertex(env, s_new);
@@ -353,7 +336,27 @@ where
         self.propagate_components(env, node, leaf);
         self.star.remove(&node);
         self.star.remove(&leaf);
-        self.pqueue.remove(&node);
+        // self.pqueue.remove(&node);
         self.pqueue.remove(&leaf);
     }
+    // fn update(&mut self, env: &S, position: ACoord, obstacle: ACoord) {
+    //     // TODO: Need to integrate rhs for when we find better paths
+    //     if self.source.is_none() || self.target.is_none() {
+    //         return;
+    //     }
+    //     println!("processing obstacle at {obstacle:?}");
+    //     let target = self.target.unwrap();
+    //     let node = env.encode(obstacle);
+    //     let leaf = env.leaf(obstacle);
+    //     let &(g_obs, rhs_obs) = self.star.get(&node).unwrap_or(&UNINIT);
+    //     self.update_vertex(env, node);
+    //     // for each of the cardinal neighbors of the obstacle
+    //     self.propagate_neighbors(env, node);
+    //     // for each of the grid components of the obstacle
+    //     self.propagate_components(env, node, leaf);
+    //     self.star.remove(&node);
+    //     self.star.remove(&leaf);
+    //     self.pqueue.remove(&node);
+    //     self.pqueue.remove(&leaf);
+    // }
 }

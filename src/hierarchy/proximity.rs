@@ -129,7 +129,7 @@ pub fn edge_neighbors(quad: &QuadTree, node: HCoord) -> Vec<HCoord> {
             h_node = transform(&node, lvl);
             if c_node == h_node {
                 // this doesnt hold a very large supraset can hold another supraset
-                c_node = transform(&cardinal, lvl-1);
+                c_node = transform(&cardinal, lvl - 1);
                 // NOTE: This is what u need to push in if u don't find anything in drill down
                 // Essentially change to a mem swap for e_node
                 // NOTE: Leaving break allows shows the problem in the decode i think
@@ -193,7 +193,7 @@ pub fn grid_siblings(node: &HCoord) -> [HCoord; 4] {
     ]
 }
 
-pub fn grid_components(leaf: &HCoord, levels:usize) -> Vec<HCoord> {
+pub fn grid_components(leaf: &HCoord, levels: usize) -> Vec<HCoord> {
     let mut comps = Vec::new();
     let mut leaf = *leaf;
     for lvl in 0..=levels {
@@ -310,22 +310,20 @@ pub mod test_grid_siblings {
     }
 }
 
-
 #[cfg(test)]
 mod test_neighbor_edge {
+    use sabrina::environment::quad::QuadTree;
     use sabrina::global::types::HCoord;
     use sabrina::parser::quad::read_quad;
-    use sabrina::environment::quad::QuadTree;
-    
+
     #[test]
     fn test_neighbor_unfilled() {
         let levels = 3;
         let path = "./data/sample/debug_neighs.map";
         let mut env = read_quad(path, levels).unwrap();
         let node = HCoord { l: 0, x: 3, y: 4 };
-        let ns = env.neighbors(node); 
-        let e_ns = vec![HCoord { l: 2, x: 4, y: 4}, HCoord {l: 0, x: 3, y: 5 }];
+        let ns = env.neighbors(node);
+        let e_ns = vec![HCoord { l: 2, x: 4, y: 4 }, HCoord { l: 0, x: 3, y: 5 }];
         assert_eq!(ns, e_ns);
     }
 }
-

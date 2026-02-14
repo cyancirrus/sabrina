@@ -2,7 +2,9 @@
 use crate::global::consts::LEVELS;
 use crate::global::types::{ACoord, Belief, Bounds, HCoord, SpatialMap};
 use crate::hierarchy::encoding::{child_hier, encode, grid_hier, point, transform};
-use crate::hierarchy::proximity::{edge_neighbors, grid_children, grid_leaf, grid_siblings, grid_components};
+use crate::hierarchy::proximity::{
+    edge_neighbors, grid_children, grid_components, grid_leaf, grid_siblings,
+};
 use std::collections::HashMap;
 
 type Information = HashMap<HCoord, QuadNode>;
@@ -99,7 +101,7 @@ impl SpatialMap for QuadTree {
         }
         node
     }
-    fn components(&self, node: &Self::Encoded, leaf:&Self::Encoded) -> Vec<Self::Encoded> {
+    fn components(&self, node: &Self::Encoded, leaf: &Self::Encoded) -> Vec<Self::Encoded> {
         let mut comps = Vec::new();
         let mut curr;
         for lvl in 0..node.l {
@@ -178,9 +180,9 @@ impl QuadTree {
 
 impl QuadTree {
     pub fn populate_edge(&mut self, node: HCoord) {
-        // if self.get_node(node).is_some() {
-        //     return;
-        // }
+        if self.get_node(node).is_some() {
+            return;
+        }
         let span = 1 << (self.levels - 1);
         let node = transform(&node, self.levels - 1);
         self.bounds.min_x = self.bounds.min_x.min(node.x);
@@ -366,24 +368,24 @@ pub mod test_distance {
     #[test]
     fn test_distance_metric() {
         let env = QuadTree::new();
-        let a = HCoord{l:0, x: 0, y: 0};
-        let b = HCoord{l:0, x: 1, y: 1};
+        let a = HCoord { l: 0, x: 0, y: 0 };
+        let b = HCoord { l: 0, x: 1, y: 1 };
         assert_eq!(4, env.distance(a, b));
-        
-        let a = HCoord{l:0, x: 0, y: 0};
-        let b = HCoord{l:0, x: 2, y: 0};
+
+        let a = HCoord { l: 0, x: 0, y: 0 };
+        let b = HCoord { l: 0, x: 2, y: 0 };
         assert_eq!(4, env.distance(a, b));
-        
-        let a = HCoord{l:1, x: 0, y: 0};
-        let b = HCoord{l:0, x: 0, y: 0};
+
+        let a = HCoord { l: 1, x: 0, y: 0 };
+        let b = HCoord { l: 0, x: 0, y: 0 };
         assert_eq!(2, env.distance(a, b));
-        
-        let a = HCoord{l:0, x: 0, y: 0};
-        let b = HCoord{l:0, x: 8, y: 0};
+
+        let a = HCoord { l: 0, x: 0, y: 0 };
+        let b = HCoord { l: 0, x: 8, y: 0 };
         assert_eq!(16, env.distance(a, b));
-        
-        let a = HCoord{l:0, x: 0, y: 0};
-        let b = HCoord{l:0, x: 8, y: 8};
+
+        let a = HCoord { l: 0, x: 0, y: 0 };
+        let b = HCoord { l: 0, x: 8, y: 8 };
         assert_eq!(32, env.distance(a, b));
     }
 }

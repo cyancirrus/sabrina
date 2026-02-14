@@ -38,7 +38,7 @@ impl SpatialMap for QuadrantGrid {
     fn leaf(&self, coord: ACoord) -> Self::Encoded {
         coord
     }
-    fn components(&self, _: &Self::Encoded, _:&Self::Encoded) -> Vec<Self::Encoded> {
+    fn components(&self, _: &Self::Encoded, _: &Self::Encoded) -> Vec<Self::Encoded> {
         vec![]
     }
     fn initialize(&mut self, _source: ACoord, _target: ACoord) {}

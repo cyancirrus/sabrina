@@ -38,6 +38,7 @@ where
                     x: n.x + self.position.x,
                     y: n.y + self.position.y,
                 };
+                // something is wrong with the planner
                 self.planner
                     .update(&self.environment, self.position, obstacle);
                 self.environment.insert_ray(self.position, obstacle);
@@ -49,7 +50,7 @@ where
     where
         Q: Debug,
     {
-        println!("PLan {plan:?}");
+        println!("plan {plan:?}");
         for &tgt in plan.iter() {
             let status = self.control(tgt);
             if status == Status::Blocked {
@@ -59,7 +60,7 @@ where
         Status::Complete
     }
     pub fn navigate(&mut self, target: ACoord) -> Status {
-        self.environment.initialize(self.position, target);
+        // self.environment.initialize(self.position, target);
         self.scan();
         println!("Environment\n{}", self.environment);
         let mut status = Status::Enroute;
