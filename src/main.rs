@@ -78,16 +78,16 @@ fn main() {
             let position = ACoord { x: 1, y: 1 };
             let target = ACoord { x: 15, y: 7 };
 
-            let position = ACoord { x: 1, y: 1 };
-            let target = ACoord { x: 18, y: 3 };
+            // let position = ACoord { x: 1, y: 1 };
+            // let target = ACoord { x: 18, y: 3 };
             let environment = QuadTree::init(levels);
             println!("environment\n{:?}", environment);
             // let environment = Grid::new();
             let lidar = Lidar::new(12, g_oracle.clone());
             // let mut sabby = Sabrina::new(position, environment, lidar, BestFirstPlanner);
             // let mut sabby = Sabrina::new(position, environment, lidar, AStarPlanner);
-            // let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
-            let mut sabby = Sabrina::new(position, q_oracle.clone(), lidar, DStarPlanner::new());
+            let mut sabby = Sabrina::new(position, environment, lidar, DStarPlanner::new());
+            // let mut sabby = Sabrina::new(position, q_oracle.clone(), lidar, DStarPlanner::new());
             println!("absolute_environment\n{q_oracle}");
             // println!("-------------------------------");
             // println!("    Starting Navigation        ");
