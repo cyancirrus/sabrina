@@ -72,7 +72,6 @@ where
     fn update_vertex(&mut self, env: &S, u: S::Encoded) {
         let (g, rhs) = self.star.get(&u).unwrap_or(&UNINIT);
         if g != rhs {
-            println!("pushing update for {u:?}");
             let ckey = self.calculate_key(env, u);
             self.pqueue.push(u, ckey);
         } else {
@@ -96,9 +95,6 @@ where
         }
     }
     fn find_min_neighbor_g(&self, env: &S, s: S::Encoded) -> usize {
-        // TODO: test this function, we should be able to bounds it
-        // Theres no reason why a restriction on inequality for find_min_neighbor_g
-        // shouldn't be able to be used as a filter in the custom propagate functions
         let mut min_cost = usize::MAX;
         let &(g_s, rhs_u) = self.star.get(&s).unwrap_or(&UNINIT);
         for s_p in env.neighbors(s) {
@@ -106,9 +102,7 @@ where
                 continue;
             }
             let (g_sp, _) = self.star[&s_p];
-            // if g_sp < g_s {
             min_cost = min_cost.min(env.distance(s, s_p).saturating_add(g_sp));
-            // }
         }
         min_cost
     }
@@ -118,12 +112,8 @@ where
             if s == target {
                 return;
             }
-            // only update if not equal
             let &(g_s, rhs_s) = self.star.get(&s).unwrap_or(&UNINIT);
             let rhs_new = self.find_min_neighbor_g(env, s);
-            if s == env.encode(ACoord {x: 18, y: 4 } ) {
-                println!("new min neighbor {rhs_new:?}");
-            }
             self.star.insert(s, (g_s, rhs_new));
             self.update_vertex(env, s);
         }
@@ -164,7 +154,6 @@ where
         }
     }
     fn compute_shortest_path(&mut self, env: &S) {
-        println!("compute");
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         loop {
@@ -176,7 +165,6 @@ where
                 }
             }
             let (u_coord, k_old) = self.pqueue.pop().unwrap();
-            println!("processing {u_coord:?}");
             let &(g_u, rhs_u) = match self.star.get(&u_coord) {
                 Some(entry) => entry,
                 None => continue,
@@ -184,15 +172,12 @@ where
             let k_new = self.calculate_key(env, u_coord);
             // reversed due to starkey reversed compare for order for minheap
             if k_old > k_new {
-                println!("A");
                 self.pqueue.push(u_coord, k_new);
             } else if g_u > rhs_u {
-                println!("B");
                 self.star.insert(u_coord, (rhs_u, rhs_u));
                 self.pqueue.remove(&u_coord);
                 self.propagate_cost_rhs(env, u_coord);
             } else {
-                println!("C");
                 let g_old = g_u;
                 let rhs_new = self.find_min_neighbor_g(env, u_coord);
                 self.star.insert(u_coord, (usize::MAX, rhs_new));
@@ -202,29 +187,17 @@ where
         }
     }
     fn reconstruct_decode(&self, env: &S) -> Option<Vec<ACoord>> {
-        println!("--------------------------------------");
-        println!("decode");
-        println!("--------------------------------------");
-        println!("distance map\n {:?}", self.star);
         let source = self.source.unwrap();
         let target = self.target.unwrap();
         let mut plan = Vec::new();
         let mut node_curr = Some(source);
         let mut node_next;
         let mut best_cost;
-        let mut i = 0;
         while let Some(current) = node_curr {
-            i += 1;
-            if i > 24 {
-                assert!(false, "deliberately_exiting");
-            } else {
-                println!("current {current:?}");
-            }
             if current != source {
                 plan.push(env.decode(current));
             }
             if target == current {
-                // println!("FINAL STAR {:?}", self.star);
                 return Some(plan);
             }
             node_next = None;
@@ -245,7 +218,6 @@ where
     fn new_plan(&mut self, env: &S, source: ACoord, target: ACoord) {
         let s_encode = env.encode(source);
         let t_encode = env.encode(target);
-        println!("t_initial {t_encode:?}");
         if env.obstructed(target) {
             return;
         };
@@ -267,7 +239,6 @@ where
         self.target = Some(t_new);
         self.k += env.distance(s_old, s_new);
         if t_new != t_old {
-            println!("TARGET UPDATED:: {t_old:?} -> {t_new:?}");
             // if the new target is at a lower level of granularity
             self.star.insert(t_new, (usize::MAX, 0));
             // restitch if target granularity is lower
@@ -283,9 +254,6 @@ where
             self.star.insert(s_new, (usize::MAX, rhs_new));
             self.propagate_cost_g(env, s_new);
             self.propagate_cost_g(env, t_new);
-        }
-        for n in env.neighbors(env.encode(ACoord { x: 18, y: 4 })) {
-            println!("NEIGHBORS ARE {n:?}");
         }
     }
 }
@@ -315,7 +283,6 @@ where
         if self.source.is_none() || self.target.is_none() {
             return;
         }
-        println!("processing obstacle at {obstacle:?}");
         let target = self.target.unwrap();
         let node = env.encode(obstacle);
         let leaf = env.leaf(obstacle);

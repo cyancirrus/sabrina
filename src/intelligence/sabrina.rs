@@ -62,10 +62,10 @@ where
     pub fn navigate(&mut self, target: ACoord) -> Status {
         // self.environment.initialize(self.position, target);
         self.scan();
-        println!("Environment\n{}", self.environment);
+        // println!("Environment\n{}", self.environment);
         let mut status = Status::Enroute;
         while status != Status::Complete && status != Status::Impossible {
-            println!("Environment\n{}", self.environment);
+            // println!("Environment\n{}", self.environment);
             println!("-------------------------------");
             let plan = self.planner.plan(&self.environment, self.position, target);
             status = match plan {
